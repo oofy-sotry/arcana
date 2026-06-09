@@ -21,4 +21,16 @@ const PETS_SQL = `
   );
 `
 
-module.exports = [WORLD_STATE_SQL, PETS_SQL]
+const PET_CONDITIONS_SQL = `
+  CREATE TABLE IF NOT EXISTS pet_conditions (
+    pet_id      INTEGER PRIMARY KEY,
+    hunger      REAL    NOT NULL DEFAULT 100.0,
+    happiness   REAL    NOT NULL DEFAULT 100.0,
+    cleanliness REAL    NOT NULL DEFAULT 100.0,
+    energy      REAL    NOT NULL DEFAULT 100.0,
+    last_updated INTEGER NOT NULL,
+    FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE
+  );
+`
+
+module.exports = [WORLD_STATE_SQL, PETS_SQL, PET_CONDITIONS_SQL]
