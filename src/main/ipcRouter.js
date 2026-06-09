@@ -5,6 +5,10 @@ class IpcRouter {
     this.petSystem     = petSystem
     this.windowManager = windowManager
   }
+
+  register() {
+    ipcMain.handle('pet:get-all', () => this.petSystem.getAll())
+  }
 }
 
 module.exports = IpcRouter
