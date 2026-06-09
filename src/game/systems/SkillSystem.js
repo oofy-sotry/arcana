@@ -17,6 +17,20 @@ class SkillSystem {
       data: SKILLS[row.skill_id] || null,
     }))
   }
+
+  unlockSkill(pet, skillId) {
+    const skill = SKILLS[skillId]
+    if (!skill) return false
+    if (pet.evolution_stage < skill.unlockStage) return false
+    if (skill.attribute !== pet.attribute) return false
+
+    db.run(
+      `INSERT OR IGNORE INTO pet_skills (pet_id, skill_id, unlocked_at) VALUES (?, ?, ?)`,
+      [pet.id, skillId, Date.now()]
+    )
+    this.save()
+    return true
+  }
 }
 
 module.exports = SkillSystem
