@@ -9,6 +9,20 @@ class GameWorld {
     this.petSystem  = null
     this._tickTimer = null
   }
+
+  async init() {
+    await db.init()
+    db.runMigrations()
+
+    this.petSystem = new PetSystem({ Pet, World, save: db.save })
+
+    const pets = this.petSystem.getAll()
+    if (pets.length > 0) {
+      this.petSystem.applyOfflineProgress(pets)
+    }
+
+    db.save()
+  }
 }
 
 module.exports = GameWorld
