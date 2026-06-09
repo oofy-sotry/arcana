@@ -18,9 +18,29 @@ const MONSTERS = [
   { id: 'gale_eagle',   name: '폭풍독수리',  attribute: 'wind',  tier: 3, hp: 280, attack: 65, defense: 18, exp: 155, coins: { min: 60, max: 120 } },
 
   // ── 땅 ──
-  { id: 'dirt_golem',   name: '흙 골렘',     attribute: 'earth', tier: 1, hp: 90,  attack: 10, defense: 8,  exp: 18,  coins: { min: 5,  max: 12 } },
-  { id: 'stone_monkey', name: '돌 원숭이',   attribute: 'earth', tier: 2, hp: 160, attack: 22, defense: 15, exp: 52,  coins: { min: 18, max: 35 } },
-  { id: 'rock_titan',   name: '암반 타이탄', attribute: 'earth', tier: 3, hp: 380, attack: 50, defense: 30, exp: 145, coins: { min: 60, max: 120 } },
+  { id: 'dirt_golem',   name: '흙 골렘',     attribute: 'earth',   tier: 1, hp: 90,  attack: 10, defense: 8,  exp: 18,  coins: { min: 5,  max: 12 } },
+  { id: 'stone_monkey', name: '돌 원숭이',   attribute: 'earth',   tier: 2, hp: 160, attack: 22, defense: 15, exp: 52,  coins: { min: 18, max: 35 } },
+  { id: 'rock_titan',   name: '암반 타이탄', attribute: 'earth',   tier: 3, hp: 380, attack: 50, defense: 30, exp: 145, coins: { min: 60, max: 120 } },
+
+  // ── 번개 ──
+  { id: 'thunder_rat',  name: '번개 쥐',     attribute: 'thunder', tier: 1, hp: 50,  attack: 15, defense: 3,  exp: 20,  coins: { min: 5,  max: 12 } },
+  { id: 'electric_snake', name: '전기 뱀',   attribute: 'thunder', tier: 2, hp: 115, attack: 32, defense: 7,  exp: 60,  coins: { min: 18, max: 35 } },
+  { id: 'thunder_bird', name: '천둥새',      attribute: 'thunder', tier: 3, hp: 270, attack: 68, defense: 16, exp: 160, coins: { min: 60, max: 120 } },
+
+  // ── 얼음 ──
+  { id: 'snow_rabbit',  name: '눈 토끼',     attribute: 'ice',     tier: 1, hp: 65,  attack: 11, defense: 5,  exp: 17,  coins: { min: 5,  max: 12 } },
+  { id: 'ice_bear',     name: '얼음 곰',     attribute: 'ice',     tier: 2, hp: 150, attack: 26, defense: 14, exp: 53,  coins: { min: 18, max: 35 } },
+  { id: 'frost_dragon', name: '서리 드래곤', attribute: 'ice',     tier: 3, hp: 340, attack: 58, defense: 24, exp: 148, coins: { min: 60, max: 120 } },
+
+  // ── 독 ──
+  { id: 'poison_spider', name: '독 거미',    attribute: 'poison',  tier: 1, hp: 55,  attack: 13, defense: 4,  exp: 19,  coins: { min: 5,  max: 12 } },
+  { id: 'acid_frog',    name: '산성 개구리', attribute: 'poison',  tier: 2, hp: 125, attack: 29, defense: 9,  exp: 56,  coins: { min: 18, max: 35 } },
+  { id: 'venom_naga',   name: '독무 나가',   attribute: 'poison',  tier: 3, hp: 295, attack: 62, defense: 20, exp: 152, coins: { min: 60, max: 120 } },
+
+  // ── 드래곤 ──
+  { id: 'dragon_hatch', name: '드래곤 새끼', attribute: 'dragon',  tier: 1, hp: 80,  attack: 13, defense: 7,  exp: 22,  coins: { min: 8,  max: 18 } },
+  { id: 'wyvern',       name: '비룡',        attribute: 'dragon',  tier: 2, hp: 170, attack: 30, defense: 13, exp: 65,  coins: { min: 25, max: 50 } },
+  { id: 'elder_dragon', name: '고룡',        attribute: 'dragon',  tier: 3, hp: 420, attack: 70, defense: 28, exp: 180, coins: { min: 80, max: 150 } },
 ]
 
 const ZONES = []
