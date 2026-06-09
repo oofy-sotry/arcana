@@ -23,6 +23,13 @@ class GameWorld {
 
     db.save()
   }
+
+  startTick() {
+    this._tickTimer = setInterval(
+      () => this.onTick(),
+      TICK_INTERVAL_SECONDS * 1000
+    )
+  }
 }
 
 module.exports = GameWorld
