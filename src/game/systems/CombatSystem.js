@@ -58,6 +58,15 @@ class CombatSystem {
     state.log.push(entry)
     return entry
   }
+
+  // 'ongoing' | 'won' | 'lost' 반환
+  checkBattleEnd(petId) {
+    const state = this._battles.get(petId)
+    if (!state) return 'ongoing'
+    if (state.monster.currentHp <= 0) return 'won'
+    if (state.petHp <= 0)            return 'lost'
+    return 'ongoing'
+  }
 }
 
 module.exports = CombatSystem
