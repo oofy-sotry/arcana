@@ -46,4 +46,9 @@ function save() {
   fs.writeFileSync(getDbPath(), Buffer.from(data))
 }
 
-module.exports = { init, save, query, run }
+function runMigrations() {
+  const migrations = require('./migrations/001_init')
+  migrations.forEach(sql => db.run(sql))
+}
+
+module.exports = { init, save, query, run, runMigrations }
