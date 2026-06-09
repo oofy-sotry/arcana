@@ -26,9 +26,24 @@ async function init() {
   }
 }
 
+function query(sql, params = []) {
+  const stmt = db.prepare(sql)
+  if (params.length) stmt.bind(params)
+  const rows = []
+  while (stmt.step()) {
+    rows.push(stmt.getAsObject())
+  }
+  stmt.free()
+  return rows
+}
+
+function run(sql, params = []) {
+  db.run(sql, params)
+}
+
 function save() {
   const data = db.export()
   fs.writeFileSync(getDbPath(), Buffer.from(data))
 }
 
-module.exports = { init, save }
+module.exports = { init, save, query, run }
