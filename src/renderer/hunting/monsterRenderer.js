@@ -33,6 +33,39 @@ class MonsterRenderer {
     this.monsters.push({ sprite, data: monsterData })
     return sprite
   }
+
+  removeMonster(sprite) {
+    const idx = this.monsters.findIndex(m => m.sprite === sprite)
+    if (idx === -1) return
+    this.stage.removeChild(sprite)
+    sprite.destroy()
+    this.monsters.splice(idx, 1)
+    // 2초 후 새 몬스터 스폰
+    setTimeout(() => {
+      if (this.monsters.length < 3) this._spawnRandom()
+    }, 2000)
+  }
+
+  _spawnRandom() {
+    if (!window._currentZoneMonsters?.length) return
+    const list = window._currentZoneMonsters
+    this.spawnMonster(list[Math.floor(Math.random() * list.length)])
+  }
+
+  // AABB 충돌 감지 — 충돌 시 onCollide 콜백 호출 (1초 쿨다운)
+  checkCollision(petSprite, onCollide) {
+    if (this._collisionCooldown) return
+    for (const m of this.monsters) {
+      const dx = Math.abs(petSprite.x - m.sprite.x)
+      const dy = Math.abs(petSprite.y - m.sprite.y)
+      if (dx < 32 && dy < 32) {
+        this._collisionCooldown = true
+        setTimeout(() => { this._collisionCooldown = false }, 1000)
+        onCollide(m.data)
+        return
+      }
+    }
+  }
 }
 
 window._monsterRenderer = null
