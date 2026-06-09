@@ -1,0 +1,9 @@
+{
+  "name": "arcana",
+  "version": "0.1.0",
+  "description": "Arcana — Desktop Pet RPG",
+  "main": "src/main/index.js",
+  "author": "oofy-sotry",
+  "license": "UNLICENSED",
+  "private": true
+}
