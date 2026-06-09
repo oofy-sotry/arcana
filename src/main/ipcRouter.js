@@ -55,6 +55,7 @@ class IpcRouter {
     })
 
     ipcMain.handle('hunting:get-zones', () => this.huntingSystem.getZones())
+    ipcMain.handle('hunting:stop-auto', (_e, { petId }) => this.huntingSystem.stopAutoHunt(petId))
   }
 }
 
