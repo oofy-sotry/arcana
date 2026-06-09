@@ -42,6 +42,16 @@ class PetSystem {
       })
     }
   }
+
+  tickAge(pets) {
+    const now = Date.now()
+    for (const pet of pets) {
+      this.Pet.updatePet(pet.id, {
+        age_seconds: pet.age_seconds + TICK_INTERVAL_SECONDS,
+        last_active: now,
+      })
+    }
+  }
 }
 
 module.exports = PetSystem
