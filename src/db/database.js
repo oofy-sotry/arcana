@@ -47,8 +47,19 @@ function save() {
 }
 
 function runMigrations() {
-  const migrations = require('./migrations/001_init')
-  migrations.forEach(sql => db.run(sql))
+  const MIGRATIONS = [
+    require('./migrations/001_init'),
+    require('./migrations/002_growth'),
+  ]
+
+  const [{ values: [[currentVersion]] }] = db.exec('PRAGMA user_version')
+
+  MIGRATIONS.forEach((sqls, index) => {
+    const version = index + 1
+    if (currentVersion >= version) return
+    sqls.forEach(sql => db.run(sql))
+    db.run(`PRAGMA user_version = ${version}`)
+  })
 }
 
 module.exports = { init, save, query, run, runMigrations }
