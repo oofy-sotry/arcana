@@ -14,8 +14,15 @@ async function initApp() {
 
   document.getElementById('app').appendChild(app.canvas)
 
-  const pets = await window.arcana.pet.getAll()
-  return pets
+  const pets      = await window.arcana.pet.getAll()
+  const renderer  = new PetRenderer(app.stage)
+  const imagePath = '../assets/pet_default.png'
+
+  for (const pet of pets) {
+    await renderer.addPet(pet, imagePath)
+  }
+
+  renderer.moveRandom(app.ticker)
 }
 
 initApp()
