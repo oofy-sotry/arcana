@@ -59,10 +59,10 @@ class ExplorationSystem {
     if (result.type === 'item') {
       this.itemSystem.addItem(pet.id, result.itemId, 1)
     } else if (result.type === 'coins') {
-      this.Pet.update(pet.id, { coins: (pet.coins || 0) + result.coins })
+      this.Pet.updatePet(pet.id, { coins: (pet.coins || 0) + result.coins })
     } else if (result.type === 'trap') {
       const newHp = Math.max(1, pet.hp - result.damage)
-      this.Pet.update(pet.id, { hp: newHp })
+      this.Pet.updatePet(pet.id, { hp: newHp })
     }
 
     db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [newEnergy, pet.id])
@@ -82,10 +82,10 @@ class ExplorationSystem {
     if (result.type === 'item') {
       this.itemSystem.addItem(pet.id, result.itemId, 1)
     } else if (result.type === 'coins') {
-      this.Pet.update(pet.id, { coins: (pet.coins || 0) + result.coins })
+      this.Pet.updatePet(pet.id, { coins: (pet.coins || 0) + result.coins })
     } else if (result.type === 'trap') {
       const newHp = Math.max(1, pet.hp - result.damage)
-      this.Pet.update(pet.id, { hp: newHp })
+      this.Pet.updatePet(pet.id, { hp: newHp })
     }
 
     db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [newEnergy, pet.id])
