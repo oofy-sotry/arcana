@@ -9,7 +9,7 @@ const ItemSystem      = require('../game/systems/ItemSystem')
 const CombatSystem    = require('../game/systems/CombatSystem')
 const HuntingSystem     = require('../game/systems/HuntingSystem')
 const ExplorationSystem = require('../game/systems/ExplorationSystem')
-const { TICK_INTERVAL_SECONDS } = require('../game/utils/time')
+const { TICK_INTERVAL_SECONDS, getElapsedSeconds } = require('../game/utils/time')
 
 class GameWorld {
   constructor() {
@@ -40,6 +40,7 @@ class GameWorld {
     const pets = this.petSystem.getAll()
     if (pets.length > 0) {
       this.petSystem.applyOfflineProgress(pets)
+      this._applyOfflineEnergyRecovery(pets)
     }
 
     db.save()
@@ -68,6 +69,20 @@ class GameWorld {
 
     World.set('last_save', String(Date.now()))
     db.save()
+  }
+
+  // 오프라인 시간만큼 에너지 회복 (+10/hour, 최대 100)
+  _applyOfflineEnergyRecovery(pets) {
+    const lastSaveMs = parseInt(World.get('last_save') || '0', 10)
+    if (!lastSaveMs) return
+    const elapsed     = getElapsedSeconds(lastSaveMs)
+    const energyGain  = (elapsed / 3600) * 10
+    for (const pet of pets) {
+      const row = db.query('SELECT energy FROM pet_conditions WHERE pet_id=?', [pet.id])[0]
+      if (!row) continue
+      const newEnergy = Math.min(100, (row.energy || 0) + energyGain)
+      db.run('UPDATE pet_conditions SET energy=? WHERE pet_id=?', [newEnergy, pet.id])
+    }
   }
 
   // GDD 10절: 에너지 +10/hour = +10/60 per tick(60s)
