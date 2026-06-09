@@ -29,7 +29,7 @@ class HuntingSystem {
   // 에너지 소진까지 전투를 반복 실행, hunt_log 저장
   startAutoHunt(pet, zoneId) {
     const db      = require('../../db/database')
-    const energy  = pet.energy != null ? pet.energy : 100
+    const energy  = pet.conditions?.energy ?? 100
     if (energy < AUTO_ENERGY_COST) return { error: '에너지 부족 (자동 사냥: -30 필요)' }
 
     const startedAt = Date.now()
@@ -76,7 +76,7 @@ class HuntingSystem {
   // 수동 모드 전투 1회: 에너지 -15, 드롭률 +20%
   processManualBattle(pet, zoneId) {
     const db     = require('../../db/database')
-    const energy = pet.energy != null ? pet.energy : 100
+    const energy = pet.conditions?.energy ?? 100
     if (energy < MANUAL_ENERGY_COST) return { error: '에너지 부족 (수동 사냥: -15 필요)' }
 
     const monster = this.spawnMonster(zoneId)

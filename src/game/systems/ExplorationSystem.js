@@ -50,7 +50,7 @@ class ExplorationSystem {
   // 에너지 -25, 드롭 1~5% 확률로 아이템 발견
   startAutoExplore(pet) {
     const db     = require('../../db/database')
-    const energy = pet.energy != null ? pet.energy : 100
+    const energy = pet.conditions?.energy ?? 100
     if (energy < AUTO_ENERGY_COST) return { error: '에너지 부족 (자동 탐사: -25 필요)' }
 
     const newEnergy = energy - AUTO_ENERGY_COST
@@ -73,7 +73,7 @@ class ExplorationSystem {
   // 에너지 -13, 드롭 2~10% (dropBoost 0.5), 특수 이벤트 확률 상승
   manualExplore(pet) {
     const db     = require('../../db/database')
-    const energy = pet.energy != null ? pet.energy : 100
+    const energy = pet.conditions?.energy ?? 100
     if (energy < MANUAL_ENERGY_COST) return { error: '에너지 부족 (수동 탐사: -13 필요)' }
 
     const newEnergy = energy - MANUAL_ENERGY_COST
