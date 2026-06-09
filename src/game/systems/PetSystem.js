@@ -21,6 +21,13 @@ class PetSystem {
     this.save()
     return pet
   }
+
+  getAll() {
+    return this.Pet.getAllPets().map(pet => ({
+      ...pet,
+      conditions: this.Pet.getConditions(pet.id),
+    }))
+  }
 }
 
 module.exports = PetSystem
