@@ -29,4 +29,13 @@ function getAllPets() {
   return db.query('SELECT * FROM pets WHERE is_alive = 1')
 }
 
-module.exports = { createPet, getPet, getAllPets }
+function updatePet(id, fields) {
+  const entries = Object.entries(fields)
+  const setClause = entries.map(([k]) => `${k} = ?`).join(', ')
+  db.run(
+    `UPDATE pets SET ${setClause} WHERE id = ?`,
+    [...entries.map(([, v]) => v), id]
+  )
+}
+
+module.exports = { createPet, getPet, getAllPets, updatePet }
