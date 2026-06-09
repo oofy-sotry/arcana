@@ -26,4 +26,12 @@ module.exports = [
     max_stack INTEGER NOT NULL DEFAULT 99,
     tradeable INTEGER NOT NULL DEFAULT 0
   )`,
+
+  `CREATE TABLE IF NOT EXISTS pet_inventory (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    pet_id   INTEGER NOT NULL REFERENCES pets(id),
+    item_id  TEXT    NOT NULL REFERENCES items(id),
+    quantity INTEGER NOT NULL DEFAULT 1,
+    UNIQUE(pet_id, item_id)
+  )`,
 ]
