@@ -1,6 +1,7 @@
 const { app } = require('electron')
 const GameWorld     = require('./gameWorld')
 const WindowManager = require('./windowManager')
+const IpcRouter     = require('./ipcRouter')
 
 const gameWorld     = new GameWorld()
 const windowManager = new WindowManager()
@@ -10,4 +11,10 @@ app.whenReady().then(async () => {
   gameWorld.startTick()
 
   windowManager.createOverlayWindow()
+
+  const ipcRouter = new IpcRouter({
+    petSystem:     gameWorld.petSystem,
+    windowManager,
+  })
+  ipcRouter.register()
 })
