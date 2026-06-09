@@ -11,4 +11,15 @@ function secondsToAge(ageSeconds) {
   return Math.floor(ageSeconds / AGE_DURATION_SECONDS)
 }
 
-module.exports = { AGE_DURATION_SECONDS, TICK_INTERVAL_SECONDS, getElapsedSeconds, secondsToAge }
+// 오프라인 경과 시간 → 처리해야 할 tick 횟수
+function calcOfflineTicks(elapsedSeconds) {
+  return Math.floor(elapsedSeconds / TICK_INTERVAL_SECONDS)
+}
+
+module.exports = {
+  AGE_DURATION_SECONDS,
+  TICK_INTERVAL_SECONDS,
+  getElapsedSeconds,
+  secondsToAge,
+  calcOfflineTicks,
+}
