@@ -8,6 +8,10 @@ class IpcRouter {
 
   register() {
     ipcMain.handle('pet:get-all', () => this.petSystem.getAll())
+
+    ipcMain.on('overlay:toggle-mouse', (_event, ignore) => {
+      this.windowManager.toggleMouseEvents(ignore)
+    })
   }
 }
 
