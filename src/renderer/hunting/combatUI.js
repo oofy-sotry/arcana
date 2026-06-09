@@ -26,6 +26,16 @@ class CombatUI {
   showMonster(monster) {
     this.setMonsterHp(monster.hp, monster.hp)
   }
+
+  // 전투 결과(ipc 응답) 기반 HP 업데이트
+  showResult(battleResult) {
+    if (!battleResult) return
+    const state = battleResult.state
+    if (state?.petHp    != null) this.setPetHp(state.petHp, this.currentPetMaxHp)
+    if (state?.monsterHp != null) this.setMonsterHp(state.monsterHp, this.currentMonMaxHp)
+    if (battleResult.result === 'won')  this.setMonsterHp(0, this.currentMonMaxHp)
+    if (battleResult.result === 'lost') this.setPetHp(0, this.currentPetMaxHp)
+  }
 }
 
 window._combatUI = null
