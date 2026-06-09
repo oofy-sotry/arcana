@@ -21,6 +21,8 @@ app.whenReady().then(async () => {
     windowManager,
   })
   ipcRouter.register()
+
+  windowManager.createTray(() => app.quit())
 })
 
 app.on('before-quit', () => {
