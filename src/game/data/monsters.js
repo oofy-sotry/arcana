@@ -1,7 +1,27 @@
 // 몬스터 스탯 기준: 레벨 × 계수로 스케일링
 // tier 1=입문(Lv1-15), tier 2=일반(Lv16-35), tier 3=고급(Lv36+)
 
-const MONSTERS = []
+const MONSTERS = [
+  // ── 불 ──
+  { id: 'fire_slime',   name: '화염 슬라임', attribute: 'fire',  tier: 1, hp: 60,  attack: 12, defense: 4,  exp: 18,  coins: { min: 5,  max: 12 } },
+  { id: 'fire_lizard',  name: '불도마뱀',    attribute: 'fire',  tier: 2, hp: 140, attack: 28, defense: 10, exp: 55,  coins: { min: 18, max: 35 } },
+  { id: 'fire_dragon',  name: '화룡',        attribute: 'fire',  tier: 3, hp: 320, attack: 60, defense: 22, exp: 150, coins: { min: 60, max: 120 } },
+
+  // ── 물 ──
+  { id: 'water_jelly',  name: '물 젤리',     attribute: 'water', tier: 1, hp: 70,  attack: 10, defense: 6,  exp: 16,  coins: { min: 5,  max: 12 } },
+  { id: 'jellyfish',    name: '해파리',      attribute: 'water', tier: 2, hp: 130, attack: 25, defense: 12, exp: 50,  coins: { min: 18, max: 35 } },
+  { id: 'deep_fish',    name: '심해어',      attribute: 'water', tier: 3, hp: 300, attack: 55, defense: 25, exp: 140, coins: { min: 60, max: 120 } },
+
+  // ── 바람 ──
+  { id: 'wind_spirit',  name: '바람 정령',   attribute: 'wind',  tier: 1, hp: 55,  attack: 14, defense: 3,  exp: 20,  coins: { min: 5,  max: 12 } },
+  { id: 'storm_bird',   name: '회오리새',    attribute: 'wind',  tier: 2, hp: 120, attack: 30, defense: 8,  exp: 58,  coins: { min: 18, max: 35 } },
+  { id: 'gale_eagle',   name: '폭풍독수리',  attribute: 'wind',  tier: 3, hp: 280, attack: 65, defense: 18, exp: 155, coins: { min: 60, max: 120 } },
+
+  // ── 땅 ──
+  { id: 'dirt_golem',   name: '흙 골렘',     attribute: 'earth', tier: 1, hp: 90,  attack: 10, defense: 8,  exp: 18,  coins: { min: 5,  max: 12 } },
+  { id: 'stone_monkey', name: '돌 원숭이',   attribute: 'earth', tier: 2, hp: 160, attack: 22, defense: 15, exp: 52,  coins: { min: 18, max: 35 } },
+  { id: 'rock_titan',   name: '암반 타이탄', attribute: 'earth', tier: 3, hp: 380, attack: 50, defense: 30, exp: 145, coins: { min: 60, max: 120 } },
+]
 
 const ZONES = []
 
