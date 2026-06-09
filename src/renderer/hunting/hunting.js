@@ -139,13 +139,6 @@ function updateEnergyDisplay() {
   document.getElementById('energy-display').textContent = `에너지: ${e}/100`
 }
 
-// 충돌 감지는 monsterRenderer.js의 checkCollision()을 통해 처리됨
-// onCollide는 최초 충돌 시 1회만 호출되도록 monsterRenderer가 쿨다운을 관리
-function onCollide(monster) {
-  addLog(`👾 ${monster.name} 출현!`)
-  if (window._combatUI) window._combatUI.showMonster(monster)
-}
-
 async function startAutoMode() {
   if (!currentPet) return
   setMode('auto')
