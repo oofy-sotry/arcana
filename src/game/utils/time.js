@@ -6,4 +6,9 @@ function getElapsedSeconds(fromMs, toMs = Date.now()) {
   return Math.max(0, Math.floor((toMs - fromMs) / 1000))
 }
 
-module.exports = { AGE_DURATION_SECONDS, TICK_INTERVAL_SECONDS, getElapsedSeconds }
+// DB의 age_seconds → 표시용 나이(살)
+function secondsToAge(ageSeconds) {
+  return Math.floor(ageSeconds / AGE_DURATION_SECONDS)
+}
+
+module.exports = { AGE_DURATION_SECONDS, TICK_INTERVAL_SECONDS, getElapsedSeconds, secondsToAge }
