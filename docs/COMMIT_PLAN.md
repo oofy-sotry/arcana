@@ -151,9 +151,160 @@
 
 ---
 
+---
+
+## Phase 2 — 성장 + 런처 UI
+
+> **완료 기준:**  
+> 경험치 획득 → 레벨업 → 스탯 성장  
+> 진화 조건 달성 → 진화 (일반/히든/암흑)  
+> 스킬 포인트로 스킬 강화  
+> 런처 창에서 펫 목록/스탯/컨디션 확인 + 아이템 기본 사용
+
+---
+
+### 2-A DB 마이그레이션
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 65 | `feat(db): database.js runMigrations PRAGMA user_version 버전 관리 추가` | src/db/database.js | 버전 체크 후 순차 실행 (001→002→...) | [ ] |
+| 66 | `feat(db): 002_growth.js pets 스탯 컬럼 추가` | src/db/migrations/002_growth.js | level, exp, skill_points, affinity, hp, mp, attack, defense, speed ALTER TABLE | [ ] |
+| 67 | `feat(db): 002_growth.js pet_skills 테이블 정의` | src/db/migrations/002_growth.js | pet_id, skill_id, skill_level, unlocked_at | [ ] |
+| 68 | `feat(db): 002_growth.js items 테이블 정의` | src/db/migrations/002_growth.js | item_id, name, type, effect, tradeable | [ ] |
+| 69 | `feat(db): 002_growth.js pet_inventory 테이블 정의` | src/db/migrations/002_growth.js | pet_id, item_id, quantity | [ ] |
+| 70 | `feat(db): 002_growth.js evolution_log 테이블 정의` | src/db/migrations/002_growth.js | pet_id, from_stage, to_stage, evo_type, evolved_at | [ ] |
+
+---
+
+### 2-B 게임 데이터
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 71 | `feat(data): characters.js 기본 구조 추가` | src/game/data/characters.js | 진화 트리 데이터 구조 (id, name, attribute, stage, nextId, evolveLevel, evolveAffinity) | [ ] |
+| 72 | `feat(data): characters.js 불/물/바람 속성 진화 트리 추가` | src/game/data/characters.js | 플리크→인페르노스, 듀이→토렌시스, 브리지→사이클로시스 | [ ] |
+| 73 | `feat(data): characters.js 땅/번개/얼음/독/드래곤 속성 진화 트리 추가` | src/game/data/characters.js | 머디→세이스모스, 스파키→뇌신로스, 스노렛→글레이시로스, 톡시→톡세모스, 드래글링→드라고렉스 | [ ] |
+| 74 | `feat(data): skills.js 기본 구조 추가` | src/game/data/skills.js | 스킬 데이터 구조 (id, name, attribute, type, power, mpCost, unlockStage, coefficient) | [ ] |
+| 75 | `feat(data): skills.js 불/물/바람/땅 스킬 추가` | src/game/data/skills.js | 4속성 × 액티브/패시브/버프 스킬 | [ ] |
+| 76 | `feat(data): skills.js 번개/얼음/독/드래곤 스킬 추가` | src/game/data/skills.js | 나머지 4속성 스킬 | [ ] |
+| 77 | `feat(data): items.js 기본 구조 추가` | src/game/data/items.js | 아이템 데이터 구조 (id, name, type, effect, maxStack, tradeable) | [ ] |
+| 78 | `feat(data): items.js 소비 아이템 추가` | src/game/data/items.js | 생명의 부적, 진화의 돌, 음식, 목욕제, 에너지 물약 | [ ] |
+
+---
+
+### 2-C LevelSystem
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 79 | `feat(level): LevelSystem.js 기본 구조 추가` | src/game/systems/LevelSystem.js | 클래스, DI 생성자 (Pet, save 주입) | [ ] |
+| 80 | `feat(level): LevelSystem.js getExpRequired 함수 추가` | src/game/systems/LevelSystem.js | 레벨별 필요 경험치 공식 (Math.floor(level^1.5 × 100)) | [ ] |
+| 81 | `feat(level): LevelSystem.js addExperience 함수 추가` | src/game/systems/LevelSystem.js | 경험치 추가, 레벨업 반복 체크, save() 호출 | [ ] |
+| 82 | `feat(level): LevelSystem.js levelUp 함수 추가` | src/game/systems/LevelSystem.js | 레벨업 처리, 스킬 포인트 +1, 스탯 성장 적용 | [ ] |
+| 83 | `feat(level): LevelSystem.js calcStatGrowth 함수 추가` | src/game/systems/LevelSystem.js | 성장 등급(하/중/상 = 60/30/10%) 기반 스탯 증가량 계산 | [ ] |
+
+---
+
+### 2-D EvolutionSystem
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 84 | `feat(evo): EvolutionSystem.js 기본 구조 추가` | src/game/systems/EvolutionSystem.js | 클래스, DI 생성자 (Pet, save 주입) | [ ] |
+| 85 | `feat(evo): EvolutionSystem.js canEvolve 함수 추가` | src/game/systems/EvolutionSystem.js | 기본 진화 조건 판정 (레벨+친화도, characters.js 참조) | [ ] |
+| 86 | `feat(evo): EvolutionSystem.js evolve 함수 추가` | src/game/systems/EvolutionSystem.js | 진화 실행: evolution_stage 변경, 히든 보너스 적용, evolution_log INSERT | [ ] |
+| 87 | `feat(evo): EvolutionSystem.js checkHiddenConditions 함수 추가` | src/game/systems/EvolutionSystem.js | 히든 진화 조건 A~J 체크 (characters.js hiddenConditions 참조) | [ ] |
+
+---
+
+### 2-E SkillSystem
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 88 | `feat(skill): SkillSystem.js 기본 구조 추가` | src/game/systems/SkillSystem.js | 클래스, DI 생성자 (Pet, save 주입) | [ ] |
+| 89 | `feat(skill): SkillSystem.js getPetSkills 함수 추가` | src/game/systems/SkillSystem.js | 펫의 해금 스킬 목록 + 강화 레벨 조회 | [ ] |
+| 90 | `feat(skill): SkillSystem.js unlockSkill 함수 추가` | src/game/systems/SkillSystem.js | 진화 단계 체크 후 스킬 해금 (pet_skills INSERT) | [ ] |
+| 91 | `feat(skill): SkillSystem.js upgradeSkill 함수 추가` | src/game/systems/SkillSystem.js | skill_points 소모, skill_level +1 (최대 5) | [ ] |
+
+---
+
+### 2-F ItemSystem
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 92 | `feat(item): ItemSystem.js 기본 구조 추가` | src/game/systems/ItemSystem.js | 클래스, DI 생성자 (Pet, save 주입) | [ ] |
+| 93 | `feat(item): ItemSystem.js addItem 함수 추가` | src/game/systems/ItemSystem.js | pet_inventory INSERT or UPDATE quantity | [ ] |
+| 94 | `feat(item): ItemSystem.js getInventory 함수 추가` | src/game/systems/ItemSystem.js | 인벤토리 전체 조회 (items JOIN pet_inventory) | [ ] |
+| 95 | `feat(item): ItemSystem.js useItem 함수 추가` | src/game/systems/ItemSystem.js | 아이템 효과 적용 (음식→배고픔 회복, 진화의 돌→진화 활성화 등), 수량 차감 | [ ] |
+
+---
+
+### 2-G GameWorld 연결 + IPC 확장
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 96 | `feat(world): gameWorld.js LevelSystem 연결` | src/main/gameWorld.js | init에 LevelSystem 주입 | [ ] |
+| 97 | `feat(world): gameWorld.js EvolutionSystem 연결` | src/main/gameWorld.js | init에 EvolutionSystem 주입 | [ ] |
+| 98 | `feat(world): gameWorld.js SkillSystem 연결` | src/main/gameWorld.js | init에 SkillSystem 주입 | [ ] |
+| 99 | `feat(world): gameWorld.js ItemSystem 연결` | src/main/gameWorld.js | init에 ItemSystem 주입 | [ ] |
+| 100 | `feat(world): gameWorld.js onTick에 진화 자동 체크 추가` | src/main/gameWorld.js | tick마다 canEvolve 체크 → 조건 충족 시 자동 진화 | [ ] |
+| 101 | `feat(ipc): ipcRouter.js pet:create 핸들러 추가` | src/main/ipcRouter.js | 신규 펫 생성 (이름, 속성 지정) | [ ] |
+| 102 | `feat(ipc): ipcRouter.js pet:add-exp 핸들러 추가` | src/main/ipcRouter.js | 경험치 지급 (테스트/퀘스트 보상 용도) | [ ] |
+| 103 | `feat(ipc): ipcRouter.js evolution:attempt 핸들러 추가` | src/main/ipcRouter.js | 수동 진화 시도 (아이템 사용 포함) | [ ] |
+| 104 | `feat(ipc): ipcRouter.js skill:get 핸들러 추가` | src/main/ipcRouter.js | 펫 스킬 목록 반환 | [ ] |
+| 105 | `feat(ipc): ipcRouter.js skill:upgrade 핸들러 추가` | src/main/ipcRouter.js | 스킬 강화 실행 | [ ] |
+| 106 | `feat(ipc): ipcRouter.js item:get-inventory 핸들러 추가` | src/main/ipcRouter.js | 인벤토리 조회 | [ ] |
+| 107 | `feat(ipc): ipcRouter.js item:use 핸들러 추가` | src/main/ipcRouter.js | 아이템 사용 | [ ] |
+| 108 | `feat(preload): preload.js 성장 시스템 API 추가` | src/preload/preload.js | pet.create, level.addExp, evolution.attempt, skill.get/upgrade, item.getInventory/use | [ ] |
+
+---
+
+### 2-H WindowManager 런처 + 트레이
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 109 | `feat(launcher): windowManager.js createLauncherWindow 함수 추가` | src/main/windowManager.js | 런처 BrowserWindow (800×600, 일반 창) | [ ] |
+| 110 | `feat(launcher): windowManager.js createTray 함수 추가` | src/main/windowManager.js | 시스템 트레이 아이콘 + 컨텍스트 메뉴 (런처 열기, 종료) | [ ] |
+| 111 | `feat(launcher): index.js Tray 연결` | src/main/index.js | whenReady에 createTray 추가, 런처 토글 등록 | [ ] |
+
+---
+
+### 2-I 런처 UI
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 112 | `feat(launcher): index.html 기본 구조 추가` | src/renderer/launcher/index.html | HTML 뼈대, 탭 네비게이션 (펫목록/스탯/스킬/아이템) | [ ] |
+| 113 | `feat(launcher): launcher.js 기본 구조 추가` | src/renderer/launcher/launcher.js | 초기화, IPC 데이터 로드 | [ ] |
+| 114 | `feat(launcher): launcher.js renderPetList 함수 추가` | src/renderer/launcher/launcher.js | 펫 카드 목록 렌더링 + 첫 실행 시 소환 버튼 | [ ] |
+| 115 | `feat(launcher): PetCard.js 기본 구조 추가` | src/renderer/launcher/components/PetCard.js | 클래스 생성 | [ ] |
+| 116 | `feat(launcher): PetCard.js render 함수 추가` | src/renderer/launcher/components/PetCard.js | 이름/레벨/진화 단계/컨디션 카드 DOM | [ ] |
+| 117 | `feat(launcher): StatPanel.js 기본 구조 추가` | src/renderer/launcher/components/StatPanel.js | 클래스 생성 | [ ] |
+| 118 | `feat(launcher): StatPanel.js render 함수 추가` | src/renderer/launcher/components/StatPanel.js | HP/MP/공격/방어/속도 수치 표시 | [ ] |
+| 119 | `feat(launcher): SkillTree.js 기본 구조 추가` | src/renderer/launcher/components/SkillTree.js | 클래스 생성 | [ ] |
+| 120 | `feat(launcher): SkillTree.js render 함수 추가` | src/renderer/launcher/components/SkillTree.js | 해금 스킬 목록, 강화 버튼 (스킬 포인트 표시) | [ ] |
+| 121 | `feat(launcher): ItemPanel.js 기본 구조 추가` | src/renderer/launcher/components/ItemPanel.js | 클래스 생성 | [ ] |
+| 122 | `feat(launcher): ItemPanel.js render 함수 추가` | src/renderer/launcher/components/ItemPanel.js | 인벤토리 목록, 사용 버튼 | [ ] |
+
+---
+
+## 요약
+
+| 그룹 | 커밋 수 | 내용 |
+|------|--------|------|
+| Phase 0 (완료) | 6 | 설계 문서, 폴더 구조 |
+| Phase 1 (완료) | 60 | Core Loop 전체 |
+| 2-A DB 마이그레이션 | 6 | 002_growth, 버전 관리 |
+| 2-B 게임 데이터 | 8 | 캐릭터 트리, 스킬, 아이템 데이터 |
+| 2-C LevelSystem | 5 | 경험치, 레벨업, 스탯 성장 |
+| 2-D EvolutionSystem | 4 | 진화 조건 판정, 실행 |
+| 2-E SkillSystem | 4 | 스킬 해금, 강화 |
+| 2-F ItemSystem | 4 | 인벤토리, 아이템 사용 |
+| 2-G GameWorld + IPC | 13 | 시스템 연결, IPC 핸들러 확장 |
+| 2-H WindowManager + Tray | 3 | 런처 창, 트레이 아이콘 |
+| 2-I 런처 UI | 11 | HTML, JS, 컴포넌트 4종 |
+| **Phase 2 합계** | **58** | |
+
+---
+
 ## 다음 Phase (예고)
 
-- **Phase 2** — 성장 + 진화: 레벨업, 진화 트리거, 스킬 해금
 - **Phase 3** — 사냥터: 전투, 수동/자동, 드롭
 - **Phase 4** — 수집 + 교배: 계보, 혼합속성
 - **Phase 5** — 스토리 + 퀘스트
