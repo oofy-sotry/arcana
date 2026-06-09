@@ -43,6 +43,35 @@ const MONSTERS = [
   { id: 'elder_dragon', name: '고룡',        attribute: 'dragon',  tier: 3, hp: 420, attack: 70, defense: 28, exp: 180, coins: { min: 80, max: 150 } },
 ]
 
+// 드롭 테이블: 몬스터 tier별 공통 드롭 + 속성별 특수 드롭
+// rate: 0.0~1.0 (auto 사냥 기준; manual 시 +20%)
+const DROP_TABLES = {
+  tier1: [
+    { itemId: 'pet_food',  rate: 0.25, quantity: 1 },
+    { itemId: 'happy_toy', rate: 0.10, quantity: 1 },
+  ],
+  tier2: [
+    { itemId: 'pet_food',   rate: 0.20, quantity: 1 },
+    { itemId: 'pet_soap',   rate: 0.12, quantity: 1 },
+    { itemId: 'happy_toy',  rate: 0.08, quantity: 1 },
+    { itemId: 'life_charm', rate: 0.05, quantity: 1 },
+  ],
+  tier3: [
+    { itemId: 'pet_food',      rate: 0.18, quantity: 1 },
+    { itemId: 'pet_soap',      rate: 0.10, quantity: 1 },
+    { itemId: 'life_charm',    rate: 0.08, quantity: 1 },
+    { itemId: 'energy_potion', rate: 0.06, quantity: 1 },
+    { itemId: 'revive_stone',  rate: 0.02, quantity: 1 },
+    { itemId: 'evo_stone',     rate: 0.01, quantity: 1 },
+  ],
+}
+
+function getDropTable(monsterId) {
+  const monster = MONSTERS.find(m => m.id === monsterId)
+  if (!monster) return []
+  return DROP_TABLES[`tier${monster.tier}`] || []
+}
+
 const ZONES = []
 
 function getMonster(id) {
@@ -53,4 +82,4 @@ function getZone(id) {
   return ZONES.find(z => z.id === id) || null
 }
 
-module.exports = { MONSTERS, ZONES, getMonster, getZone }
+module.exports = { MONSTERS, ZONES, DROP_TABLES, getMonster, getZone, getDropTable }
