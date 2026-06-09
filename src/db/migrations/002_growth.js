@@ -34,4 +34,13 @@ module.exports = [
     quantity INTEGER NOT NULL DEFAULT 1,
     UNIQUE(pet_id, item_id)
   )`,
+
+  `CREATE TABLE IF NOT EXISTS evolution_log (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    pet_id     INTEGER NOT NULL REFERENCES pets(id),
+    from_stage INTEGER NOT NULL,
+    to_stage   INTEGER NOT NULL,
+    evo_type   TEXT    NOT NULL DEFAULT 'normal',
+    evolved_at INTEGER NOT NULL
+  )`,
 ]
