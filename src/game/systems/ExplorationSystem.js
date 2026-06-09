@@ -69,6 +69,29 @@ class ExplorationSystem {
     this.save()
     return { ...result, finalEnergy: newEnergy }
   }
+
+  // 에너지 -13, 드롭 2~10% (dropBoost 0.5), 특수 이벤트 확률 상승
+  manualExplore(pet) {
+    const db     = require('../../db/database')
+    const energy = pet.energy != null ? pet.energy : 100
+    if (energy < MANUAL_ENERGY_COST) return { error: '에너지 부족 (수동 탐사: -13 필요)' }
+
+    const newEnergy = energy - MANUAL_ENERGY_COST
+    const result    = this.rollEvent(0.5)
+
+    if (result.type === 'item') {
+      this.itemSystem.addItem(pet.id, result.itemId, 1)
+    } else if (result.type === 'coins') {
+      this.Pet.update(pet.id, { coins: (pet.coins || 0) + result.coins })
+    } else if (result.type === 'trap') {
+      const newHp = Math.max(1, pet.hp - result.damage)
+      this.Pet.update(pet.id, { hp: newHp })
+    }
+
+    db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [newEnergy, pet.id])
+    this.save()
+    return { ...result, finalEnergy: newEnergy }
+  }
 }
 
 module.exports = ExplorationSystem
