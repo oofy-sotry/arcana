@@ -23,6 +23,24 @@ class CombatSystem {
     return state
   }
 
+  // 몬스터 공격 턴: 몬스터는 스킬 없이 기본 공격만 사용
+  executeMonsterTurn(petId) {
+    const state = this._battles.get(petId)
+    if (!state) return null
+    const { pet, monster } = state
+    const result = calcDamage({
+      attack: monster.attack,
+      defense: pet.defense,
+      skillLevel: 1,
+      attackerAttr: monster.attribute,
+      defenderAttr: pet.attribute,
+    })
+    state.petHp -= result.damage
+    const entry = { actor: 'monster', ...result }
+    state.log.push(entry)
+    return entry
+  }
+
   // 펫 공격 턴: 스킬 미지정 시 기본 공격(skillLevel=1) 사용
   executePetTurn(petId, skillLevel = 1) {
     const state = this._battles.get(petId)
