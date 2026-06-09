@@ -72,7 +72,42 @@ function getDropTable(monsterId) {
   return DROP_TABLES[`tier${monster.tier}`] || []
 }
 
-const ZONES = []
+// 권장 레벨 외 구역도 입장 가능하나 고수준 몬스터는 위험
+const ZONES = [
+  {
+    id: 'beginner',
+    name: '입문 사냥터',
+    description: '레벨 1~15 초심자 구역',
+    minLevel: 1,
+    maxLevel: 15,
+    monsterIds: [
+      'fire_slime', 'water_jelly', 'wind_spirit', 'dirt_golem',
+      'thunder_rat', 'snow_rabbit', 'poison_spider', 'dragon_hatch',
+    ],
+  },
+  {
+    id: 'normal',
+    name: '일반 사냥터',
+    description: '레벨 16~35 숙련자 구역',
+    minLevel: 16,
+    maxLevel: 35,
+    monsterIds: [
+      'fire_lizard', 'jellyfish', 'storm_bird', 'stone_monkey',
+      'electric_snake', 'ice_bear', 'acid_frog', 'wyvern',
+    ],
+  },
+  {
+    id: 'advanced',
+    name: '고급 사냥터',
+    description: '레벨 36+ 강자의 구역',
+    minLevel: 36,
+    maxLevel: 99,
+    monsterIds: [
+      'fire_dragon', 'deep_fish', 'gale_eagle', 'rock_titan',
+      'thunder_bird', 'frost_dragon', 'venom_naga', 'elder_dragon',
+    ],
+  },
+]
 
 function getMonster(id) {
   return MONSTERS.find(m => m.id === id) || null
