@@ -20,4 +20,12 @@ contextBridge.exposeInMainWorld('arcana', {
   overlay: {
     toggleMouse: (ignore)          => ipcRenderer.send('overlay:toggle-mouse', ignore),
   },
+  hunting: {
+    getZones:     ()                           => ipcRenderer.invoke('hunting:get-zones'),
+    startAuto:    ({ petId, zoneId })          => ipcRenderer.invoke('hunting:start-auto', { petId, zoneId }),
+    stopAuto:     ({ petId })                  => ipcRenderer.invoke('hunting:stop-auto', { petId }),
+    manualBattle: ({ petId, zoneId })          => ipcRenderer.invoke('hunting:manual-battle', { petId, zoneId }),
+    explore:      ({ petId, mode })            => ipcRenderer.invoke('hunting:explore', { petId, mode }),
+    open:         ()                           => ipcRenderer.invoke('hunting:open'),
+  },
 })
