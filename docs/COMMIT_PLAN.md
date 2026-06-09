@@ -34,6 +34,7 @@
 | 10 | `chore: package.json PixiJS 의존성 추가` | package.json | pixi.js | ✅ |
 | 11 | `chore: package.json sql.js 의존성 추가` | package.json | ~~better-sqlite3~~ → sql.js (경로 공백 node-gyp 빌드 오류로 교체) | ✅ |
 | 12 | `chore: package.json 실행 스크립트 추가` | package.json | start, build 스크립트 | ✅ |
+| 12-1 | `chore: package.json electron-builder WASM 번들 설정 추가` | package.json | extraResources에 sql-wasm.wasm 포함 (미설정 시 패키징 후 DB 초기화 실패) | [ ] |
 
 ---
 
@@ -44,6 +45,7 @@
 | 13 | `feat(db): database.js 기본 구조 추가` | src/db/database.js | sql.js 초기화, DB 파일 경로 설정 | [ ] |
 | 14 | `feat(db): database.js init 함수 추가` | src/db/database.js | `init()` — 파일 로드 or 신규 생성 (async) | [ ] |
 | 14-1 | `feat(db): database.js save 함수 추가` | src/db/database.js | `save()` — db.export() → 파일 플러시 | [ ] |
+| 14-2 | `feat(db): database.js rowsToObjects 헬퍼 추가` | src/db/database.js | sql.js 결과 형식({columns,values}) → 객체 배열 변환. 모든 모델에서 공통 사용 | [ ] |
 | 15 | `feat(db): 001_init.js world_state 테이블 정의` | src/db/migrations/001_init.js | world_state 스키마 | [ ] |
 | 16 | `feat(db): 001_init.js pets 테이블 정의` | src/db/migrations/001_init.js | pets 스키마 (id, uuid, name, attribute TEXT, level, age, evolution_stage...) | [ ] |
 | 17 | `feat(db): 001_init.js pet_conditions 테이블 정의` | src/db/migrations/001_init.js | pet_conditions 스키마 (hunger, happiness, energy...) | [ ] |
@@ -78,7 +80,7 @@
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
 | 33 | `feat(pet): PetSystem.js 기본 구조 추가` | src/game/systems/PetSystem.js | 클래스 생성, 생성자 | [ ] |
-| 34 | `feat(pet): PetSystem.js createPet 함수 추가` | src/game/systems/PetSystem.js | 신규 펫 생성 (기본값 설정 + DB 저장) | [ ] |
+| 34 | `feat(pet): PetSystem.js createPet 함수 추가` | src/game/systems/PetSystem.js | 신규 펫 생성 (기본값 설정 + DB INSERT + 즉시 save()) | [ ] |
 | 35 | `feat(pet): PetSystem.js getAll 함수 추가` | src/game/systems/PetSystem.js | 전체 펫 + 컨디션 조회 | [ ] |
 | 36 | `feat(pet): PetSystem.js tickConditions 함수 추가` | src/game/systems/PetSystem.js | 60초마다 컨디션 감소 계산 | [ ] |
 | 37 | `feat(pet): PetSystem.js tickAge 함수 추가` | src/game/systems/PetSystem.js | 나이 증가 체크 (43200초 단위) | [ ] |
@@ -91,7 +93,7 @@
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
 | 39 | `feat(world): gameWorld.js 기본 구조 추가` | src/main/gameWorld.js | 클래스 생성, 시스템 주입 | [ ] |
-| 40 | `feat(world): gameWorld.js init 함수 추가` | src/main/gameWorld.js | DB 연결, 오프라인 진행 처리 | [ ] |
+| 40 | `feat(world): gameWorld.js init 함수 추가` | src/main/gameWorld.js | **async** — await db.init(), 오프라인 진행 처리 | [ ] |
 | 41 | `feat(world): gameWorld.js startTick 함수 추가` | src/main/gameWorld.js | 60초 setInterval 루프 | [ ] |
 | 42 | `feat(world): gameWorld.js onTick 함수 추가` | src/main/gameWorld.js | tick 1회 실행 (컨디션 → 나이 → 저장) | [ ] |
 | 43 | `feat(world): gameWorld.js shutdown 함수 추가` | src/main/gameWorld.js | 종료 전 강제 저장 | [ ] |
@@ -111,7 +113,7 @@
 | 50 | `feat(preload): preload.js contextBridge 기본 구조 추가` | src/preload/preload.js | ipcRenderer 노출 기반 구조 | [ ] |
 | 51 | `feat(preload): preload.js pet API 노출 추가` | src/preload/preload.js | window.arcana.pet.getAll 등 | [ ] |
 | 52 | `feat(window): index.js 기본 구조 추가` | src/main/index.js | app.whenReady 진입점 | [ ] |
-| 53 | `feat(window): index.js GameWorld 연결` | src/main/index.js | init, tick 시작 | [ ] |
+| 53 | `feat(window): index.js GameWorld 연결` | src/main/index.js | **await** gameWorld.init() 후 tick 시작 (async 체인) | [ ] |
 | 54 | `feat(window): index.js WindowManager 연결` | src/main/index.js | 오버레이 창 생성 | [ ] |
 | 55 | `feat(window): index.js IpcRouter 연결` | src/main/index.js | 핸들러 등록 | [ ] |
 | 56 | `feat(window): index.js 종료 이벤트 처리` | src/main/index.js | before-quit → shutdown | [ ] |
@@ -138,14 +140,14 @@
 | 그룹 | 커밋 수 | 내용 |
 |------|--------|------|
 | Phase 0 (완료) | 6 | 설계 문서, 폴더 구조 |
-| 1-A 환경 설정 | 6 | .gitignore, package.json |
-| 1-B 데이터베이스 | 16 | SQLite, 모델, 마이그레이션 |
+| 1-A 환경 설정 | 7 | .gitignore, package.json (WASM 설정 포함) |
+| 1-B 데이터베이스 | 18 | sql.js, 모델, 마이그레이션, 헬퍼 함수 |
 | 1-C 게임 유틸 | 4 | 시간 계산 유틸 |
 | 1-D PetSystem | 6 | 핵심 게임 로직 |
 | 1-E GameWorld | 5 | 60초 루프 |
 | 1-F 창 + IPC | 13 | 창 관리, IPC 라우터 |
 | 1-G 오버레이 | 8 | PixiJS 렌더링 |
-| **Phase 1 합계** | **58** | |
+| **Phase 1 합계** | **60** | |
 
 ---
 
