@@ -40,6 +40,21 @@ function drawBackground() {
   app.stage.addChild(g)
 }
 
+function spawnPetSprite() {
+  if (!app) return
+  if (petSprite) { app.stage.removeChild(petSprite); petSprite = null }
+
+  const g = new PIXI.Graphics()
+  g.circle(0, 0, 16).fill(0xe94560)
+  const tex = app.renderer.generateTexture(g)
+  petSprite = new PIXI.Sprite(tex)
+  petSprite.anchor.set(0.5)
+  petSprite.x = app.screen.width  / 2
+  petSprite.y = app.screen.height / 2
+  app.stage.addChild(petSprite)
+  g.destroy()
+}
+
 async function init() {
   await initScene()
 
@@ -57,6 +72,7 @@ async function init() {
   if (pets.length > 0) {
     currentPet = pets[0]
     updateEnergyDisplay()
+    spawnPetSprite()
   }
 
   document.getElementById('btn-mode-auto').addEventListener('click', startAutoMode)
