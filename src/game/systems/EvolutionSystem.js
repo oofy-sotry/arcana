@@ -18,6 +18,33 @@ class EvolutionSystem {
       pet.affinity >= charData.evolveAffinity
     )
   }
+
+  evolve(pet, evoType = 'normal') {
+    const fromStage = pet.evolution_stage
+    const toStage   = fromStage + 1
+
+    // 히든 진화 스탯 보너스 (GDD 기준)
+    const HIDDEN_BONUS = { 1: 0.10, 2: 0.15, 3: 0.20, 4: 0.30 }
+    const bonus = evoType === 'hidden' ? (HIDDEN_BONUS[toStage] || 0) : 0
+
+    this.Pet.updatePet(pet.id, {
+      evolution_stage: toStage,
+      hp:      Math.ceil(pet.hp      * (1 + bonus)),
+      mp:      Math.ceil(pet.mp      * (1 + bonus)),
+      attack:  Math.ceil(pet.attack  * (1 + bonus)),
+      defense: Math.ceil(pet.defense * (1 + bonus)),
+      speed:   Math.ceil(pet.speed   * (1 + bonus)),
+    })
+
+    db.run(
+      `INSERT INTO evolution_log (pet_id, from_stage, to_stage, evo_type, evolved_at)
+       VALUES (?, ?, ?, ?, ?)`,
+      [pet.id, fromStage, toStage, evoType, Date.now()]
+    )
+
+    this.save()
+    return { fromStage, toStage, evoType }
+  }
 }
 
 module.exports = EvolutionSystem
