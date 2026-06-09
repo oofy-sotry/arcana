@@ -7,7 +7,8 @@ const EvolutionSystem = require('../game/systems/EvolutionSystem')
 const SkillSystem     = require('../game/systems/SkillSystem')
 const ItemSystem      = require('../game/systems/ItemSystem')
 const CombatSystem    = require('../game/systems/CombatSystem')
-const HuntingSystem   = require('../game/systems/HuntingSystem')
+const HuntingSystem     = require('../game/systems/HuntingSystem')
+const ExplorationSystem = require('../game/systems/ExplorationSystem')
 const { TICK_INTERVAL_SECONDS } = require('../game/utils/time')
 
 class GameWorld {
@@ -18,8 +19,9 @@ class GameWorld {
     this.skillSystem     = null
     this.itemSystem      = null
     this.combatSystem    = null
-    this.huntingSystem   = null
-    this._tickTimer      = null
+    this.huntingSystem      = null
+    this.explorationSystem  = null
+    this._tickTimer         = null
   }
 
   async init() {
@@ -32,7 +34,8 @@ class GameWorld {
     this.skillSystem     = new SkillSystem({ Pet, save: db.save })
     this.itemSystem      = new ItemSystem({ Pet, save: db.save })
     this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem })
-    this.huntingSystem   = new HuntingSystem({ Pet, save: db.save, combatSystem: this.combatSystem })
+    this.huntingSystem      = new HuntingSystem({ Pet, save: db.save, combatSystem: this.combatSystem })
+    this.explorationSystem  = new ExplorationSystem({ Pet, save: db.save, itemSystem: this.itemSystem })
 
     const pets = this.petSystem.getAll()
     if (pets.length > 0) {
