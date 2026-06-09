@@ -45,7 +45,7 @@
 | 13 | `feat(db): database.js 기본 구조 추가` | src/db/database.js | sql.js 초기화, DB 파일 경로 설정 | [ ] |
 | 14 | `feat(db): database.js init 함수 추가` | src/db/database.js | `init()` — 파일 로드 or 신규 생성 (async) | [ ] |
 | 14-1 | `feat(db): database.js save 함수 추가` | src/db/database.js | `save()` — db.export() → 파일 플러시 | [ ] |
-| 14-2 | `feat(db): database.js rowsToObjects 헬퍼 추가` | src/db/database.js | sql.js 결과 형식({columns,values}) → 객체 배열 변환. 모든 모델에서 공통 사용 | [ ] |
+| 14-2 | `feat(db): database.js query / run 헬퍼 추가` | src/db/database.js | `query(sql,params)` — prepare→bind→step→free 래퍼, `run(sql,params)` — INSERT/UPDATE/DELETE 래퍼 | [ ] |
 | 15 | `feat(db): 001_init.js world_state 테이블 정의` | src/db/migrations/001_init.js | world_state 스키마 | [ ] |
 | 16 | `feat(db): 001_init.js pets 테이블 정의` | src/db/migrations/001_init.js | pets 스키마 (id, uuid, name, attribute TEXT, level, age, evolution_stage...) | [ ] |
 | 17 | `feat(db): 001_init.js pet_conditions 테이블 정의` | src/db/migrations/001_init.js | pet_conditions 스키마 (hunger, happiness, energy...) | [ ] |
