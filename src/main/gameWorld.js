@@ -50,6 +50,12 @@ class GameWorld {
     this.petSystem.tickConditions(pets)
     this.petSystem.tickAge(pets)
 
+    for (const pet of pets) {
+      if (this.evolutionSystem.canEvolve(pet)) {
+        this.evolutionSystem.evolve(pet)
+      }
+    }
+
     World.set('last_save', String(Date.now()))
     db.save()
   }
