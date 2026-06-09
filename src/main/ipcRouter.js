@@ -56,6 +56,12 @@ class IpcRouter {
 
     ipcMain.handle('hunting:get-zones', () => this.huntingSystem.getZones())
     ipcMain.handle('hunting:stop-auto', (_e, { petId }) => this.huntingSystem.stopAutoHunt(petId))
+    ipcMain.handle('hunting:manual-battle', (_e, { petId, zoneId }) => {
+      const pets = this.petSystem.getAll()
+      const pet  = pets.find(p => p.id === petId)
+      if (!pet) return { error: 'not_found' }
+      return this.huntingSystem.processManualBattle(pet, zoneId)
+    })
   }
 }
 
