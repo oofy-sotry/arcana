@@ -70,10 +70,13 @@ async function init() {
   sel.addEventListener('change', () => { currentZoneId = sel.value })
 
   const pets = await window.arcana.pet.getAll()
+  window._combatUI = new CombatUI()
+
   if (pets.length > 0) {
     currentPet = pets[0]
     updateEnergyDisplay()
     spawnPetSprite()
+    window._combatUI.setPetHp(currentPet.hp || 100, currentPet.hp || 100)
   }
 
   document.getElementById('btn-mode-auto').addEventListener('click', startAutoMode)
