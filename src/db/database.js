@@ -26,4 +26,9 @@ async function init() {
   }
 }
 
-module.exports = { init }
+function save() {
+  const data = db.export()
+  fs.writeFileSync(getDbPath(), Buffer.from(data))
+}
+
+module.exports = { init, save }
