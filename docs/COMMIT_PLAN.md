@@ -104,19 +104,19 @@
 
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
-| 44 | `feat(window): windowManager.js 기본 구조 추가` | src/main/windowManager.js | 클래스 생성 | [ ] |
-| 45 | `feat(window): windowManager.js createOverlayWindow 함수 추가` | src/main/windowManager.js | 투명 전체화면 창 생성 옵션 | [ ] |
-| 46 | `feat(window): windowManager.js toggleMouseEvents 함수 추가` | src/main/windowManager.js | 마우스 클릭 투과 토글 | [ ] |
-| 47 | `feat(ipc): ipcRouter.js 기본 구조 추가` | src/main/ipcRouter.js | 라우터 초기화 구조 | [ ] |
-| 48 | `feat(ipc): ipcRouter.js pet:get-all 핸들러 추가` | src/main/ipcRouter.js | 전체 펫 목록 반환 | [ ] |
-| 49 | `feat(ipc): ipcRouter.js overlay:toggle-mouse 핸들러 추가` | src/main/ipcRouter.js | 오버레이 마우스 투과 토글 | [ ] |
-| 50 | `feat(preload): preload.js contextBridge 기본 구조 추가` | src/preload/preload.js | ipcRenderer 노출 기반 구조 | [ ] |
-| 51 | `feat(preload): preload.js pet API 노출 추가` | src/preload/preload.js | window.arcana.pet.getAll 등 | [ ] |
-| 52 | `feat(window): index.js 기본 구조 추가` | src/main/index.js | app.whenReady 진입점 | [ ] |
-| 53 | `feat(window): index.js GameWorld 연결` | src/main/index.js | **await** gameWorld.init() 후 tick 시작 (async 체인) | [ ] |
-| 54 | `feat(window): index.js WindowManager 연결` | src/main/index.js | 오버레이 창 생성 | [ ] |
-| 55 | `feat(window): index.js IpcRouter 연결` | src/main/index.js | 핸들러 등록 | [ ] |
-| 56 | `feat(window): index.js 종료 이벤트 처리` | src/main/index.js | before-quit → shutdown | [ ] |
+| 44 | `feat(window): windowManager.js 기본 구조 추가` | src/main/windowManager.js | 클래스 생성 | ✅ |
+| 45 | `feat(window): windowManager.js createOverlayWindow 함수 추가` | src/main/windowManager.js | 투명 전체화면 창 생성 옵션 | ✅ |
+| 46 | `feat(window): windowManager.js toggleMouseEvents 함수 추가` | src/main/windowManager.js | 마우스 클릭 투과 토글 | ✅ |
+| 47 | `feat(ipc): ipcRouter.js 기본 구조 추가` | src/main/ipcRouter.js | 라우터 초기화 구조 | ✅ |
+| 48 | `feat(ipc): ipcRouter.js pet:get-all 핸들러 추가` | src/main/ipcRouter.js | 전체 펫 목록 반환 | ✅ |
+| 49 | `feat(ipc): ipcRouter.js overlay:toggle-mouse 핸들러 추가` | src/main/ipcRouter.js | 오버레이 마우스 투과 토글 | ✅ |
+| 50 | `feat(preload): preload.js contextBridge 기본 구조 추가` | src/preload/preload.js | ipcRenderer 노출 기반 구조 | ✅ |
+| 51 | `feat(preload): preload.js pet API 노출 추가` | src/preload/preload.js | window.arcana.pet.getAll 등 | ✅ |
+| 52 | `feat(window): index.js 기본 구조 추가` | src/main/index.js | app.whenReady 진입점 | ✅ |
+| 53 | `feat(window): index.js GameWorld 연결` | src/main/index.js | **await** gameWorld.init() 후 tick 시작 (async 체인) | ✅ |
+| 54 | `feat(window): index.js WindowManager 연결` | src/main/index.js | 오버레이 창 생성 | ✅ |
+| 55 | `feat(window): index.js IpcRouter 연결` | src/main/index.js | 핸들러 등록 | ✅ |
+| 56 | `feat(window): index.js 종료 이벤트 처리` | src/main/index.js | before-quit → shutdown | ✅ |
 
 ---
 
