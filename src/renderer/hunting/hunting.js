@@ -6,6 +6,7 @@ let mode          = 'manual' // 'auto' | 'manual'
 let energy        = 100
 
 const SPEED = 2.5
+const keys  = {} // 현재 누르고 있는 키 추적
 
 async function initScene() {
   const wrap = document.getElementById('canvas-wrap')
@@ -78,6 +79,49 @@ async function init() {
   document.getElementById('btn-mode-auto').addEventListener('click', startAutoMode)
   document.getElementById('btn-mode-manual').addEventListener('click', () => setMode('manual'))
   document.getElementById('btn-explore').addEventListener('click', onExplore)
+  document.getElementById('btn-attack').addEventListener('click', onManualAttack)
+  document.getElementById('btn-flee').addEventListener('click', onFlee)
+
+  setupKeyboard()
+  app.ticker.add(onTick)
+}
+
+function setupKeyboard() {
+  document.addEventListener('keydown', e => {
+    keys[e.code] = true
+    if (e.code === 'Space')  { e.preventDefault(); onManualAttack() }
+    if (e.code === 'Escape') { e.preventDefault(); onFlee() }
+  })
+  document.addEventListener('keyup', e => { keys[e.code] = false })
+}
+
+function onTick() {
+  if (!petSprite || mode !== 'manual') return
+  const W = app.screen.width
+  const H = app.screen.height
+  if (keys['ArrowLeft']  || keys['KeyA']) petSprite.x = Math.max(16, petSprite.x - SPEED)
+  if (keys['ArrowRight'] || keys['KeyD']) petSprite.x = Math.min(W - 16, petSprite.x + SPEED)
+  if (keys['ArrowUp']    || keys['KeyW']) petSprite.y = Math.max(16, petSprite.y - SPEED)
+  if (keys['ArrowDown']  || keys['KeyS']) petSprite.y = Math.min(H - 16, petSprite.y + SPEED)
+  if (window._monsterRenderer) window._monsterRenderer.checkCollision(petSprite, onCollide)
+}
+
+async function onManualAttack() {
+  if (!currentPet || mode !== 'manual') return
+  const result = await window.arcana.hunting.manualBattle({ petId: currentPet.id, zoneId: currentZoneId })
+  if (result?.error) { addLog(`⚠ ${result.error}`); return }
+  addLog(`⚔ ${result.monster}: ${result.result} | 잔여 에너지 ${Math.round(result.finalEnergy)}`)
+  if (result.drops?.length) addLog(`  드롭: ${result.drops.map(d => d.itemId).join(', ')}`)
+  if (window._combatUI) window._combatUI.showResult(result)
+}
+
+async function onFlee() {
+  addLog('🏃 도망쳤다!')
+}
+
+function onCollide(monster) {
+  addLog(`👾 ${monster.name} 출현!`)
+  if (window._combatUI) window._combatUI.showMonster(monster)
 }
 
 function setMode(m) {
