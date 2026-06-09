@@ -69,8 +69,35 @@ function showCreateForm() {
   })
 }
 
-function onSelectPet(petId) {
+async function onSelectPet(petId) {
   selectedPetId = petId
+  const pet     = allPets.find(p => p.id === petId)
+  if (!pet) return
+
+  const [skills, inventory] = await Promise.all([
+    window.arcana.skill.get({ petId }),
+    window.arcana.item.getInventory({ petId }),
+  ])
+
+  document.getElementById('tab-stats').innerHTML  = ''
+  document.getElementById('tab-skills').innerHTML = ''
+  document.getElementById('tab-items').innerHTML  = ''
+
+  document.getElementById('tab-stats').appendChild(new StatPanel(pet).render())
+  document.getElementById('tab-skills').appendChild(
+    new SkillTree(pet, skills).render(async skillId => {
+      await window.arcana.skill.upgrade({ petId, skillId })
+      allPets = await window.arcana.pet.getAll()
+      onSelectPet(petId)
+    })
+  )
+  document.getElementById('tab-items').appendChild(
+    new ItemPanel(pet, inventory).render(async itemId => {
+      await window.arcana.item.use({ petId, itemId })
+      allPets = await window.arcana.pet.getAll()
+      onSelectPet(petId)
+    })
+  )
 }
 
 document.addEventListener('DOMContentLoaded', init)
