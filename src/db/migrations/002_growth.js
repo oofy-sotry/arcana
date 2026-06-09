@@ -8,4 +8,13 @@ module.exports = [
   `ALTER TABLE pets ADD COLUMN attack     INTEGER NOT NULL DEFAULT 10`,
   `ALTER TABLE pets ADD COLUMN defense    INTEGER NOT NULL DEFAULT 5`,
   `ALTER TABLE pets ADD COLUMN speed      INTEGER NOT NULL DEFAULT 10`,
+
+  `CREATE TABLE IF NOT EXISTS pet_skills (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    pet_id      INTEGER NOT NULL REFERENCES pets(id),
+    skill_id    TEXT    NOT NULL,
+    skill_level INTEGER NOT NULL DEFAULT 1,
+    unlocked_at INTEGER NOT NULL,
+    UNIQUE(pet_id, skill_id)
+  )`,
 ]
