@@ -53,7 +53,7 @@ class HuntingSystem {
       )
       battles.push({ monster: monster.name, ...outcome })
       if (outcome.result === 'lost') break
-      pet = this.Pet.findById(pet.id)
+      pet = this.Pet.getPet(pet.id)
       if (!pet) break
     }
 
