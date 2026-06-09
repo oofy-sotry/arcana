@@ -31,6 +31,26 @@ class SkillSystem {
     this.save()
     return true
   }
+
+  upgradeSkill(pet, skillId) {
+    const rows = db.query(
+      'SELECT * FROM pet_skills WHERE pet_id = ? AND skill_id = ?',
+      [pet.id, skillId]
+    )
+    if (rows.length === 0) return { ok: false, reason: 'not_unlocked' }
+
+    const current = rows[0]
+    if (current.skill_level >= 5) return { ok: false, reason: 'max_level' }
+    if (pet.skill_points < 1)     return { ok: false, reason: 'no_points' }
+
+    db.run(
+      'UPDATE pet_skills SET skill_level = skill_level + 1 WHERE pet_id = ? AND skill_id = ?',
+      [pet.id, skillId]
+    )
+    this.Pet.updatePet(pet.id, { skill_points: pet.skill_points - 1 })
+    this.save()
+    return { ok: true, newLevel: current.skill_level + 1 }
+  }
 }
 
 module.exports = SkillSystem
