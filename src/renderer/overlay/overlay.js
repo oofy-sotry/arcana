@@ -13,6 +13,9 @@ async function initApp() {
   })
 
   document.getElementById('app').appendChild(app.canvas)
+
+  const pets = await window.arcana.pet.getAll()
+  return pets
 }
 
 initApp()
