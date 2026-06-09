@@ -17,5 +17,15 @@
   "devDependencies": {
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.oofy-sotry.arcana",
+    "productName": "Arcana",
+    "extraResources": [
+      {
+        "from": "node_modules/sql.js/dist/sql-wasm.wasm",
+        "to": "sql-wasm.wasm"
+      }
+    ]
   }
 }
