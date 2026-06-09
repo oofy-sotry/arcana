@@ -62,6 +62,14 @@ class IpcRouter {
       if (!pet) return { error: 'not_found' }
       return this.huntingSystem.processManualBattle(pet, zoneId)
     })
+    ipcMain.handle('hunting:explore', (_e, { petId, mode }) => {
+      const pets = this.petSystem.getAll()
+      const pet  = pets.find(p => p.id === petId)
+      if (!pet) return { error: 'not_found' }
+      return mode === 'manual'
+        ? this.explorationSystem.manualExplore(pet)
+        : this.explorationSystem.startAutoExplore(pet)
+    })
   }
 }
 
