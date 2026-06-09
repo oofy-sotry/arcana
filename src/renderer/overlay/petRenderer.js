@@ -5,4 +5,9 @@ class PetRenderer {
     this.stage   = stage
     this.sprites = new Map()
   }
+
+  async loadSprite(imagePath) {
+    const texture = await Assets.load(imagePath)
+    return Sprite.from(texture)
+  }
 }
