@@ -302,9 +302,161 @@
 
 ---
 
+---
+
+## Phase 3 — 사냥터 + 전투
+
+> **완료 기준:**  
+> 사냥터 창 입장/퇴장  
+> 자동 모드: 에너지 소진까지 자동 전투 + 드롭 획득  
+> 수동 모드: 방향키 이동, 몬스터 충돌 시 전투, ESC 도망  
+> 전투 공식 (공격 × 스킬계수 − 방어 × 상성배율) 적용  
+> 보물탐사 이벤트 (자동/수동)
+
+---
+
+### 3-A DB 마이그레이션
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 122 | `feat(db): 003_hunting.js 기본 구조 추가` | src/db/migrations/003_hunting.js | 빈 배열 파일 생성 | ✅ |
+| 123 | `feat(db): 003_hunting.js pets coins 컬럼 추가` | src/db/migrations/003_hunting.js | ALTER TABLE pets ADD COLUMN coins INTEGER DEFAULT 0 | ✅ |
+| 124 | `feat(db): 003_hunting.js hunt_log 테이블 정의` | src/db/migrations/003_hunting.js | pet_id, zone_id, mode, started_at, ended_at, result | ✅ |
+| 125 | `feat(db): 003_hunting.js drop_log 테이블 정의` | src/db/migrations/003_hunting.js | pet_id, hunt_log_id, item_id, quantity, coins, dropped_at | ✅ |
+| 126 | `feat(db): database.js runMigrations에 003_hunting 추가` | src/db/database.js | MIGRATIONS 배열에 003 포함 | ✅ |
+
+---
+
+### 3-B 게임 데이터
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 127 | `feat(data): attributes.js 기본 구조 추가` | src/game/data/attributes.js | 속성 ID 목록, 상성 차트 (10×10 matrix) | ✅ |
+| 128 | `feat(data): monsters.js 기본 구조 추가` | src/game/data/monsters.js | 몬스터 데이터 구조 (id, name, attribute, hp, attack, defense, exp, zone) | ✅ |
+| 129 | `feat(data): monsters.js 불/물/바람/땅 속성 몬스터 추가` | src/game/data/monsters.js | 4속성 × 난이도 3단계 = 12종 | ✅ |
+| 130 | `feat(data): monsters.js 번개/얼음/독/드래곤 속성 몬스터 추가` | src/game/data/monsters.js | 나머지 4속성 12종 | ✅ |
+| 131 | `feat(data): monsters.js 드롭 테이블 추가` | src/game/data/monsters.js | 몬스터별 드롭 아이템 목록 + 확률 | ✅ |
+| 132 | `feat(data): monsters.js 사냥터 구역(zone) 정의 추가` | src/game/data/monsters.js | ZONES: 입문/일반/고급 3구역, 권장 레벨, 스폰 몬스터 목록 | ✅ |
+
+---
+
+### 3-C 전투 수식
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 133 | `feat(combat): formula.js 기본 구조 추가` | src/game/utils/formula.js | 파일 생성, 상수 정의 | ✅ |
+| 134 | `feat(combat): formula.js calcDamage 함수 추가` | src/game/utils/formula.js | max(1, 공격×계수 − 방어) × 상성 × 크리티컬 | ✅ |
+| 135 | `feat(combat): formula.js calcCritical 함수 추가` | src/game/utils/formula.js | 기본 10% + 상성유리 시 +15%, 1.5배 | ✅ |
+| 136 | `feat(combat): formula.js getAttributeMultiplier 함수 추가` | src/game/utils/formula.js | attributes.js 상성 차트 참조 → 1.3/1.0/0.77 | ✅ |
+
+---
+
+### 3-D CombatSystem
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 137 | `feat(combat): CombatSystem.js 기본 구조 추가` | src/game/systems/CombatSystem.js | 클래스, DI 생성자 | ✅ |
+| 138 | `feat(combat): CombatSystem.js startBattle 함수 추가` | src/game/systems/CombatSystem.js | 전투 상태 초기화 (pet vs monster) | ✅ |
+| 139 | `feat(combat): CombatSystem.js executePetTurn 함수 추가` | src/game/systems/CombatSystem.js | 펫 공격 (스킬 선택 + 데미지 계산) | ✅ |
+| 140 | `feat(combat): CombatSystem.js executeMonsterTurn 함수 추가` | src/game/systems/CombatSystem.js | 몬스터 공격 (기본 공격) | ✅ |
+| 141 | `feat(combat): CombatSystem.js checkBattleEnd 함수 추가` | src/game/systems/CombatSystem.js | HP 0 체크 → 승/패/도망 판정 | ✅ |
+| 142 | `feat(combat): CombatSystem.js endBattle 함수 추가` | src/game/systems/CombatSystem.js | 승리: exp/코인/드롭 지급, 패배: 사망 처리 | ✅ |
+
+---
+
+### 3-E HuntingSystem
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 143 | `feat(hunt): HuntingSystem.js 기본 구조 추가` | src/game/systems/HuntingSystem.js | 클래스, DI 생성자 | ✅ |
+| 144 | `feat(hunt): HuntingSystem.js getZones 함수 추가` | src/game/systems/HuntingSystem.js | 접근 가능 구역 목록 반환 | ✅ |
+| 145 | `feat(hunt): HuntingSystem.js spawnMonster 함수 추가` | src/game/systems/HuntingSystem.js | zone 기반 랜덤 몬스터 선택 | ✅ |
+| 146 | `feat(hunt): HuntingSystem.js startAutoHunt 함수 추가` | src/game/systems/HuntingSystem.js | 에너지 -30/전투, 자동 반복 배틀 루프 | ✅ |
+| 147 | `feat(hunt): HuntingSystem.js stopAutoHunt 함수 추가` | src/game/systems/HuntingSystem.js | 자동 사냥 중단, hunt_log 저장 | ✅ |
+| 148 | `feat(hunt): HuntingSystem.js processManualBattle 함수 추가` | src/game/systems/HuntingSystem.js | 에너지 -15/전투, 드롭률 +20% | ✅ |
+
+---
+
+### 3-F ExplorationSystem
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 149 | `feat(hunt): ExplorationSystem.js 기본 구조 추가` | src/game/systems/ExplorationSystem.js | 클래스, DI 생성자 | ✅ |
+| 150 | `feat(hunt): ExplorationSystem.js startAutoExplore 함수 추가` | src/game/systems/ExplorationSystem.js | 에너지 -25, 드롭 1~5% | ✅ |
+| 151 | `feat(hunt): ExplorationSystem.js rollEvent 함수 추가` | src/game/systems/ExplorationSystem.js | 랜덤 이벤트 테이블 (아이템/코인/罠/빈칸) | ✅ |
+| 152 | `feat(hunt): ExplorationSystem.js manualExplore 함수 추가` | src/game/systems/ExplorationSystem.js | 에너지 -13, 드롭 2~10%, 특수 이벤트 확률 상승 | ✅ |
+
+---
+
+### 3-G GameWorld 연결 + IPC
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 153 | `feat(world): gameWorld.js CombatSystem 연결` | src/main/gameWorld.js | init에 CombatSystem 주입 | ✅ |
+| 154 | `feat(world): gameWorld.js HuntingSystem 연결` | src/main/gameWorld.js | init에 HuntingSystem 주입 | ✅ |
+| 155 | `feat(world): gameWorld.js ExplorationSystem 연결` | src/main/gameWorld.js | init에 ExplorationSystem 주입 | ✅ |
+| 156 | `feat(world): gameWorld.js onTick 에너지 자동 회복 추가` | src/main/gameWorld.js | +10/hour = +약 0.167/tick, pet_conditions energy 갱신 | ✅ |
+| 157 | `feat(world): gameWorld.js onTick 오프라인 자동 사냥 처리` | src/main/gameWorld.js | applyOfflineProgress에 에너지 기반 자동 사냥 누적 반영 | ✅ |
+| 158 | `feat(ipc): ipcRouter.js hunting:get-zones 핸들러 추가` | src/main/ipcRouter.js | 구역 목록 반환 | ✅ |
+| 159 | `feat(ipc): ipcRouter.js hunting:start-auto 핸들러 추가` | src/main/ipcRouter.js | 자동 사냥 시작 | ✅ |
+| 160 | `feat(ipc): ipcRouter.js hunting:stop-auto 핸들러 추가` | src/main/ipcRouter.js | 자동 사냥 중단 | ✅ |
+| 161 | `feat(ipc): ipcRouter.js hunting:manual-battle 핸들러 추가` | src/main/ipcRouter.js | 수동 전투 1회 실행 | ✅ |
+| 162 | `feat(ipc): ipcRouter.js hunting:explore 핸들러 추가` | src/main/ipcRouter.js | 탐사 1회 실행 (자동/수동 구분) | ✅ |
+| 163 | `feat(ipc): ipcRouter.js hunting:open 핸들러 추가` | src/main/ipcRouter.js | 사냥터 창 열기 | ✅ |
+| 164 | `feat(preload): preload.js 사냥 API 추가` | src/preload/preload.js | hunting.getZones/startAuto/stopAuto/manualBattle/explore/open | ✅ |
+
+---
+
+### 3-H 사냥터 창
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 165 | `feat(window): windowManager.js createHuntingWindow 함수 추가` | src/main/windowManager.js | 사냥터 BrowserWindow (1024×768) | ✅ |
+| 166 | `feat(window): index.js HuntingWindow 연결` | src/main/index.js | IPC hunting:open → createHuntingWindow | ✅ |
+
+---
+
+### 3-I 사냥터 렌더러
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 167 | `feat(hunting): index.html 기본 구조 추가` | src/renderer/hunting/index.html | HTML 뼈대, 모드 토글 버튼 | ✅ |
+| 168 | `feat(hunting): hunting.js PixiJS 씬 초기화` | src/renderer/hunting/hunting.js | Application 생성, 배경 타일 | ✅ |
+| 169 | `feat(hunting): hunting.js 펫 스프라이트 배치` | src/renderer/hunting/hunting.js | 초기 펫 위치 + 스프라이트 로드 | ✅ |
+| 170 | `feat(hunting): hunting.js 키보드 이동 추가` | src/renderer/hunting/hunting.js | 방향키/WASD 이동, ESC 도망 | ✅ |
+| 171 | `feat(hunting): hunting.js 충돌 감지 추가` | src/renderer/hunting/hunting.js | 펫-몬스터 AABB 충돌 → 전투 트리거 | ✅ |
+| 172 | `feat(hunting): monsterRenderer.js 기본 구조 추가` | src/renderer/hunting/monsterRenderer.js | 클래스, 스테이지 참조 | ✅ |
+| 173 | `feat(hunting): monsterRenderer.js spawnMonster 함수 추가` | src/renderer/hunting/monsterRenderer.js | 랜덤 위치에 몬스터 스프라이트 생성 | ✅ |
+| 174 | `feat(hunting): monsterRenderer.js removeMonster 함수 추가` | src/renderer/hunting/monsterRenderer.js | 전투 후 몬스터 제거 + 리스폰 타이머 | ✅ |
+| 175 | `feat(hunting): combatUI.js 기본 구조 추가` | src/renderer/hunting/combatUI.js | 클래스, UI 컨테이너 | ✅ |
+| 176 | `feat(hunting): combatUI.js HP바 렌더링` | src/renderer/hunting/combatUI.js | 펫/몬스터 HP 게이지 | ✅ |
+| 177 | `feat(hunting): combatUI.js 전투 버튼 추가` | src/renderer/hunting/combatUI.js | 공격/도망 버튼, 자동/수동 모드 토글 | ✅ |
+
+---
+
+## 요약
+
+| 그룹 | 커밋 수 | 내용 |
+|------|--------|------|
+| Phase 0 (완료) | 6 | 설계 문서, 폴더 구조 |
+| Phase 1 (완료) | 60 | Core Loop 전체 |
+| Phase 2 (완료) | 58 | 성장+런처 전체 |
+| Phase 3 (완료) | 57+ | 사냥터+전투 전체 |
+| 3-A DB 마이그레이션 | 5 | 003_hunting, coins/log 테이블 |
+| 3-B 게임 데이터 | 6 | attributes 상성, monsters 24종+드롭+구역 |
+| 3-C 전투 수식 | 4 | formula.js 데미지/크리티컬/상성 |
+| 3-D CombatSystem | 6 | 턴 기반 전투 로직 |
+| 3-E HuntingSystem | 6 | 자동/수동 사냥, 드롭 처리 |
+| 3-F ExplorationSystem | 4 | 자동/수동 탐사, 랜덤 이벤트 |
+| 3-G GameWorld + IPC | 12 | 시스템 연결, 에너지 회복, IPC 핸들러 |
+| 3-H 사냥터 창 | 2 | HuntingWindow, 연결 |
+| 3-I 사냥터 렌더러 | 11 | PixiJS 씬, 이동, 충돌, 전투UI |
+| **Phase 3 합계** | **56** | |
+
+---
+
 ## 다음 Phase (예고)
 
-- **Phase 3** — 사냥터: 전투, 수동/자동, 드롭
 - **Phase 4** — 수집 + 교배: 계보, 혼합속성
 - **Phase 5** — 스토리 + 퀘스트
 - **Phase 6** — 온라인
