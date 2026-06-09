@@ -22,6 +22,24 @@ class CombatSystem {
     this._battles.set(pet.id, state)
     return state
   }
+
+  // 펫 공격 턴: 스킬 미지정 시 기본 공격(skillLevel=1) 사용
+  executePetTurn(petId, skillLevel = 1) {
+    const state = this._battles.get(petId)
+    if (!state) return null
+    const { pet, monster } = state
+    const result = calcDamage({
+      attack: pet.attack,
+      defense: monster.defense,
+      skillLevel,
+      attackerAttr: pet.attribute,
+      defenderAttr: monster.attribute,
+    })
+    state.monster.currentHp -= result.damage
+    const entry = { actor: 'pet', ...result }
+    state.log.push(entry)
+    return entry
+  }
 }
 
 module.exports = CombatSystem
