@@ -17,4 +17,13 @@ module.exports = [
     unlocked_at INTEGER NOT NULL,
     UNIQUE(pet_id, skill_id)
   )`,
+
+  `CREATE TABLE IF NOT EXISTS items (
+    id        TEXT    PRIMARY KEY,
+    name      TEXT    NOT NULL,
+    type      TEXT    NOT NULL,
+    effect    TEXT    NOT NULL,
+    max_stack INTEGER NOT NULL DEFAULT 99,
+    tradeable INTEGER NOT NULL DEFAULT 0
+  )`,
 ]
