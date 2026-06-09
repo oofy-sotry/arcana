@@ -34,7 +34,7 @@
 | 10 | `chore: package.json PixiJS 의존성 추가` | package.json | pixi.js | ✅ |
 | 11 | `chore: package.json sql.js 의존성 추가` | package.json | ~~better-sqlite3~~ → sql.js (경로 공백 node-gyp 빌드 오류로 교체) | ✅ |
 | 12 | `chore: package.json 실행 스크립트 추가` | package.json | start, build 스크립트 | ✅ |
-| 12-1 | `chore: package.json electron-builder WASM 번들 설정 추가` | package.json | extraResources에 sql-wasm.wasm 포함 (미설정 시 패키징 후 DB 초기화 실패) | [ ] |
+| 12-1 | `chore: package.json electron-builder WASM 번들 설정 추가` | package.json | extraResources에 sql-wasm.wasm 포함 (미설정 시 패키징 후 DB 초기화 실패) | ✅ |
 
 ---
 
