@@ -100,12 +100,12 @@ class CombatSystem {
       this.save()
     } else if (result === 'lost') {
       if (mode === 'auto') {
-        db.run(`DELETE FROM pets WHERE id = ?`, [petId])
-        this.save()
+        // 소프트 삭제 — FK 제약 보존, getAllPets는 is_alive=1 필터 적용
+        this.Pet.updatePet(petId, { is_alive: 0 })
       } else {
         this.Pet.updatePet(petId, { hp: 1 })
-        this.save()
       }
+      this.save()
     }
 
     this._battles.delete(petId)
