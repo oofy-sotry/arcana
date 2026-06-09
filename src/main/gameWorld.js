@@ -2,14 +2,16 @@ const db          = require('../db/database')
 const Pet         = require('../db/models/Pet')
 const World       = require('../db/models/World')
 const PetSystem   = require('../game/systems/PetSystem')
-const LevelSystem = require('../game/systems/LevelSystem')
+const LevelSystem     = require('../game/systems/LevelSystem')
+const EvolutionSystem = require('../game/systems/EvolutionSystem')
 const { TICK_INTERVAL_SECONDS } = require('../game/utils/time')
 
 class GameWorld {
   constructor() {
-    this.petSystem   = null
-    this.levelSystem = null
-    this._tickTimer  = null
+    this.petSystem       = null
+    this.levelSystem     = null
+    this.evolutionSystem = null
+    this._tickTimer      = null
   }
 
   async init() {
@@ -17,7 +19,8 @@ class GameWorld {
     db.runMigrations()
 
     this.petSystem   = new PetSystem({ Pet, World, save: db.save })
-    this.levelSystem = new LevelSystem({ Pet, save: db.save })
+    this.levelSystem     = new LevelSystem({ Pet, save: db.save })
+    this.evolutionSystem = new EvolutionSystem({ Pet, save: db.save })
 
     const pets = this.petSystem.getAll()
     if (pets.length > 0) {
