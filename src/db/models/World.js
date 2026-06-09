@@ -5,4 +5,12 @@ function get(key) {
   return rows.length > 0 ? rows[0].value : null
 }
 
-module.exports = { get }
+function set(key, value) {
+  db.run(
+    `INSERT INTO world_state (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+    [key, String(value)]
+  )
+}
+
+module.exports = { get, set }
