@@ -4,10 +4,11 @@ const ATTR_COLORS = {
 }
 
 class MonsterRenderer {
-  constructor(stage, screenWidth, screenHeight) {
+  constructor(stage, screenWidth, screenHeight, renderer) {
     this.stage    = stage
     this.W        = screenWidth
     this.H        = screenHeight
+    this.renderer = renderer
     this.monsters = [] // { sprite, data }
     this._collisionCooldown = false
   }
@@ -18,16 +19,14 @@ class MonsterRenderer {
     const y      = margin + Math.random() * (this.H - margin * 2)
     const color  = ATTR_COLORS[monsterData.attribute] || 0xaaaaaa
 
-    const g = new PIXI.Graphics()
+    const g   = new PIXI.Graphics()
     g.rect(-16, -16, 32, 32).fill(color)
-    const renderer = PIXI.autoDetectRenderer
-    const tex = window._app?.renderer?.generateTexture(g)
-    g.destroy()
-
-    const sprite = tex ? new PIXI.Sprite(tex) : new PIXI.Graphics().rect(-16, -16, 32, 32).fill(color)
-    if (sprite.anchor) sprite.anchor.set(0.5)
+    const tex    = this.renderer.generateTexture(g)
+    const sprite = new PIXI.Sprite(tex)
+    sprite.anchor.set(0.5)
     sprite.x = x
     sprite.y = y
+    g.destroy()
 
     this.stage.addChild(sprite)
     this.monsters.push({ sprite, data: monsterData })
@@ -68,4 +67,5 @@ class MonsterRenderer {
   }
 }
 
+// hunting.js의 initScene() 이후 인스턴스 생성: window._monsterRenderer = new MonsterRenderer(...)
 window._monsterRenderer = null

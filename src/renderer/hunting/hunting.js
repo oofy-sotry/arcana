@@ -23,8 +23,9 @@ async function initScene() {
     autoDensity:      true,
   })
   wrap.appendChild(app.canvas)
-
   drawBackground()
+
+  window._monsterRenderer = new MonsterRenderer(app.stage, W, H, app.renderer)
 }
 
 function drawBackground() {
