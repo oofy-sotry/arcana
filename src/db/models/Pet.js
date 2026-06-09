@@ -21,4 +21,8 @@ function createPet(name, attribute, species = 'default') {
   return pet
 }
 
-module.exports = { createPet }
+function getPet(id) {
+  return db.query('SELECT * FROM pets WHERE id = ?', [id])[0] || null
+}
+
+module.exports = { createPet, getPet }
