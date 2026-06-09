@@ -53,6 +53,8 @@ class IpcRouter {
     ipcMain.on('overlay:toggle-mouse', (_event, ignore) => {
       this.windowManager.toggleMouseEvents(ignore)
     })
+
+    ipcMain.handle('hunting:get-zones', () => this.huntingSystem.getZones())
   }
 }
 
