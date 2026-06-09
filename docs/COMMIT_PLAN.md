@@ -44,7 +44,7 @@
 | 13 | `feat(db): database.js 기본 구조 추가` | src/db/database.js | SQLite 연결, DB 파일 경로 설정 | [ ] |
 | 14 | `feat(db): database.js 연결 함수 추가` | src/db/database.js | `connect()` — DB 열기/닫기 | [ ] |
 | 15 | `feat(db): 001_init.js world_state 테이블 정의` | src/db/migrations/001_init.js | world_state 스키마 | [ ] |
-| 16 | `feat(db): 001_init.js pets 테이블 정의` | src/db/migrations/001_init.js | pets 스키마 (id, name, attribute, level, age...) | [ ] |
+| 16 | `feat(db): 001_init.js pets 테이블 정의` | src/db/migrations/001_init.js | pets 스키마 (id, **uuid**, name, attribute TEXT, level, age, **evolution_stage**...) | [ ] |
 | 17 | `feat(db): 001_init.js pet_conditions 테이블 정의` | src/db/migrations/001_init.js | pet_conditions 스키마 (hunger, happiness, energy...) | [ ] |
 | 18 | `feat(db): database.js 마이그레이션 실행 함수 추가` | src/db/database.js | `runMigrations()` | [ ] |
 | 19 | `feat(db): World.js 기본 구조 추가` | src/db/models/World.js | 파일 생성, 모듈 구조 | [ ] |
@@ -57,6 +57,7 @@
 | 26 | `feat(db): Pet.js updatePet 함수 추가` | src/db/models/Pet.js | UPDATE — 펫 스탯 저장 | [ ] |
 | 27 | `feat(db): Pet.js getConditions 함수 추가` | src/db/models/Pet.js | SELECT — 컨디션 조회 | [ ] |
 | 28 | `feat(db): Pet.js updateConditions 함수 추가` | src/db/models/Pet.js | UPDATE — 컨디션 저장 | [ ] |
+| 28-1 | `feat(db): Item.js 기본 구조 추가` | src/db/models/Item.js | 파일 생성 (tradeable 플래그 포함) | [ ] |
 
 ---
 
