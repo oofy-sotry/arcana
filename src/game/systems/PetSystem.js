@@ -15,6 +15,12 @@ class PetSystem {
     this.World = World
     this.save = save
   }
+
+  createPet(name, attribute, species = 'default') {
+    const pet = this.Pet.createPet(name, attribute, species)
+    this.save()
+    return pet
+  }
 }
 
 module.exports = PetSystem
