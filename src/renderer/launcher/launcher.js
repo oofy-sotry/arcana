@@ -3,6 +3,7 @@ let selectedPetId = null
 
 async function init() {
   setupTabs()
+  document.getElementById('btn-hunting').addEventListener('click', () => window.arcana.hunting.open())
   allPets = await window.arcana.pet.getAll()
   renderPetList()
 }
