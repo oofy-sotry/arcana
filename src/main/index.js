@@ -18,3 +18,7 @@ app.whenReady().then(async () => {
   })
   ipcRouter.register()
 })
+
+app.on('before-quit', () => {
+  gameWorld.shutdown()
+})
