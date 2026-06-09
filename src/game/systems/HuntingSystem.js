@@ -72,6 +72,26 @@ class HuntingSystem {
     if (!hunt) return
     this._activeHunts.delete(petId)
   }
+
+  // 수동 모드 전투 1회: 에너지 -15, 드롭률 +20%
+  processManualBattle(pet, zoneId) {
+    const db     = require('../../db/database')
+    const energy = pet.energy != null ? pet.energy : 100
+    if (energy < MANUAL_ENERGY_COST) return { error: '에너지 부족 (수동 사냥: -15 필요)' }
+
+    const monster = this.spawnMonster(zoneId)
+    if (!monster) return { error: '몬스터를 찾을 수 없습니다' }
+
+    const newEnergy = energy - MANUAL_ENERGY_COST
+    const outcome   = this.combatSystem.runAutoFight(pet, monster, {
+      mode: 'manual',
+      dropRateBonus: MANUAL_DROP_BONUS,
+    })
+
+    db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [newEnergy, pet.id])
+    this.save()
+    return { monster: monster.name, ...outcome, finalEnergy: newEnergy }
+  }
 }
 
 module.exports = HuntingSystem
