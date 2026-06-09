@@ -28,12 +28,12 @@
 
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
-| 7 | `chore: .gitignore 설정` | .gitignore | node_modules, dist, *.db, .env 제외 | [ ] |
-| 8 | `chore: package.json 기본 설정` | package.json | name, version, main 진입점 | [ ] |
-| 9 | `chore: package.json Electron 의존성 추가` | package.json | electron, electron-builder | [ ] |
-| 10 | `chore: package.json PixiJS 의존성 추가` | package.json | pixi.js | [ ] |
-| 11 | `chore: package.json better-sqlite3 의존성 추가` | package.json | better-sqlite3 | [ ] |
-| 12 | `chore: package.json 실행 스크립트 추가` | package.json | start, build 스크립트 | [ ] |
+| 7 | `chore: .gitignore 설정` | .gitignore | node_modules, dist, *.db, .env 제외 | ✅ |
+| 8 | `chore: package.json 기본 설정` | package.json | name, version, main 진입점 | ✅ |
+| 9 | `chore: package.json Electron 의존성 추가` | package.json | electron, electron-builder | ✅ |
+| 10 | `chore: package.json PixiJS 의존성 추가` | package.json | pixi.js | ✅ |
+| 11 | `chore: package.json sql.js 의존성 추가` | package.json | ~~better-sqlite3~~ → sql.js (경로 공백 node-gyp 빌드 오류로 교체) | ✅ |
+| 12 | `chore: package.json 실행 스크립트 추가` | package.json | start, build 스크립트 | ✅ |
 
 ---
 
@@ -41,12 +41,13 @@
 
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
-| 13 | `feat(db): database.js 기본 구조 추가` | src/db/database.js | SQLite 연결, DB 파일 경로 설정 | [ ] |
-| 14 | `feat(db): database.js 연결 함수 추가` | src/db/database.js | `connect()` — DB 열기/닫기 | [ ] |
+| 13 | `feat(db): database.js 기본 구조 추가` | src/db/database.js | sql.js 초기화, DB 파일 경로 설정 | [ ] |
+| 14 | `feat(db): database.js init 함수 추가` | src/db/database.js | `init()` — 파일 로드 or 신규 생성 (async) | [ ] |
+| 14-1 | `feat(db): database.js save 함수 추가` | src/db/database.js | `save()` — db.export() → 파일 플러시 | [ ] |
 | 15 | `feat(db): 001_init.js world_state 테이블 정의` | src/db/migrations/001_init.js | world_state 스키마 | [ ] |
-| 16 | `feat(db): 001_init.js pets 테이블 정의` | src/db/migrations/001_init.js | pets 스키마 (id, **uuid**, name, attribute TEXT, level, age, **evolution_stage**...) | [ ] |
+| 16 | `feat(db): 001_init.js pets 테이블 정의` | src/db/migrations/001_init.js | pets 스키마 (id, uuid, name, attribute TEXT, level, age, evolution_stage...) | [ ] |
 | 17 | `feat(db): 001_init.js pet_conditions 테이블 정의` | src/db/migrations/001_init.js | pet_conditions 스키마 (hunger, happiness, energy...) | [ ] |
-| 18 | `feat(db): database.js 마이그레이션 실행 함수 추가` | src/db/database.js | `runMigrations()` | [ ] |
+| 18 | `feat(db): database.js runMigrations 함수 추가` | src/db/database.js | `runMigrations()` — 001_init.js 실행 | [ ] |
 | 19 | `feat(db): World.js 기본 구조 추가` | src/db/models/World.js | 파일 생성, 모듈 구조 | [ ] |
 | 20 | `feat(db): World.js get 함수 추가` | src/db/models/World.js | `get(key)` — world_state 조회 | [ ] |
 | 21 | `feat(db): World.js set 함수 추가` | src/db/models/World.js | `set(key, value)` — world_state 저장 | [ ] |
