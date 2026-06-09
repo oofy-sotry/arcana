@@ -30,6 +30,17 @@ class GameWorld {
       TICK_INTERVAL_SECONDS * 1000
     )
   }
+
+  onTick() {
+    const pets = this.petSystem.getAll()
+    if (pets.length === 0) return
+
+    this.petSystem.tickConditions(pets)
+    this.petSystem.tickAge(pets)
+
+    World.set('last_save', String(Date.now()))
+    db.save()
+  }
 }
 
 module.exports = GameWorld
