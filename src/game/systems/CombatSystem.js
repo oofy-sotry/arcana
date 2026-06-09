@@ -93,10 +93,17 @@ class CombatSystem {
         }
       }
 
+      const now = Date.now()
       db.run(
-        `INSERT INTO drop_log (pet_id, hunt_log_id, item_id, quantity, coins, dropped_at) VALUES (?,?,?,?,?,?)`,
-        [petId, huntLogId, drops.map(d => d.itemId).join(',') || null, drops.reduce((s, d) => s + d.quantity, 0), coinAmt, Date.now()]
+        `INSERT INTO drop_log (pet_id, hunt_log_id, coins, dropped_at) VALUES (?,?,?,?)`,
+        [petId, huntLogId, coinAmt, now]
       )
+      for (const d of drops) {
+        db.run(
+          `INSERT INTO drop_log (pet_id, hunt_log_id, item_id, quantity, dropped_at) VALUES (?,?,?,?,?)`,
+          [petId, huntLogId, d.itemId, d.quantity, now]
+        )
+      }
       this.save()
     } else if (result === 'lost') {
       if (mode === 'auto') {
