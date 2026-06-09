@@ -70,6 +70,13 @@ class IpcRouter {
         ? this.explorationSystem.manualExplore(pet)
         : this.explorationSystem.startAutoExplore(pet)
     })
+    ipcMain.handle('hunting:open', () => this.windowManager.createHuntingWindow())
+    ipcMain.handle('hunting:start-auto', (_e, { petId, zoneId }) => {
+      const pets = this.petSystem.getAll()
+      const pet  = pets.find(p => p.id === petId)
+      if (!pet) return { error: 'not_found' }
+      return this.huntingSystem.startAutoHunt(pet, zoneId)
+    })
   }
 }
 
