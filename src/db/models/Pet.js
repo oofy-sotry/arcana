@@ -38,4 +38,8 @@ function updatePet(id, fields) {
   )
 }
 
-module.exports = { createPet, getPet, getAllPets, updatePet }
+function getConditions(petId) {
+  return db.query('SELECT * FROM pet_conditions WHERE pet_id = ?', [petId])[0] || null
+}
+
+module.exports = { createPet, getPet, getAllPets, updatePet, getConditions }
