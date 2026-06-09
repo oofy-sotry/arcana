@@ -19,6 +19,17 @@ class ItemSystem {
     this.save()
     return true
   }
+
+  getInventory(petId) {
+    const rows = db.query(
+      'SELECT * FROM pet_inventory WHERE pet_id = ? AND quantity > 0',
+      [petId]
+    )
+    return rows.map(row => ({
+      ...row,
+      data: ITEMS[row.item_id] || null,
+    }))
+  }
 }
 
 module.exports = ItemSystem
