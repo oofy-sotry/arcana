@@ -34,6 +34,11 @@ class WindowManager {
 
     return this.overlayWindow
   }
+
+  toggleMouseEvents(ignore) {
+    if (!this.overlayWindow) return
+    this.overlayWindow.setIgnoreMouseEvents(ignore, { forward: true })
+  }
 }
 
 module.exports = WindowManager
