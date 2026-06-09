@@ -58,6 +58,7 @@ class GameWorld {
 
     this.petSystem.tickConditions(pets)
     this.petSystem.tickAge(pets)
+    this._tickEnergyRecovery(pets)
 
     for (const pet of pets) {
       if (this.evolutionSystem.canEvolve(pet)) {
@@ -67,6 +68,17 @@ class GameWorld {
 
     World.set('last_save', String(Date.now()))
     db.save()
+  }
+
+  // GDD 10절: 에너지 +10/hour = +10/60 per tick(60s)
+  _tickEnergyRecovery(pets) {
+    const energyPerTick = 10 / 60
+    for (const pet of pets) {
+      const row = db.query('SELECT energy FROM pet_conditions WHERE pet_id=?', [pet.id])[0]
+      if (!row) continue
+      const newEnergy = Math.min(100, (row.energy || 0) + energyPerTick)
+      db.run('UPDATE pet_conditions SET energy=? WHERE pet_id=?', [newEnergy, pet.id])
+    }
   }
 
   shutdown() {
