@@ -65,6 +65,13 @@ class HuntingSystem {
     this.save()
     return { battles, finalEnergy: currentEnergy }
   }
+
+  // 진행 중인 자동 사냥 상태 정리 (타이머 기반 확장 시 사용)
+  stopAutoHunt(petId) {
+    const hunt = this._activeHunts.get(petId)
+    if (!hunt) return
+    this._activeHunts.delete(petId)
+  }
 }
 
 module.exports = HuntingSystem
