@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'unsafe-inline'" />
+  <title>Arcana — 사냥터</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a1a; color: #eee; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    #topbar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 16px; background: #16213e; border-bottom: 1px solid #0f3460;
+      flex-shrink: 0;
+    }
+    #topbar select { background: #0f3460; color: #eee; border: 1px solid #1a4070; padding: 4px 8px; border-radius: 4px; }
+    #topbar button { padding: 4px 14px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    #btn-mode-auto   { background: #e94560; color: #fff; }
+    #btn-mode-manual { background: #0f3460; color: #eee; }
+    #energy-display  { margin-left: auto; font-size: 13px; color: #aaa; }
+
+    #canvas-wrap { flex: 1; overflow: hidden; position: relative; }
+    #canvas-wrap canvas { display: block; }
+
+    #bottombar {
+      background: #16213e; border-top: 1px solid #0f3460;
+      padding: 10px 16px; flex-shrink: 0;
+    }
+    #hp-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .hp-label { font-size: 12px; color: #aaa; width: 60px; }
+    .hp-bar-wrap { flex: 1; background: #0a0a1a; border-radius: 4px; height: 10px; overflow: hidden; }
+    .hp-bar      { height: 100%; background: #2ecc71; border-radius: 4px; transition: width 0.2s; }
+    .hp-text     { font-size: 11px; color: #aaa; width: 60px; text-align: right; }
+
+    #action-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    #action-row button { padding: 6px 18px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    #btn-attack  { background: #e94560; color: #fff; }
+    #btn-flee    { background: #555; color: #eee; }
+    #btn-explore { background: #0f3460; color: #eee; }
+
+    #combat-log { font-size: 11px; color: #aaa; max-height: 50px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <div id="topbar">
+    <label for="zone-select">구역:</label>
+    <select id="zone-select"></select>
+    <button id="btn-mode-auto">자동 사냥</button>
+    <button id="btn-mode-manual">수동 사냥</button>
+    <span id="energy-display">에너지: --/100</span>
+  </div>
+
+  <div id="canvas-wrap"></div>
+
+  <div id="bottombar">
+    <div id="hp-row">
+      <span class="hp-label">내 HP</span>
+      <div class="hp-bar-wrap"><div class="hp-bar" id="pet-hp-bar" style="width:100%"></div></div>
+      <span class="hp-text" id="pet-hp-text">--/--</span>
+      <span class="hp-label" style="margin-left:16px">적 HP</span>
+      <div class="hp-bar-wrap"><div class="hp-bar" id="mon-hp-bar" style="width:0%;background:#e94560"></div></div>
+      <span class="hp-text" id="mon-hp-text">--</span>
+    </div>
+    <div id="action-row">
+      <button id="btn-attack">공격 (Space)</button>
+      <button id="btn-flee">도망 (ESC)</button>
+      <button id="btn-explore">탐사</button>
+    </div>
+    <div id="combat-log"></div>
+  </div>
+
+  <script src="../../../node_modules/pixi.js/dist/pixi.min.js"></script>
+  <script src="monsterRenderer.js"></script>
+  <script src="combatUI.js"></script>
+  <script src="hunting.js"></script>
+</body>
+</html>
