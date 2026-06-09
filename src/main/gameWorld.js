@@ -41,6 +41,15 @@ class GameWorld {
     World.set('last_save', String(Date.now()))
     db.save()
   }
+
+  shutdown() {
+    if (this._tickTimer) {
+      clearInterval(this._tickTimer)
+      this._tickTimer = null
+    }
+    World.set('last_save', String(Date.now()))
+    db.save()
+  }
 }
 
 module.exports = GameWorld
