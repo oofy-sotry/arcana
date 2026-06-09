@@ -24,4 +24,12 @@ function calcDamage({ attack, defense, skillLevel = 1, attackerAttr, defenderAtt
   return { damage: Math.max(1, total), isCrit, attrMult }
 }
 
-module.exports = { CRIT_BASE_RATE, CRIT_BONUS_RATE, CRIT_MULTIPLIER, SKILL_COEFF_BASE, SKILL_COEFF_STEP, getMultiplier, isFavorable, calcCritical, calcDamage }
+// attributes.js 상성 차트를 참조하는 래퍼 — 외부에서 formula.js 단일 임포트로 충분하도록
+function getAttributeMultiplier(attackerAttr, defenderAttr) {
+  return getMultiplier(attackerAttr, defenderAttr)
+}
+
+module.exports = {
+  CRIT_BASE_RATE, CRIT_BONUS_RATE, CRIT_MULTIPLIER, SKILL_COEFF_BASE, SKILL_COEFF_STEP,
+  getMultiplier, isFavorable, calcCritical, calcDamage, getAttributeMultiplier,
+}
