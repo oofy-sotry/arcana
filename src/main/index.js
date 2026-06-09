@@ -13,7 +13,11 @@ app.whenReady().then(async () => {
   windowManager.createOverlayWindow()
 
   const ipcRouter = new IpcRouter({
-    petSystem:     gameWorld.petSystem,
+    petSystem:       gameWorld.petSystem,
+    levelSystem:     gameWorld.levelSystem,
+    evolutionSystem: gameWorld.evolutionSystem,
+    skillSystem:     gameWorld.skillSystem,
+    itemSystem:      gameWorld.itemSystem,
     windowManager,
   })
   ipcRouter.register()
