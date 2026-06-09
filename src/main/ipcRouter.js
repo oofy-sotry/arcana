@@ -21,6 +21,13 @@ class IpcRouter {
       if (!pet) return null
       return this.levelSystem.addExperience(pet, amount)
     })
+    ipcMain.handle('evolution:attempt', (_e, { petId }) => {
+      const pets = this.petSystem.getAll()
+      const pet  = pets.find(p => p.id === petId)
+      if (!pet) return { ok: false, reason: 'not_found' }
+      if (!this.evolutionSystem.canEvolve(pet)) return { ok: false, reason: 'conditions_not_met' }
+      return { ok: true, result: this.evolutionSystem.evolve(pet) }
+    })
 
     ipcMain.on('overlay:toggle-mouse', (_event, ignore) => {
       this.windowManager.toggleMouseEvents(ignore)
