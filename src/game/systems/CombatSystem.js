@@ -81,7 +81,7 @@ class CombatSystem {
     if (result === 'won') {
       this.levelSystem.addExperience(pet, monster.exp)
       const coinAmt = monster.coins.min + Math.floor(Math.random() * (monster.coins.max - monster.coins.min + 1))
-      this.Pet.update(petId, { coins: (pet.coins || 0) + coinAmt })
+      this.Pet.updatePet(petId, { coins: (pet.coins || 0) + coinAmt })
 
       const table = getDropTable(monster.id)
       for (const entry of table) {
@@ -103,7 +103,7 @@ class CombatSystem {
         db.run(`DELETE FROM pets WHERE id = ?`, [petId])
         this.save()
       } else {
-        this.Pet.update(petId, { hp: 1 })
+        this.Pet.updatePet(petId, { hp: 1 })
         this.save()
       }
     }
