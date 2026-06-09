@@ -25,4 +25,8 @@ function getPet(id) {
   return db.query('SELECT * FROM pets WHERE id = ?', [id])[0] || null
 }
 
-module.exports = { createPet, getPet }
+function getAllPets() {
+  return db.query('SELECT * FROM pets WHERE is_alive = 1')
+}
+
+module.exports = { createPet, getPet, getAllPets }
