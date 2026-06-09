@@ -50,6 +50,7 @@ function runMigrations() {
   const MIGRATIONS = [
     require('./migrations/001_init'),
     require('./migrations/002_growth'),
+    require('./migrations/003_hunting'),
   ]
 
   const [{ values: [[currentVersion]] }] = db.exec('PRAGMA user_version')
