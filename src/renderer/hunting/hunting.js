@@ -116,6 +116,7 @@ async function onManualAttack() {
   addLog(`⚔ ${result.monster}: ${result.result} | 잔여 에너지 ${Math.round(result.finalEnergy)}`)
   if (result.drops?.length) addLog(`  드롭: ${result.drops.map(d => d.itemId).join(', ')}`)
   if (window._combatUI) window._combatUI.showResult(result)
+  updateEnergyDisplay(result.finalEnergy)
 }
 
 async function onFlee() {
@@ -133,9 +134,10 @@ function setMode(m) {
   document.getElementById('btn-mode-manual').style.background = m === 'manual' ? '#e94560' : '#0f3460'
 }
 
-function updateEnergyDisplay() {
-  const cond = currentPet?.conditions
-  const e    = (cond?.energy != null) ? Math.round(cond.energy) : energy
+function updateEnergyDisplay(overrideEnergy) {
+  const e = overrideEnergy != null
+    ? Math.round(overrideEnergy)
+    : Math.round(currentPet?.conditions?.energy ?? energy)
   document.getElementById('energy-display').textContent = `에너지: ${e}/100`
 }
 
@@ -147,9 +149,8 @@ async function startAutoMode() {
   if (result?.error) { addLog(`⚠ ${result.error}`); setMode('manual'); return }
   if (result?.battles) {
     addLog(`전투 ${result.battles.length}회 완료, 잔여 에너지: ${Math.round(result.finalEnergy)}`)
-    result.battles.forEach(b => {
-      addLog(`  ${b.monster}: ${b.result}`)
-    })
+    result.battles.forEach(b => { addLog(`  ${b.monster}: ${b.result}`) })
+    updateEnergyDisplay(result.finalEnergy)
   }
   setMode('manual')
 }
@@ -163,6 +164,7 @@ async function onExplore() {
   if (result.type === 'trap')  addLog(`🪤 덫! -${result.damage} HP`)
   if (result.type === 'empty') addLog('— 아무것도 없었다.')
   addLog(`잔여 에너지: ${Math.round(result.finalEnergy)}`)
+  updateEnergyDisplay(result.finalEnergy)
 }
 
 function addLog(msg) {
