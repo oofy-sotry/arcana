@@ -6,6 +6,9 @@
   "author": "oofy-sotry",
   "license": "UNLICENSED",
   "private": true,
+  "dependencies": {
+    "pixi.js": "^8.0.0"
+  },
   "devDependencies": {
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0"
