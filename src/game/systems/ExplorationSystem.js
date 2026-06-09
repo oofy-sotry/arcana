@@ -47,45 +47,28 @@ class ExplorationSystem {
     return { type: 'empty' }
   }
 
-  // 에너지 -25, 드롭 1~5% 확률로 아이템 발견
   startAutoExplore(pet) {
-    const db     = require('../../db/database')
-    const energy = pet.conditions?.energy ?? 100
-    if (energy < AUTO_ENERGY_COST) return { error: '에너지 부족 (자동 탐사: -25 필요)' }
-
-    const newEnergy = energy - AUTO_ENERGY_COST
-    const result    = this.rollEvent(0.05)
-
-    if (result.type === 'item') {
-      this.itemSystem.addItem(pet.id, result.itemId, 1)
-    } else if (result.type === 'coins') {
-      this.Pet.updatePet(pet.id, { coins: (pet.coins || 0) + result.coins })
-    } else if (result.type === 'trap') {
-      const newHp = Math.max(1, pet.hp - result.damage)
-      this.Pet.updatePet(pet.id, { hp: newHp })
-    }
-
-    db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [newEnergy, pet.id])
-    this.save()
-    return { ...result, finalEnergy: newEnergy }
+    return this._explore(pet, AUTO_ENERGY_COST, 0.05, '자동 탐사: -25 필요')
   }
 
-  // 에너지 -13, 드롭 2~10% (dropBoost 0.5), 특수 이벤트 확률 상승
   manualExplore(pet) {
+    return this._explore(pet, MANUAL_ENERGY_COST, 0.5, '수동 탐사: -13 필요')
+  }
+
+  _explore(pet, energyCost, dropBoost, errLabel) {
     const db     = require('../../db/database')
     const energy = pet.conditions?.energy ?? 100
-    if (energy < MANUAL_ENERGY_COST) return { error: '에너지 부족 (수동 탐사: -13 필요)' }
+    if (energy < energyCost) return { error: `에너지 부족 (${errLabel})` }
 
-    const newEnergy = energy - MANUAL_ENERGY_COST
-    const result    = this.rollEvent(0.5)
+    const newEnergy = energy - energyCost
+    const result    = this.rollEvent(dropBoost)
 
     if (result.type === 'item') {
       this.itemSystem.addItem(pet.id, result.itemId, 1)
     } else if (result.type === 'coins') {
       this.Pet.updatePet(pet.id, { coins: (pet.coins || 0) + result.coins })
     } else if (result.type === 'trap') {
-      const newHp = Math.max(1, pet.hp - result.damage)
-      this.Pet.updatePet(pet.id, { hp: newHp })
+      this.Pet.updatePet(pet.id, { hp: Math.max(1, pet.hp - result.damage) })
     }
 
     db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [newEnergy, pet.id])
