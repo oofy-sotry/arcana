@@ -1,13 +1,15 @@
 const { ipcMain } = require('electron')
 
 class IpcRouter {
-  constructor({ petSystem, levelSystem, evolutionSystem, skillSystem, itemSystem, windowManager }) {
-    this.petSystem       = petSystem
-    this.levelSystem     = levelSystem
-    this.evolutionSystem = evolutionSystem
-    this.skillSystem     = skillSystem
-    this.itemSystem      = itemSystem
-    this.windowManager   = windowManager
+  constructor({ petSystem, levelSystem, evolutionSystem, skillSystem, itemSystem, huntingSystem, explorationSystem, windowManager }) {
+    this.petSystem        = petSystem
+    this.levelSystem      = levelSystem
+    this.evolutionSystem  = evolutionSystem
+    this.skillSystem      = skillSystem
+    this.itemSystem       = itemSystem
+    this.huntingSystem    = huntingSystem
+    this.explorationSystem = explorationSystem
+    this.windowManager    = windowManager
   }
 
   register() {
