@@ -20,7 +20,13 @@ class PetRenderer {
     sprite.cursor = 'pointer'
     this.stage.addChild(sprite)
     this.sprites.set(pet.id, sprite)
+    this.attachMouseEvents(sprite)
     return sprite
+  }
+
+  attachMouseEvents(sprite) {
+    sprite.on('pointerover',  () => window.arcana.overlay.toggleMouse(false))
+    sprite.on('pointerout',   () => window.arcana.overlay.toggleMouse(true))
   }
 
   moveRandom(ticker) {
