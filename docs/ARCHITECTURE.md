@@ -11,7 +11,7 @@
 | 플랫폼 | Electron | 투명 바탕화면 오버레이 구현 가능한 유일한 선택 |
 | 언어 | JavaScript (ES Modules) | Electron 네이티브, 충분한 성능 |
 | 렌더링 | PixiJS (WebGL) | GPU 가속 스프라이트 렌더링, 펫 다수 처리 최적 |
-| 데이터베이스 | SQLite (better-sqlite3) | 펫 계보·교배·아이템 등 관계형 데이터 필수 |
+| 데이터베이스 | SQLite (sql.js) | 펫 계보·교배·아이템 등 관계형 데이터 필수. WebAssembly 기반으로 컴파일 불필요 |
 | UI (허브) | Vanilla JS + CSS | 무거운 프레임워크 불필요, 직접 제어 |
 
 ---
@@ -147,9 +147,10 @@ world_state       (key, value)  -- coins, last_save, etc.
 ```
 
 ### 저장 규칙
-- **동기 저장** (better-sqlite3): 게임 로직에서 즉시 commit
-- **자동저장**: 60초 tick마다 world_state + pet_conditions 갱신
-- **종료 저장**: app.on('before-quit') 훅에서 강제 flush
+- **메모리 DB**: sql.js는 DB를 메모리에 로드해서 사용 (쿼리는 동기)
+- **자동저장**: 60초 tick마다 `db.export()` → 파일로 플러시
+- **종료 저장**: app.on('before-quit') 훅에서 강제 플러시
+- **시작 로드**: `fs.readFileSync(dbPath)` → `new SQL.Database(buffer)`
 
 ---
 
