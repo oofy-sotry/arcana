@@ -28,6 +28,20 @@ class PetSystem {
       conditions: this.Pet.getConditions(pet.id),
     }))
   }
+
+  tickConditions(pets) {
+    const now = Date.now()
+    for (const pet of pets) {
+      const cond = this.Pet.getConditions(pet.id)
+      if (!cond) continue
+      this.Pet.updateConditions(pet.id, {
+        hunger:      Math.max(0, cond.hunger      - CONDITION_DECAY.hunger),
+        happiness:   Math.max(0, cond.happiness   - CONDITION_DECAY.happiness),
+        cleanliness: Math.max(0, cond.cleanliness - CONDITION_DECAY.cleanliness),
+        last_updated: now,
+      })
+    }
+  }
 }
 
 module.exports = PetSystem
