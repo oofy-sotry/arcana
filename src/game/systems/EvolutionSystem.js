@@ -45,6 +45,16 @@ class EvolutionSystem {
     this.save()
     return { fromStage, toStage, evoType }
   }
+
+  // 히든 진화 조건 체크 — Phase 3+ 에서 각 조건 유형(A~J) 순차 구현
+  // 현재는 구조만 정의, 기본값 false 반환
+  checkHiddenConditions(pet) {
+    const charData = Object.values(CHARACTERS).find(
+      c => c.attribute === pet.attribute && c.stage === pet.evolution_stage
+    )
+    if (!charData || !charData.hiddenConditions) return false
+    return false
+  }
 }
 
 module.exports = EvolutionSystem
