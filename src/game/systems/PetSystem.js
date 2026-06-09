@@ -52,6 +52,30 @@ class PetSystem {
       })
     }
   }
+
+  applyOfflineProgress(pets) {
+    const now = Date.now()
+    for (const pet of pets) {
+      const elapsed = getElapsedSeconds(pet.last_active, now)
+      const ticks   = calcOfflineTicks(elapsed)
+      if (ticks === 0) continue
+
+      const cond = this.Pet.getConditions(pet.id)
+      if (cond) {
+        this.Pet.updateConditions(pet.id, {
+          hunger:      Math.max(0, cond.hunger      - CONDITION_DECAY.hunger      * ticks),
+          happiness:   Math.max(0, cond.happiness   - CONDITION_DECAY.happiness   * ticks),
+          cleanliness: Math.max(0, cond.cleanliness - CONDITION_DECAY.cleanliness * ticks),
+          last_updated: now,
+        })
+      }
+
+      this.Pet.updatePet(pet.id, {
+        age_seconds: pet.age_seconds + TICK_INTERVAL_SECONDS * ticks,
+        last_active: now,
+      })
+    }
+  }
 }
 
 module.exports = PetSystem
