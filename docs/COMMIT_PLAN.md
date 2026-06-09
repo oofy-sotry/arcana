@@ -124,14 +124,14 @@
 
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
-| 57 | `feat(overlay): index.html 기본 구조 추가` | src/renderer/overlay/index.html | HTML 뼈대, PixiJS 로드 | [ ] |
-| 58 | `feat(overlay): overlay.js PixiJS 앱 초기화` | src/renderer/overlay/overlay.js | Application 생성, 전체화면 설정 | [ ] |
-| 59 | `feat(overlay): overlay.js 펫 데이터 로드` | src/renderer/overlay/overlay.js | IPC pet:get-all 호출 → 렌더러 초기화 | [ ] |
-| 60 | `feat(overlay): petRenderer.js 기본 구조 추가` | src/renderer/overlay/petRenderer.js | 클래스 생성 | [ ] |
-| 61 | `feat(overlay): petRenderer.js loadSprite 함수 추가` | src/renderer/overlay/petRenderer.js | PNG 로드 → PixiJS Sprite 생성 | [ ] |
-| 62 | `feat(overlay): petRenderer.js addPet 함수 추가` | src/renderer/overlay/petRenderer.js | 스테이지에 펫 스프라이트 추가 | [ ] |
-| 63 | `feat(overlay): petRenderer.js moveRandom 함수 추가` | src/renderer/overlay/petRenderer.js | 랜덤 방향 이동 (ticker) | [ ] |
-| 64 | `feat(overlay): petRenderer.js 마우스 오버 감지 추가` | src/renderer/overlay/petRenderer.js | pointerover → IPC toggle-mouse | [ ] |
+| 57 | `feat(overlay): index.html 기본 구조 추가` | src/renderer/overlay/index.html | HTML 뼈대, PixiJS 로드 | ✅ |
+| 58 | `feat(overlay): overlay.js PixiJS 앱 초기화` | src/renderer/overlay/overlay.js | Application 생성, 전체화면 설정 | ✅ |
+| 59 | `feat(overlay): overlay.js 펫 데이터 로드` | src/renderer/overlay/overlay.js | IPC pet:get-all 호출 → 렌더러 초기화 | ✅ |
+| 60 | `feat(overlay): petRenderer.js 기본 구조 추가` | src/renderer/overlay/petRenderer.js | 클래스 생성 | ✅ |
+| 61 | `feat(overlay): petRenderer.js loadSprite 함수 추가` | src/renderer/overlay/petRenderer.js | PNG 로드 → PixiJS Sprite 생성 | ✅ |
+| 62 | `feat(overlay): petRenderer.js addPet 함수 추가` | src/renderer/overlay/petRenderer.js | 스테이지에 펫 스프라이트 추가 | ✅ |
+| 63 | `feat(overlay): petRenderer.js moveRandom 함수 추가` | src/renderer/overlay/petRenderer.js | 랜덤 방향 이동 (ticker) | ✅ |
+| 64 | `feat(overlay): petRenderer.js 마우스 오버 감지 추가` | src/renderer/overlay/petRenderer.js | pointerover → IPC toggle-mouse | ✅ |
 
 ---
 
