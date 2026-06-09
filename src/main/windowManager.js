@@ -1,9 +1,11 @@
-const { BrowserWindow, screen } = require('electron')
+const { BrowserWindow, Tray, Menu, nativeImage, screen } = require('electron')
 const path = require('path')
 
 class WindowManager {
   constructor() {
-    this.overlayWindow = null
+    this.overlayWindow  = null
+    this.launcherWindow = null
+    this.tray           = null
   }
 
   createOverlayWindow() {
@@ -33,6 +35,32 @@ class WindowManager {
     )
 
     return this.overlayWindow
+  }
+
+  createLauncherWindow() {
+    if (this.launcherWindow && !this.launcherWindow.isDestroyed()) {
+      this.launcherWindow.focus()
+      return this.launcherWindow
+    }
+
+    this.launcherWindow = new BrowserWindow({
+      width:  800,
+      height: 600,
+      title:  'Arcana',
+      webPreferences: {
+        preload:          path.join(__dirname, '../preload/preload.js'),
+        contextIsolation: true,
+        nodeIntegration:  false,
+      },
+    })
+
+    this.launcherWindow.loadFile(
+      path.join(__dirname, '../renderer/launcher/index.html')
+    )
+
+    this.launcherWindow.on('closed', () => { this.launcherWindow = null })
+
+    return this.launcherWindow
   }
 
   toggleMouseEvents(ignore) {
