@@ -5,6 +5,7 @@ const PetSystem   = require('../game/systems/PetSystem')
 const LevelSystem     = require('../game/systems/LevelSystem')
 const EvolutionSystem = require('../game/systems/EvolutionSystem')
 const SkillSystem     = require('../game/systems/SkillSystem')
+const ItemSystem      = require('../game/systems/ItemSystem')
 const { TICK_INTERVAL_SECONDS } = require('../game/utils/time')
 
 class GameWorld {
@@ -13,6 +14,7 @@ class GameWorld {
     this.levelSystem     = null
     this.evolutionSystem = null
     this.skillSystem     = null
+    this.itemSystem      = null
     this._tickTimer      = null
   }
 
@@ -24,6 +26,7 @@ class GameWorld {
     this.levelSystem     = new LevelSystem({ Pet, save: db.save })
     this.evolutionSystem = new EvolutionSystem({ Pet, save: db.save })
     this.skillSystem     = new SkillSystem({ Pet, save: db.save })
+    this.itemSystem      = new ItemSystem({ Pet, save: db.save })
 
     const pets = this.petSystem.getAll()
     if (pets.length > 0) {
