@@ -15,6 +15,12 @@ class IpcRouter {
     ipcMain.handle('pet:create', (_e, { name, attribute }) =>
       this.petSystem.createPet(name, attribute)
     )
+    ipcMain.handle('pet:add-exp', (_e, { petId, amount }) => {
+      const pets = this.petSystem.getAll()
+      const pet  = pets.find(p => p.id === petId)
+      if (!pet) return null
+      return this.levelSystem.addExperience(pet, amount)
+    })
 
     ipcMain.on('overlay:toggle-mouse', (_event, ignore) => {
       this.windowManager.toggleMouseEvents(ignore)
