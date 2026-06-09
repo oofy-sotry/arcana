@@ -5,5 +5,9 @@
   "main": "src/main/index.js",
   "author": "oofy-sotry",
   "license": "UNLICENSED",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
 }
