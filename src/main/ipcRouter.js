@@ -29,6 +29,25 @@ class IpcRouter {
       return { ok: true, result: this.evolutionSystem.evolve(pet) }
     })
 
+    ipcMain.handle('skill:get', (_e, { petId }) =>
+      this.skillSystem.getPetSkills(petId)
+    )
+    ipcMain.handle('skill:upgrade', (_e, { petId, skillId }) => {
+      const pets = this.petSystem.getAll()
+      const pet  = pets.find(p => p.id === petId)
+      if (!pet) return { ok: false, reason: 'not_found' }
+      return this.skillSystem.upgradeSkill(pet, skillId)
+    })
+    ipcMain.handle('item:get-inventory', (_e, { petId }) =>
+      this.itemSystem.getInventory(petId)
+    )
+    ipcMain.handle('item:use', (_e, { petId, itemId }) => {
+      const pets = this.petSystem.getAll()
+      const pet  = pets.find(p => p.id === petId)
+      if (!pet) return { ok: false, reason: 'not_found' }
+      return this.itemSystem.useItem(pet, itemId)
+    })
+
     ipcMain.on('overlay:toggle-mouse', (_event, ignore) => {
       this.windowManager.toggleMouseEvents(ignore)
     })
