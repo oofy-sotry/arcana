@@ -16,6 +16,15 @@ class HuntingSystem {
   getZones() {
     return ZONES
   }
+
+  // 구역에서 랜덤 몬스터 1마리 선택
+  spawnMonster(zoneId) {
+    const zone = ZONES.find(z => z.id === zoneId)
+    if (!zone) return null
+    const ids    = zone.monsterIds
+    const chosen = ids[Math.floor(Math.random() * ids.length)]
+    return MONSTERS.find(m => m.id === chosen) || null
+  }
 }
 
 module.exports = HuntingSystem
