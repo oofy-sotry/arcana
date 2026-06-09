@@ -42,25 +42,25 @@
 
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
-| 13 | `feat(db): database.js 기본 구조 추가` | src/db/database.js | sql.js 초기화, DB 파일 경로 설정 | [ ] |
-| 14 | `feat(db): database.js init 함수 추가` | src/db/database.js | `init()` — 파일 로드 or 신규 생성 (async) | [ ] |
-| 14-1 | `feat(db): database.js save 함수 추가` | src/db/database.js | `save()` — db.export() → 파일 플러시 | [ ] |
-| 14-2 | `feat(db): database.js query / run 헬퍼 추가` | src/db/database.js | `query(sql,params)` — prepare→bind→step→free 래퍼, `run(sql,params)` — INSERT/UPDATE/DELETE 래퍼 | [ ] |
-| 15 | `feat(db): 001_init.js world_state 테이블 정의` | src/db/migrations/001_init.js | world_state 스키마 | [ ] |
-| 16 | `feat(db): 001_init.js pets 테이블 정의` | src/db/migrations/001_init.js | pets 스키마 (id, uuid, name, attribute TEXT, level, age, evolution_stage...) | [ ] |
-| 17 | `feat(db): 001_init.js pet_conditions 테이블 정의` | src/db/migrations/001_init.js | pet_conditions 스키마 (hunger, happiness, energy...) | [ ] |
-| 18 | `feat(db): database.js runMigrations 함수 추가` | src/db/database.js | `runMigrations()` — 001_init.js 실행 | [ ] |
-| 19 | `feat(db): World.js 기본 구조 추가` | src/db/models/World.js | 파일 생성, 모듈 구조 | [ ] |
-| 20 | `feat(db): World.js get 함수 추가` | src/db/models/World.js | `get(key)` — world_state 조회 | [ ] |
-| 21 | `feat(db): World.js set 함수 추가` | src/db/models/World.js | `set(key, value)` — world_state 저장 | [ ] |
-| 22 | `feat(db): Pet.js 기본 구조 추가` | src/db/models/Pet.js | 파일 생성, 모듈 구조 | [ ] |
-| 23 | `feat(db): Pet.js createPet 함수 추가` | src/db/models/Pet.js | INSERT — 펫 생성 | [ ] |
-| 24 | `feat(db): Pet.js getPet 함수 추가` | src/db/models/Pet.js | SELECT — 단일 펫 조회 | [ ] |
-| 25 | `feat(db): Pet.js getAllPets 함수 추가` | src/db/models/Pet.js | SELECT — 전체 펫 목록 | [ ] |
-| 26 | `feat(db): Pet.js updatePet 함수 추가` | src/db/models/Pet.js | UPDATE — 펫 스탯 저장 | [ ] |
-| 27 | `feat(db): Pet.js getConditions 함수 추가` | src/db/models/Pet.js | SELECT — 컨디션 조회 | [ ] |
-| 28 | `feat(db): Pet.js updateConditions 함수 추가` | src/db/models/Pet.js | UPDATE — 컨디션 저장 | [ ] |
-| 28-1 | `feat(db): Item.js 기본 구조 추가` | src/db/models/Item.js | 파일 생성 (tradeable 플래그 포함) | [ ] |
+| 13 | `feat(db): database.js 기본 구조 추가` | src/db/database.js | sql.js 초기화, DB 파일 경로 설정 | ✅ |
+| 14 | `feat(db): database.js init 함수 추가` | src/db/database.js | `init()` — 파일 로드 or 신규 생성 (async) | ✅ |
+| 14-1 | `feat(db): database.js save 함수 추가` | src/db/database.js | `save()` — db.export() → 파일 플러시 | ✅ |
+| 14-2 | `feat(db): database.js query / run 헬퍼 추가` | src/db/database.js | `query(sql,params)` — prepare→bind→step→free 래퍼, `run(sql,params)` — INSERT/UPDATE/DELETE 래퍼 | ✅ |
+| 15 | `feat(db): 001_init.js world_state 테이블 정의` | src/db/migrations/001_init.js | world_state 스키마 | ✅ |
+| 16 | `feat(db): 001_init.js pets 테이블 정의` | src/db/migrations/001_init.js | pets 스키마 (id, uuid, name, attribute TEXT, level, age, evolution_stage...) | ✅ |
+| 17 | `feat(db): 001_init.js pet_conditions 테이블 정의` | src/db/migrations/001_init.js | pet_conditions 스키마 (hunger, happiness, energy...) | ✅ |
+| 18 | `feat(db): database.js runMigrations 함수 추가` | src/db/database.js | `runMigrations()` — 001_init.js 실행 | ✅ |
+| 19 | `feat(db): World.js 기본 구조 추가` | src/db/models/World.js | 파일 생성, 모듈 구조 | ✅ |
+| 20 | `feat(db): World.js get 함수 추가` | src/db/models/World.js | `get(key)` — world_state 조회 | ✅ |
+| 21 | `feat(db): World.js set 함수 추가` | src/db/models/World.js | `set(key, value)` — world_state 저장 | ✅ |
+| 22 | `feat(db): Pet.js 기본 구조 추가` | src/db/models/Pet.js | 파일 생성, 모듈 구조 | ✅ |
+| 23 | `feat(db): Pet.js createPet 함수 추가` | src/db/models/Pet.js | INSERT — 펫 생성 | ✅ |
+| 24 | `feat(db): Pet.js getPet 함수 추가` | src/db/models/Pet.js | SELECT — 단일 펫 조회 | ✅ |
+| 25 | `feat(db): Pet.js getAllPets 함수 추가` | src/db/models/Pet.js | SELECT — 전체 펫 목록 | ✅ |
+| 26 | `feat(db): Pet.js updatePet 함수 추가` | src/db/models/Pet.js | UPDATE — 펫 스탯 저장 | ✅ |
+| 27 | `feat(db): Pet.js getConditions 함수 추가` | src/db/models/Pet.js | SELECT — 컨디션 조회 | ✅ |
+| 28 | `feat(db): Pet.js updateConditions 함수 추가` | src/db/models/Pet.js | UPDATE — 컨디션 저장 | ✅ |
+| 28-1 | `feat(db): Item.js 기본 구조 추가` | src/db/models/Item.js | 파일 생성 (tradeable 플래그 포함) | ✅ |
 
 ---
 
@@ -68,10 +68,10 @@
 
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
-| 29 | `feat(pet): time.js 기본 구조 추가` | src/game/utils/time.js | 파일 생성 | [ ] |
-| 30 | `feat(pet): time.js getElapsedSeconds 함수 추가` | src/game/utils/time.js | 두 타임스탬프 사이 경과 초 계산 | [ ] |
-| 31 | `feat(pet): time.js secondsToAge 함수 추가` | src/game/utils/time.js | 초 → 나이 변환 (43200초 = 1살) | [ ] |
-| 32 | `feat(pet): time.js calcOfflineTicks 함수 추가` | src/game/utils/time.js | 오프라인 경과 시간 → tick 횟수 변환 | [ ] |
+| 29 | `feat(pet): time.js 기본 구조 추가` | src/game/utils/time.js | 파일 생성 | ✅ |
+| 30 | `feat(pet): time.js getElapsedSeconds 함수 추가` | src/game/utils/time.js | 두 타임스탬프 사이 경과 초 계산 | ✅ |
+| 31 | `feat(pet): time.js secondsToAge 함수 추가` | src/game/utils/time.js | 초 → 나이 변환 (43200초 = 1살) | ✅ |
+| 32 | `feat(pet): time.js calcOfflineTicks 함수 추가` | src/game/utils/time.js | 오프라인 경과 시간 → tick 횟수 변환 | ✅ |
 
 ---
 
@@ -79,12 +79,12 @@
 
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
-| 33 | `feat(pet): PetSystem.js 기본 구조 추가` | src/game/systems/PetSystem.js | 클래스 생성, 생성자 | [ ] |
-| 34 | `feat(pet): PetSystem.js createPet 함수 추가` | src/game/systems/PetSystem.js | 신규 펫 생성 (기본값 설정 + DB INSERT + 즉시 save()) | [ ] |
-| 35 | `feat(pet): PetSystem.js getAll 함수 추가` | src/game/systems/PetSystem.js | 전체 펫 + 컨디션 조회 | [ ] |
-| 36 | `feat(pet): PetSystem.js tickConditions 함수 추가` | src/game/systems/PetSystem.js | 60초마다 컨디션 감소 계산 | [ ] |
-| 37 | `feat(pet): PetSystem.js tickAge 함수 추가` | src/game/systems/PetSystem.js | 나이 증가 체크 (43200초 단위) | [ ] |
-| 38 | `feat(pet): PetSystem.js applyOfflineProgress 함수 추가` | src/game/systems/PetSystem.js | 오프라인 경과분 일괄 반영 | [ ] |
+| 33 | `feat(pet): PetSystem.js 기본 구조 추가` | src/game/systems/PetSystem.js | 클래스 생성, 생성자 | ✅ |
+| 34 | `feat(pet): PetSystem.js createPet 함수 추가` | src/game/systems/PetSystem.js | 신규 펫 생성 (기본값 설정 + DB INSERT + 즉시 save()) | ✅ |
+| 35 | `feat(pet): PetSystem.js getAll 함수 추가` | src/game/systems/PetSystem.js | 전체 펫 + 컨디션 조회 | ✅ |
+| 36 | `feat(pet): PetSystem.js tickConditions 함수 추가` | src/game/systems/PetSystem.js | 60초마다 컨디션 감소 계산 | ✅ |
+| 37 | `feat(pet): PetSystem.js tickAge 함수 추가` | src/game/systems/PetSystem.js | 나이 증가 체크 (43200초 단위) | ✅ |
+| 38 | `feat(pet): PetSystem.js applyOfflineProgress 함수 추가` | src/game/systems/PetSystem.js | 오프라인 경과분 일괄 반영 | ✅ |
 
 ---
 
@@ -92,11 +92,11 @@
 
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
-| 39 | `feat(world): gameWorld.js 기본 구조 추가` | src/main/gameWorld.js | 클래스 생성, 시스템 주입 | [ ] |
-| 40 | `feat(world): gameWorld.js init 함수 추가` | src/main/gameWorld.js | **async** — await db.init(), 오프라인 진행 처리 | [ ] |
-| 41 | `feat(world): gameWorld.js startTick 함수 추가` | src/main/gameWorld.js | 60초 setInterval 루프 | [ ] |
-| 42 | `feat(world): gameWorld.js onTick 함수 추가` | src/main/gameWorld.js | tick 1회 실행 (컨디션 → 나이 → 저장) | [ ] |
-| 43 | `feat(world): gameWorld.js shutdown 함수 추가` | src/main/gameWorld.js | 종료 전 강제 저장 | [ ] |
+| 39 | `feat(world): gameWorld.js 기본 구조 추가` | src/main/gameWorld.js | 클래스 생성, 시스템 주입 | ✅ |
+| 40 | `feat(world): gameWorld.js init 함수 추가` | src/main/gameWorld.js | **async** — await db.init(), 오프라인 진행 처리 | ✅ |
+| 41 | `feat(world): gameWorld.js startTick 함수 추가` | src/main/gameWorld.js | 60초 setInterval 루프 | ✅ |
+| 42 | `feat(world): gameWorld.js onTick 함수 추가` | src/main/gameWorld.js | tick 1회 실행 (컨디션 → 나이 → 저장) | ✅ |
+| 43 | `feat(world): gameWorld.js shutdown 함수 추가` | src/main/gameWorld.js | 종료 전 강제 저장 | ✅ |
 
 ---
 
