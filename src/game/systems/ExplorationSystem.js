@@ -16,6 +16,37 @@ class ExplorationSystem {
     this.itemSystem = itemSystem
   }
 
+  // 가중치 기반 랜덤 이벤트 선택, dropBoost = item/coins 확률 증폭 비율
+  rollEvent(dropBoost = 0) {
+    const weighted = EVENTS.map(e => {
+      let w = e.weight
+      if ((e.type === 'item' || e.type === 'coins') && dropBoost > 0) {
+        w = Math.floor(w * (1 + dropBoost))
+      }
+      return { ...e, w }
+    })
+    const total  = weighted.reduce((s, e) => s + e.w, 0)
+    let roll     = Math.random() * total
+    let selected = weighted[weighted.length - 1]
+    for (const event of weighted) {
+      roll -= event.w
+      if (roll <= 0) { selected = event; break }
+    }
+
+    if (selected.type === 'item') {
+      const pool   = selected.items
+      const itemId = pool[Math.floor(Math.random() * pool.length)]
+      return { type: 'item', itemId }
+    }
+    if (selected.type === 'coins') {
+      return { type: 'coins', coins: 5 + Math.floor(Math.random() * 20) }
+    }
+    if (selected.type === 'trap') {
+      return { type: 'trap', damage: 5 + Math.floor(Math.random() * 15) }
+    }
+    return { type: 'empty' }
+  }
+
   // 에너지 -25, 드롭 1~5% 확률로 아이템 발견
   startAutoExplore(pet) {
     const db     = require('../../db/database')
