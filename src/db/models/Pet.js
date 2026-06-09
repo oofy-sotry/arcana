@@ -42,4 +42,13 @@ function getConditions(petId) {
   return db.query('SELECT * FROM pet_conditions WHERE pet_id = ?', [petId])[0] || null
 }
 
-module.exports = { createPet, getPet, getAllPets, updatePet, getConditions }
+function updateConditions(petId, fields) {
+  const entries = Object.entries(fields)
+  const setClause = entries.map(([k]) => `${k} = ?`).join(', ')
+  db.run(
+    `UPDATE pet_conditions SET ${setClause} WHERE pet_id = ?`,
+    [...entries.map(([, v]) => v), petId]
+  )
+}
+
+module.exports = { createPet, getPet, getAllPets, updatePet, getConditions, updateConditions }
