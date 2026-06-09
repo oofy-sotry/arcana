@@ -5,6 +5,7 @@ class WindowManager {
   constructor() {
     this.overlayWindow  = null
     this.launcherWindow = null
+    this.huntingWindow  = null
     this.tray           = null
   }
 
@@ -61,6 +62,32 @@ class WindowManager {
     this.launcherWindow.on('closed', () => { this.launcherWindow = null })
 
     return this.launcherWindow
+  }
+
+  createHuntingWindow() {
+    if (this.huntingWindow && !this.huntingWindow.isDestroyed()) {
+      this.huntingWindow.focus()
+      return this.huntingWindow
+    }
+
+    this.huntingWindow = new BrowserWindow({
+      width:  1024,
+      height: 768,
+      title:  'Arcana — 사냥터',
+      webPreferences: {
+        preload:          path.join(__dirname, '../preload/preload.js'),
+        contextIsolation: true,
+        nodeIntegration:  false,
+      },
+    })
+
+    this.huntingWindow.loadFile(
+      path.join(__dirname, '../renderer/hunting/index.html')
+    )
+
+    this.huntingWindow.on('closed', () => { this.huntingWindow = null })
+
+    return this.huntingWindow
   }
 
   createTray(onQuit) {
