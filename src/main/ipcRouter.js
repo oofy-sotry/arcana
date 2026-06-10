@@ -3,7 +3,7 @@ const { ipcMain } = require('electron')
 class IpcRouter {
   constructor({ petSystem, levelSystem, evolutionSystem, skillSystem, itemSystem,
                 huntingSystem, explorationSystem,
-                breedingSystem, gachaSystem, partySystem, questSystem,
+                breedingSystem, gachaSystem, partySystem, questSystem, onlineSystem,
                 windowManager }) {
     this.petSystem        = petSystem
     this.levelSystem      = levelSystem
@@ -16,6 +16,7 @@ class IpcRouter {
     this.gachaSystem      = gachaSystem
     this.partySystem      = partySystem
     this.questSystem      = questSystem
+    this.onlineSystem     = onlineSystem
     this.windowManager    = windowManager
   }
 
@@ -140,6 +141,41 @@ class IpcRouter {
       this.questSystem.claimReward(questId, petId)
     )
     ipcMain.handle('quest:faction-rep', () => this.questSystem.getFactionRep())
+
+    // ── Online ────────────────────────────────────────────────────────────
+    ipcMain.handle('online:status', () => ({
+      loggedIn: this.onlineSystem.isLoggedIn(),
+      username: this.onlineSystem.getUsername(),
+    }))
+    ipcMain.handle('online:server-ping', () => this.onlineSystem.isServerReachable())
+    ipcMain.handle('online:register', (_e, { username, email, password }) =>
+      this.onlineSystem.register(username, email, password)
+    )
+    ipcMain.handle('online:login', (_e, { email, password }) =>
+      this.onlineSystem.login(email, password)
+    )
+    ipcMain.handle('online:logout', () => { this.onlineSystem.logout(); return { ok: true } })
+    ipcMain.handle('online:sync-pets', () => this.onlineSystem.syncPets())
+    ipcMain.handle('online:ranking', (_e, { category }) => this.onlineSystem.getRanking(category))
+
+    ipcMain.handle('online:breeding-offers', () => this.onlineSystem.listBreedingOffers())
+    ipcMain.handle('online:breeding-post', (_e, { pet, price }) =>
+      this.onlineSystem.postBreedingOffer(pet, price)
+    )
+    ipcMain.handle('online:breeding-cancel', () => this.onlineSystem.cancelBreedingOffer())
+    ipcMain.handle('online:breeding-request', (_e, { offerId, myPet }) =>
+      this.onlineSystem.requestBreeding(offerId, myPet)
+    )
+
+    ipcMain.handle('online:battle-challenge', (_e, { targetUsername, myPet }) =>
+      this.onlineSystem.challengeBattle(targetUsername, myPet)
+    )
+    ipcMain.handle('online:battle-history', () => this.onlineSystem.getBattleHistory())
+
+    ipcMain.handle('online:friends', () => this.onlineSystem.getFriends())
+    ipcMain.handle('online:friends-add', (_e, { username }) => this.onlineSystem.addFriend(username))
+    ipcMain.handle('online:friends-remove', (_e, { friendId }) => this.onlineSystem.removeFriend(friendId))
+    ipcMain.handle('online:friends-pets', (_e, { username }) => this.onlineSystem.getFriendPets(username))
   }
 }
 
