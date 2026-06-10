@@ -38,8 +38,10 @@ class IpcRouter {
       const pet  = pets.find(p => p.id === petId)
       if (!pet) return { ok: false, reason: 'not_found' }
       if (!this.evolutionSystem.canEvolve(pet)) return { ok: false, reason: 'conditions_not_met' }
-      const result = this.evolutionSystem.evolve(pet)
+      const result   = this.evolutionSystem.evolve(pet)
       this.questSystem?.recordActivity('evolve', 1)
+      const freshPet = this.petSystem.getAll().find(p => p.id === petId)
+      if (freshPet) this.skillSystem.unlockForStage(freshPet)
       return { ok: true, result }
     })
 
