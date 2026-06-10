@@ -114,6 +114,10 @@ class ItemSystem {
         break
       }
 
+      case 'none':
+        // 재료 아이템(evo_stone 등) — 직접 사용 불가, 진화 시스템이 소비
+        return { ok: false, reason: 'material_not_consumable' }
+
       default:
         return { ok: false, reason: 'unhandled_effect' }
     }
