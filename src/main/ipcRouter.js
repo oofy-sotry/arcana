@@ -77,6 +77,43 @@ class IpcRouter {
       if (!pet) return { error: 'not_found' }
       return this.huntingSystem.startAutoHunt(pet, zoneId)
     })
+
+    // ── Breeding ──────────────────────────────────────────────────────────
+    ipcMain.handle('breeding:compat-info', (_e, { petId1, petId2 }) => {
+      const pets = this.petSystem.getAll()
+      const pet1 = pets.find(p => p.id === petId1)
+      const pet2 = pets.find(p => p.id === petId2)
+      if (!pet1 || !pet2) return { error: 'not_found' }
+      return this.breedingSystem.getCompatInfo(pet1, pet2)
+    })
+    ipcMain.handle('breeding:breed', (_e, { petId1, petId2, batchCount }) => {
+      const pets = this.petSystem.getAll()
+      const pet1 = pets.find(p => p.id === petId1)
+      const pet2 = pets.find(p => p.id === petId2)
+      if (!pet1 || !pet2) return { error: 'not_found' }
+      return this.breedingSystem.breed(pet1, pet2, batchCount ?? 1)
+    })
+    ipcMain.handle('breeding:get-lineage', (_e, { petId }) =>
+      this.breedingSystem.getLineage(petId)
+    )
+
+    // ── Gacha ─────────────────────────────────────────────────────────────
+    ipcMain.handle('gacha:roll-single', (_e, { ownerPetId }) =>
+      this.gachaSystem.rollSingle(ownerPetId)
+    )
+    ipcMain.handle('gacha:roll-ten', (_e, { ownerPetId }) =>
+      this.gachaSystem.rollTen(ownerPetId)
+    )
+
+    // ── Party ─────────────────────────────────────────────────────────────
+    ipcMain.handle('party:get', () => this.partySystem.getParty())
+    ipcMain.handle('party:add', (_e, { petId, slot }) =>
+      this.partySystem.addToParty(petId, slot)
+    )
+    ipcMain.handle('party:remove', (_e, { petId }) =>
+      this.partySystem.removeFromParty(petId)
+    )
+    ipcMain.handle('party:clear', () => this.partySystem.clearParty())
   }
 }
 
