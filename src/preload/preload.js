@@ -83,7 +83,7 @@ contextBridge.exposeInMainWorld('arcana', {
     hiddenEnding:    ()              => ipcRenderer.invoke('faction:hidden-ending'),
     soulFusion:      ()              => ipcRenderer.invoke('faction:soul-fusion'),
     chapter:         ()              => ipcRenderer.invoke('faction:chapter'),
-    advanceChapter:  ({ chapter })   => ipcRenderer.invoke('faction:advance-chapter', { chapter }),
+    advanceChapter:  ({ chapter, effects }) => ipcRenderer.invoke('faction:advance-chapter', { chapter, effects }),
   },
   explore: {
     resolveChoice: ({ petId, eventId, choiceIndex }) =>
