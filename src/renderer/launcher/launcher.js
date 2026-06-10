@@ -6,6 +6,7 @@ async function init() {
   document.getElementById('btn-hunting').addEventListener('click', () => window.arcana.hunting.open())
   allPets = await window.arcana.pet.getAll()
   renderPetList()
+  setupPhase4Tabs()
 }
 
 function setupTabs() {
@@ -98,6 +99,53 @@ async function onSelectPet(petId) {
       allPets = await window.arcana.pet.getAll()
       onSelectPet(petId)
     })
+  )
+}
+
+function setupPhase4Tabs() {
+  document.querySelectorAll('nav button[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab
+      if (tab === 'breeding') renderBreedingTab()
+      if (tab === 'gacha')    renderGachaTab()
+      if (tab === 'party')    renderPartyTab()
+    })
+  })
+}
+
+function renderBreedingTab() {
+  const container = document.getElementById('tab-breeding')
+  container.innerHTML = ''
+  container.appendChild(
+    new BreedingPanel(allPets).render(async () => {
+      allPets = await window.arcana.pet.getAll()
+      renderBreedingTab()
+    })
+  )
+}
+
+function renderGachaTab() {
+  const container = document.getElementById('tab-gacha')
+  container.innerHTML = ''
+  container.appendChild(
+    new GachaPanel(allPets).render(async () => {
+      allPets = await window.arcana.pet.getAll()
+      renderGachaTab()
+    })
+  )
+}
+
+async function renderPartyTab() {
+  const container = document.getElementById('tab-party')
+  container.innerHTML = '<span style="color:#aaa; font-size:13px">로딩 중...</span>'
+  const party = await window.arcana.party.get()
+  renderPartyTabWith(container, party)
+}
+
+function renderPartyTabWith(container, party) {
+  container.innerHTML = ''
+  container.appendChild(
+    new PartyPanel(allPets, party).render(updatedParty => renderPartyTabWith(container, updatedParty))
   )
 }
 
