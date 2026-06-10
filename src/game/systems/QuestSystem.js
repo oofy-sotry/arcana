@@ -116,10 +116,17 @@ class QuestSystem {
   }
 
   getUnlockStatus(quest) {
-    const db  = require('../../db/database')
-    const row = db.query('SELECT completed_at, claimed_at FROM quest_progress WHERE quest_id = ?', [quest.id])[0]
+    const db    = require('../../db/database')
+    const today = this._getToday()
+    const row   = db.query('SELECT completed_at, claimed_at, reset_date FROM quest_progress WHERE quest_id = ?', [quest.id])[0]
 
-    if (row?.claimed_at)   return 'claimed'
+    // 일일 퀘스트는 오늘 날짜에 수령된 경우에만 'claimed'
+    if (quest.daily) {
+      if (row?.claimed_at && row.reset_date === today) return 'claimed'
+    } else {
+      if (row?.claimed_at) return 'claimed'
+    }
+
     if (!this._checkUnlock(quest)) return 'locked'
     if (this.getProgress(quest) >= quest.condition.target) return 'completed'
     return 'active'
