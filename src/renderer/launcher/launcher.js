@@ -19,6 +19,7 @@ function setupTabs() {
       if (tab === 'breeding') renderBreedingTab()
       if (tab === 'gacha')    renderGachaTab()
       if (tab === 'party')    renderPartyTab()
+      if (tab === 'quest')    renderQuestTab()
     })
   })
 }
@@ -138,6 +139,27 @@ function renderPartyTabWith(container, party) {
   container.innerHTML = ''
   container.appendChild(
     new PartyPanel(allPets, party).render(updatedParty => renderPartyTabWith(container, updatedParty))
+  )
+}
+
+async function renderQuestTab() {
+  const container = document.getElementById('tab-quest')
+  container.innerHTML = '<span style="color:#aaa; font-size:13px">로딩 중...</span>'
+  const [quests, factionRep] = await Promise.all([
+    window.arcana.quest.getAll(),
+    window.arcana.quest.factionRep(),
+  ])
+  container.innerHTML = ''
+  container.appendChild(
+    new QuestPanel(quests, factionRep, allPets).render(async (questId, petId) => {
+      const result = await window.arcana.quest.claim({ questId, petId })
+      if (result.ok) {
+        allPets = await window.arcana.pet.getAll()
+        renderQuestTab()
+      } else {
+        alert(`수령 실패: ${result.reason}`)
+      }
+    })
   )
 }
 
