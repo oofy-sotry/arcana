@@ -13,7 +13,9 @@ const BreedingSystem    = require('../game/systems/BreedingSystem')
 const GachaSystem       = require('../game/systems/GachaSystem')
 const PartySystem       = require('../game/systems/PartySystem')
 const QuestSystem       = require('../game/systems/QuestSystem')
-const OnlineSystem      = require('../game/systems/OnlineSystem')
+const OnlineSystem       = require('../game/systems/OnlineSystem')
+const EquipmentSystem    = require('../game/systems/EquipmentSystem')
+const FactionSystem      = require('../game/systems/FactionSystem')
 const { TICK_INTERVAL_SECONDS, getElapsedSeconds } = require('../game/utils/time')
 
 class GameWorld {
@@ -30,8 +32,10 @@ class GameWorld {
     this.gachaSystem        = null
     this.partySystem        = null
     this.questSystem        = null
-    this.onlineSystem       = null
-    this._tickTimer         = null
+    this.onlineSystem        = null
+    this.equipmentSystem     = null
+    this.factionSystem       = null
+    this._tickTimer          = null
   }
 
   async init() {
@@ -44,18 +48,21 @@ class GameWorld {
     this.skillSystem     = new SkillSystem({ Pet, save: db.save })
     this.itemSystem      = new ItemSystem({ Pet, save: db.save })
     this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem })
-    this.explorationSystem  = new ExplorationSystem({ Pet, save: db.save, itemSystem: this.itemSystem })
-    this.breedingSystem     = new BreedingSystem({ Pet, save: db.save })
-    this.gachaSystem        = new GachaSystem({ Pet, save: db.save })
-    this.partySystem        = new PartySystem({ Pet, save: db.save })
-    this.questSystem        = new QuestSystem({ Pet, save: db.save, levelSystem: this.levelSystem })
-    this.huntingSystem      = new HuntingSystem({
+    this.factionSystem       = new FactionSystem({ save: db.save })
+    this.equipmentSystem     = new EquipmentSystem({ save: db.save, itemSystem: this.itemSystem })
+    this.explorationSystem   = new ExplorationSystem({ Pet, save: db.save, itemSystem: this.itemSystem, factionSystem: this.factionSystem })
+    this.breedingSystem      = new BreedingSystem({ Pet, save: db.save })
+    this.gachaSystem         = new GachaSystem({ Pet, save: db.save })
+    this.partySystem         = new PartySystem({ Pet, save: db.save })
+    this.questSystem         = new QuestSystem({ Pet, save: db.save, levelSystem: this.levelSystem })
+    this.huntingSystem       = new HuntingSystem({
       Pet, save: db.save,
-      combatSystem: this.combatSystem,
-      questSystem:  this.questSystem,
-      partySystem:  this.partySystem,
+      combatSystem:  this.combatSystem,
+      questSystem:   this.questSystem,
+      partySystem:   this.partySystem,
+      factionSystem: this.factionSystem,
     })
-    this.onlineSystem       = new OnlineSystem({ Pet, save: db.save })
+    this.onlineSystem        = new OnlineSystem({ Pet, save: db.save })
 
     const pets = this.petSystem.getAll()
     if (pets.length > 0) {
@@ -85,11 +92,16 @@ class GameWorld {
       const canEvo   = this.evolutionSystem.canEvolve(pet)
       const isHidden = this.evolutionSystem.checkHiddenConditions(pet)
       if (canEvo || isHidden) {
-        this.evolutionSystem.evolve(pet, isHidden ? 'hidden' : 'normal')
-        const freshPet = this.petSystem.getAll().find(p => p.id === pet.id)
+        const evoResult = this.evolutionSystem.evolve(pet, isHidden ? 'hidden' : 'normal')
+        const freshPet  = this.petSystem.getAll().find(p => p.id === pet.id)
         if (freshPet) this.skillSystem.unlockForStage(freshPet)
+        // 히든 진화 시 영혼동화도 증가
+        if (evoResult.evoType === 'hidden') this.factionSystem.gainSoulFusion('hidden_evolution')
       }
     }
+
+    // 영혼동화도 시간 경과 증가 (+0.01/tick)
+    this.factionSystem.gainSoulFusion('time_tick')
 
     World.set('last_save', String(Date.now()))
     db.save()
