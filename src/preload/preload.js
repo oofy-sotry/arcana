@@ -7,7 +7,7 @@ contextBridge.exposeInMainWorld('arcana', {
     addExp:  ({ petId, amount })   => ipcRenderer.invoke('pet:add-exp', { petId, amount }),
   },
   evolution: {
-    attempt: ({ petId })           => ipcRenderer.invoke('evolution:attempt', { petId }),
+    attempt: ({ petId, forceType }) => ipcRenderer.invoke('evolution:attempt', { petId, forceType }),
   },
   skill: {
     get:     ({ petId })           => ipcRenderer.invoke('skill:get', { petId }),
@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('arcana', {
     manualBattle: ({ petId, zoneId })          => ipcRenderer.invoke('hunting:manual-battle', { petId, zoneId }),
     explore:      ({ petId, mode })            => ipcRenderer.invoke('hunting:explore', { petId, mode }),
     open:         ()                           => ipcRenderer.invoke('hunting:open'),
+    zoneMonsters: ({ zoneId })                 => ipcRenderer.invoke('hunting:zone-monsters', { zoneId }),
   },
   breeding: {
     compatInfo: ({ petId1, petId2 })             => ipcRenderer.invoke('breeding:compat-info', { petId1, petId2 }),
