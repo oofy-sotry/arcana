@@ -93,7 +93,7 @@ async function onSelectPet(petId) {
   document.getElementById('tab-skills').innerHTML = ''
   document.getElementById('tab-items').innerHTML  = ''
 
-  document.getElementById('tab-stats').appendChild(new StatPanel(pet).render())
+  document.getElementById('tab-stats').appendChild(new StatPanel(pet, () => onEvolve(petId)).render())
   document.getElementById('tab-skills').appendChild(
     new SkillTree(pet, skills).render(async skillId => {
       await window.arcana.skill.upgrade({ petId, skillId })
@@ -108,6 +108,52 @@ async function onSelectPet(petId) {
       onSelectPet(petId)
     })
   )
+}
+
+async function onEvolve(petId) {
+  const result = await window.arcana.evolution.attempt({ petId })
+  if (result.reason === 'confirm_hidden') {
+    const overlay = document.createElement('div')
+    overlay.style.cssText = `
+      position:fixed; inset:0; background:rgba(0,0,0,0.7);
+      display:flex; align-items:center; justify-content:center; z-index:9999`
+    overlay.innerHTML = `
+      <div style="background:#16213e; border:2px solid #e94560; border-radius:12px; padding:28px 32px; max-width:340px; text-align:center">
+        <h3 style="color:#e94560; margin-bottom:12px">히든 진화</h3>
+        <p style="color:#ddd; margin-bottom:8px">히든 진화 조건 달성!</p>
+        <p style="color:#aaa; font-size:13px; margin-bottom:20px">진화석(evo_stone)을 1개 소비합니다.<br>히든 진화를 진행하시겠습니까?</p>
+        <div style="display:flex; gap:12px; justify-content:center">
+          <button id="btn-hidden-yes" style="padding:9px 22px; background:#e94560; border:none; color:#fff; border-radius:6px; cursor:pointer">히든 진화</button>
+          ${result.canNormal ? `<button id="btn-hidden-normal" style="padding:9px 22px; background:#0f3460; border:1px solid #aaa; color:#ddd; border-radius:6px; cursor:pointer">일반 진화</button>` : ''}
+          <button id="btn-hidden-no" style="padding:9px 22px; background:#1a1a2e; border:1px solid #555; color:#aaa; border-radius:6px; cursor:pointer">취소</button>
+        </div>
+      </div>`
+    document.body.appendChild(overlay)
+
+    const cleanup = () => document.body.removeChild(overlay)
+    overlay.querySelector('#btn-hidden-yes').addEventListener('click', async () => {
+      cleanup()
+      const r = await window.arcana.evolution.attempt({ petId, forceType: 'hidden' })
+      if (r.ok) { allPets = await window.arcana.pet.getAll(); onSelectPet(petId) }
+      else alert(`진화 실패: ${r.reason}`)
+    })
+    overlay.querySelector('#btn-hidden-no').addEventListener('click', cleanup)
+    if (result.canNormal) {
+      overlay.querySelector('#btn-hidden-normal').addEventListener('click', async () => {
+        cleanup()
+        const r = await window.arcana.evolution.attempt({ petId, forceType: 'normal' })
+        if (r.ok) { allPets = await window.arcana.pet.getAll(); onSelectPet(petId) }
+        else alert(`진화 실패: ${r.reason}`)
+      })
+    }
+    return
+  }
+  if (result.ok) {
+    allPets = await window.arcana.pet.getAll()
+    onSelectPet(petId)
+  } else {
+    alert(`진화 불가: ${result.reason}`)
+  }
 }
 
 function renderBreedingTab() {
