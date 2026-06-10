@@ -455,8 +455,64 @@
 
 ---
 
+---
+
+## Phase 4 — 수집 + 교배
+
+> **완료 기준:** 교배로 혼합속성 펫을 만들고, 가챠로 새 펫을 소환하고, 파티를 구성해 시너지를 확인할 수 있다.
+
+---
+
+### 4-A DB 마이그레이션
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 178 | `feat(db): 004_breeding 마이그레이션 추가 — 계보·교배·가챠·파티` | src/db/migrations/004_breeding.js | breeding_log·gacha_log·party_members 테이블 + max_breeding·used_breeding 컬럼 | ✅ |
+| 179 | `feat(db): database.js에 004_breeding 마이그레이션 등록` | src/db/database.js | migrations 배열에 004_breeding 추가 | ✅ |
+
+---
+
+### 4-B 게임 데이터
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 180 | `feat(data): breeding.js — 교배 호환성 차트·혼합속성 결과·확률 정의` | src/game/data/breeding.js | COMPAT_PROBS, HYBRID_RESULTS, 헬퍼 함수 | ✅ |
+
+---
+
+### 4-C 시스템
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 181 | `feat(game): BreedingSystem.js — 교배·혼합속성·계보·몰빵 로직` | src/game/systems/BreedingSystem.js | canBreed/getCompatInfo/breed/getLineage | ✅ |
+| 182 | `feat(game): GachaSystem.js — 단일·10연 뽑기, 속성·단계 가중 드롭` | src/game/systems/GachaSystem.js | rollSingle/rollTen, 가중치 드롭 | ✅ |
+| 183 | `feat(game): PartySystem.js — 파티 구성·시너지 계산` | src/game/systems/PartySystem.js | getParty/addToParty/removeFromParty/clearParty | ✅ |
+
+---
+
+### 4-D GameWorld + IPC
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 184 | `feat(world): gameWorld.js BreedingSystem·GachaSystem·PartySystem 연결` | src/main/gameWorld.js | constructor 필드 + init 인스턴스 주입 | ✅ |
+| 185 | `feat(ipc): ipcRouter.js breeding·gacha·party 핸들러 추가` | src/main/ipcRouter.js | breeding:compat-info/breed/get-lineage, gacha:roll-single/roll-ten, party:get/add/remove/clear | ✅ |
+| 186 | `feat(preload): preload.js breeding·gacha·party API 추가` | src/preload/preload.js | arcana.breeding / arcana.gacha / arcana.party | ✅ |
+
+---
+
+### 4-E 런처 UI (교배·가챠·파티 탭)
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 187 | `feat(launcher): launcher.html 교배·가챠·파티 탭 추가` | src/renderer/launcher/launcher.html | 탭 버튼 3개 + 섹션 뼈대 | ⬜ |
+| 188 | `feat(launcher): launcher.js 교배 탭 — 펫 선택 + 호환도 표시` | src/renderer/launcher/launcher.js | 두 펫 선택 드롭다운, compatInfo 호출 | ⬜ |
+| 189 | `feat(launcher): launcher.js 교배 탭 — 교배 실행 + 결과 표시` | src/renderer/launcher/launcher.js | breed() 호출, 자식 펫 정보 렌더링 | ⬜ |
+| 190 | `feat(launcher): launcher.js 가챠 탭 — 단일/10연 뽑기 버튼` | src/renderer/launcher/launcher.js | rollSingle/rollTen 호출, 결과 카드 렌더링 | ⬜ |
+| 191 | `feat(launcher): launcher.js 파티 탭 — 파티 슬롯 + 시너지 표시` | src/renderer/launcher/launcher.js | getParty/add/remove, 시너지 bonuses 표시 | ⬜ |
+
+---
+
 ## 다음 Phase (예고)
 
-- **Phase 4** — 수집 + 교배: 계보, 혼합속성
 - **Phase 5** — 스토리 + 퀘스트
 - **Phase 6** — 온라인
