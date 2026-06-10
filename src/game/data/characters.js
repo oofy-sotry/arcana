@@ -297,7 +297,7 @@ const CHARACTERS = {
   chaosrex_2: { name: '카오스락',  attribute: 'dark', attribute2: 'light', species: 'Chaosrex', stage: 2, nextId: 'chaosrex_3', evolveLevel: 55, evolveAffinity: 72,
     hiddenConditions: [{ type: 'has_item', itemId: 'evo_stone' }, { type: 'high_affinity', value: 95 }] },
   chaosrex_3: { name: '카오렉시스', attribute: 'dark', attribute2: 'light', species: 'Chaosrex', stage: 3, nextId: 'chaosrex_4', evolveLevel: 75, evolveAffinity: 88 },
-  chaosrex_4: { name: '카오스렉스', attribute: 'dark', attribute2: 'light', species: 'Chaosrex', stage: 4, nextId: 'omnirex_0', evolveLevel: null, evolveAffinity: null },
+  chaosrex_4: { name: '카오스렉스', attribute: 'dark', attribute2: 'light', species: 'Chaosrex', stage: 4, nextId: null, evolveLevel: null, evolveAffinity: null },
 
 
   // ══════════════════════════════════════════════════════════════
