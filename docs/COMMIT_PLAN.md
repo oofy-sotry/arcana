@@ -504,11 +504,11 @@
 
 | # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
 |---|------------|------|----------|------|
-| 187 | `feat(launcher): launcher.html 교배·가챠·파티 탭 추가` | src/renderer/launcher/launcher.html | 탭 버튼 3개 + 섹션 뼈대 | ⬜ |
-| 188 | `feat(launcher): launcher.js 교배 탭 — 펫 선택 + 호환도 표시` | src/renderer/launcher/launcher.js | 두 펫 선택 드롭다운, compatInfo 호출 | ⬜ |
-| 189 | `feat(launcher): launcher.js 교배 탭 — 교배 실행 + 결과 표시` | src/renderer/launcher/launcher.js | breed() 호출, 자식 펫 정보 렌더링 | ⬜ |
-| 190 | `feat(launcher): launcher.js 가챠 탭 — 단일/10연 뽑기 버튼` | src/renderer/launcher/launcher.js | rollSingle/rollTen 호출, 결과 카드 렌더링 | ⬜ |
-| 191 | `feat(launcher): launcher.js 파티 탭 — 파티 슬롯 + 시너지 표시` | src/renderer/launcher/launcher.js | getParty/add/remove, 시너지 bonuses 표시 | ⬜ |
+| 187 | `feat(launcher): index.html 교배·가챠·파티 탭 추가` | src/renderer/launcher/index.html | 탭 버튼 3개 + 패널 div + 스크립트 태그 | ✅ |
+| 188 | `feat(launcher): BreedingPanel.js — 펫 선택·호환도 표시·교배 실행·결과 렌더링` | src/renderer/launcher/components/BreedingPanel.js | 드롭다운 2개, compatInfo 호출, breed() + 결과 카드 | ✅ |
+| 189 | (BreedingPanel.js에 통합) | — | — | ✅ |
+| 190 | `feat(launcher): GachaPanel.js — 단일·10연 뽑기 버튼·결과 카드 렌더링` | src/renderer/launcher/components/GachaPanel.js | rollSingle/rollTen 호출, 단계별 테두리 색 카드 | ✅ |
+| 191 | `feat(launcher): PartyPanel.js — 파티 슬롯 구성·시너지 표시` + `launcher.js 교배·가챠·파티 탭 연결` | components/PartyPanel.js + launcher.js | 슬롯 fill/empty 분기, 시너지 bonuses, setupPhase4Tabs | ✅ |
 
 ---
 
