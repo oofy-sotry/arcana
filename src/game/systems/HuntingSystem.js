@@ -58,6 +58,21 @@ class HuntingSystem {
     return getMonster(zone.hiddenMonsterId)
   }
 
+  // ─── 렌더러용: 구역 몬스터 목록 (id·name·attribute·tier) ──────────
+  // tier → 리스폰 딜레이(ms): 1-2=2s, 3-4=3s, 5-6=5s, 7+=8s
+  getZoneMonsters(zoneId) {
+    const RESPAWN_MS = { 1: 2000, 2: 2000, 3: 3000, 4: 3000, 5: 5000, 6: 5000, 7: 8000 }
+    const zone = ZONES.find(z => z.id === zoneId)
+    if (!zone) return []
+    const ids = [...zone.monsterIds, zone.bossId]
+    return ids.map(id => {
+      const m = getMonster(id)
+      if (!m) return null
+      return { id: m.id, name: m.name, attribute: m.attribute, tier: m.tier, isBoss: m.isBoss,
+               respawnMs: RESPAWN_MS[m.tier] || 8000 }
+    }).filter(Boolean)
+  }
+
   // ─── 자동 사냥 ─────────────────────────────────────────────────────
   startAutoHunt(pet, zoneId) {
     const db    = require('../../db/database')
