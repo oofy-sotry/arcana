@@ -13,6 +13,7 @@ const BreedingSystem    = require('../game/systems/BreedingSystem')
 const GachaSystem       = require('../game/systems/GachaSystem')
 const PartySystem       = require('../game/systems/PartySystem')
 const QuestSystem       = require('../game/systems/QuestSystem')
+const OnlineSystem      = require('../game/systems/OnlineSystem')
 const { TICK_INTERVAL_SECONDS, getElapsedSeconds } = require('../game/utils/time')
 
 class GameWorld {
@@ -29,6 +30,7 @@ class GameWorld {
     this.gachaSystem        = null
     this.partySystem        = null
     this.questSystem        = null
+    this.onlineSystem       = null
     this._tickTimer         = null
   }
 
@@ -52,6 +54,7 @@ class GameWorld {
       combatSystem: this.combatSystem,
       questSystem:  this.questSystem,
     })
+    this.onlineSystem       = new OnlineSystem({ Pet, save: db.save })
 
     const pets = this.petSystem.getAll()
     if (pets.length > 0) {
