@@ -4,20 +4,23 @@ class IpcRouter {
   constructor({ petSystem, levelSystem, evolutionSystem, skillSystem, itemSystem,
                 huntingSystem, explorationSystem,
                 breedingSystem, gachaSystem, partySystem, questSystem, onlineSystem,
+                equipmentSystem, factionSystem,
                 windowManager }) {
-    this.petSystem        = petSystem
-    this.levelSystem      = levelSystem
-    this.evolutionSystem  = evolutionSystem
-    this.skillSystem      = skillSystem
-    this.itemSystem       = itemSystem
-    this.huntingSystem    = huntingSystem
+    this.petSystem         = petSystem
+    this.levelSystem       = levelSystem
+    this.evolutionSystem   = evolutionSystem
+    this.skillSystem       = skillSystem
+    this.itemSystem        = itemSystem
+    this.huntingSystem     = huntingSystem
     this.explorationSystem = explorationSystem
-    this.breedingSystem   = breedingSystem
-    this.gachaSystem      = gachaSystem
-    this.partySystem      = partySystem
-    this.questSystem      = questSystem
-    this.onlineSystem     = onlineSystem
-    this.windowManager    = windowManager
+    this.breedingSystem    = breedingSystem
+    this.gachaSystem       = gachaSystem
+    this.partySystem       = partySystem
+    this.questSystem       = questSystem
+    this.onlineSystem      = onlineSystem
+    this.equipmentSystem   = equipmentSystem
+    this.factionSystem     = factionSystem
+    this.windowManager     = windowManager
   }
 
   register() {
@@ -75,7 +78,10 @@ class IpcRouter {
       this.windowManager.toggleMouseEvents(ignore)
     })
 
-    ipcMain.handle('hunting:get-zones', () => this.huntingSystem.getZones())
+    ipcMain.handle('hunting:get-zones', (_e, { petId } = {}) => {
+      const pet = petId ? this.petSystem.getAll().find(p => p.id === petId) : null
+      return this.huntingSystem.getZones(pet)
+    })
     ipcMain.handle('hunting:stop-auto', (_e, { petId }) => this.huntingSystem.stopAutoHunt(petId))
     ipcMain.handle('hunting:manual-battle', (_e, { petId, zoneId }) => {
       const pets = this.petSystem.getAll()
@@ -192,6 +198,57 @@ class IpcRouter {
     ipcMain.handle('online:friends-add', (_e, { username }) => this.onlineSystem.addFriend(username))
     ipcMain.handle('online:friends-remove', (_e, { friendId }) => this.onlineSystem.removeFriend(friendId))
     ipcMain.handle('online:friends-pets', (_e, { username }) => this.onlineSystem.getFriendPets(username))
+
+    // ── Exploration choice ────────────────────────────────────────────
+    ipcMain.handle('explore:resolve-choice', (_e, { petId, eventId, choiceIndex }) => {
+      const pet = this.petSystem.getAll().find(p => p.id === petId)
+      if (!pet) return { ok: false, error: 'not_found' }
+      return this.explorationSystem.resolveChoice(pet, eventId, choiceIndex)
+    })
+
+    // ── Equipment ─────────────────────────────────────────────────────
+    ipcMain.handle('equipment:get-inventory', (_e, { petId }) =>
+      this.equipmentSystem.getInventory(petId)
+    )
+    ipcMain.handle('equipment:get-equipped', (_e, { petId }) =>
+      this.equipmentSystem.getEquipped(petId)
+    )
+    ipcMain.handle('equipment:equip', (_e, { petId, inventoryId }) =>
+      this.equipmentSystem.equip(petId, inventoryId)
+    )
+    ipcMain.handle('equipment:unequip', (_e, { petId, slot }) =>
+      this.equipmentSystem.unequip(petId, slot)
+    )
+    ipcMain.handle('equipment:enhance', (_e, { petId, inventoryId }) =>
+      this.equipmentSystem.enhance(petId, inventoryId)
+    )
+    ipcMain.handle('equipment:open-box', (_e, { petId, itemId }) =>
+      this.equipmentSystem.openBox(petId, itemId)
+    )
+    ipcMain.handle('equipment:set-bonuses', (_e, { petId }) =>
+      this.equipmentSystem.getSetBonuses(petId)
+    )
+
+    // ── Faction ───────────────────────────────────────────────────────
+    ipcMain.handle('faction:get-all', () => this.factionSystem.getAllRep())
+    ipcMain.handle('faction:get-tier', (_e, { faction }) =>
+      this.factionSystem.getTierInfo(faction)
+    )
+    ipcMain.handle('faction:use-item', (_e, { itemId }) =>
+      this.factionSystem.useFactionItem(itemId)
+    )
+    ipcMain.handle('faction:hidden-ending', () =>
+      this.factionSystem.checkHiddenEndingConditions()
+    )
+    ipcMain.handle('faction:soul-fusion', () =>
+      ({ value: this.factionSystem.getSoulFusion() })
+    )
+    ipcMain.handle('faction:chapter', () =>
+      ({ chapter: this.factionSystem.getCurrentChapter() })
+    )
+    ipcMain.handle('faction:advance-chapter', (_e, { chapter }) =>
+      this.factionSystem.advanceChapter(chapter)
+    )
   }
 }
 

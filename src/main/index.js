@@ -24,7 +24,9 @@ app.whenReady().then(async () => {
     gachaSystem:      gameWorld.gachaSystem,
     partySystem:      gameWorld.partySystem,
     questSystem:      gameWorld.questSystem,
-    onlineSystem:     gameWorld.onlineSystem,
+    onlineSystem:      gameWorld.onlineSystem,
+    equipmentSystem:   gameWorld.equipmentSystem,
+    factionSystem:     gameWorld.factionSystem,
     windowManager,
   })
   ipcRouter.register()
