@@ -80,7 +80,7 @@ class IpcRouter {
       const result = mode === 'manual'
         ? this.explorationSystem.manualExplore(pet)
         : this.explorationSystem.startAutoExplore(pet)
-      this.questSystem?.recordActivity('explore', 1)
+      if (!result.error) this.questSystem?.recordActivity('explore', 1)
       return result
     })
     ipcMain.handle('hunting:open', () => this.windowManager.createHuntingWindow())
