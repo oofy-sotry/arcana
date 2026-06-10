@@ -2,6 +2,9 @@
 // hiddenConditions: 노멀 트랙 → 히든 트랙 분기 조건 (빠를수록 강함)
 // isHidden: true → 히든 트랙 캐릭터 (pet.is_hidden=1 펫에서 사용)
 // species: 혼합속성·특수 계통 구분자
+// attributes: T2 혼합종 전용 다중속성 배열 (3~4속성), attribute는 주속성(하위 호환)
+
+const { HYBRID_TIER2_RESULTS } = require('./breeding')
 
 const CHARACTERS = {
 
@@ -327,5 +330,55 @@ const CHARACTERS = {
     hiddenConditions: [{ type: 'has_item', itemId: 'evo_stone' }, { type: 'high_affinity', value: 99 }] },
   omnirex_4_hidden: { name: '균열 옴니렉스',  attribute: 'omni', species: 'OmnirexHidden', stage: 4, isHidden: true, nextId: null,               evolveLevel: null, evolveAffinity: null },
 }
+
+// ══════════════════════════════════════════════════════════════
+// T2 혼합종 91종 — 자동 생성 (HYBRID_TIER2_RESULTS 기반)
+// Dominant(3속성) / Balanced(4속성) 진화 요구치 분리
+// T2는 히든 트랙 없음 — 교배 자체가 극히 낮은 확률이므로
+// attribute = 주속성(하위 호환), attributes = 전체 속성 배열
+// ══════════════════════════════════════════════════════════════
+;(function _buildT2() {
+  const DOMINANT_EVO = [
+    { level: 15, aff: 30 },
+    { level: 35, aff: 50 },
+    { level: 55, aff: 70 },
+    { level: 75, aff: 85 },
+  ]
+  const BALANCED_EVO = [
+    { level: 20, aff: 35 },
+    { level: 40, aff: 55 },
+    { level: 60, aff: 75 },
+    { level: 80, aff: 88 },
+  ]
+  const SUFFIXES = ['에그', '유아체', '각성체', '완전체', '초월체']
+
+  for (const t2 of Object.values(HYBRID_TIER2_RESULTS)) {
+    const baseId      = t2.species.toLowerCase()
+    const evo         = t2.isDominant ? DOMINANT_EVO : BALANCED_EVO
+    const primaryAttr = t2.isDominant ? t2.dominantAttr : t2.attributes[0]
+
+    for (let s = 0; s <= 4; s++) {
+      const isLast = s === 4
+      const entry = {
+        name:           `${t2.name} ${SUFFIXES[s]}`,
+        attribute:      primaryAttr,
+        attributes:     t2.attributes,
+        species:        t2.species,
+        stage:          s,
+        nextId:         isLast ? null : `${baseId}_${s + 1}`,
+        evolveLevel:    isLast ? null : evo[s].level,
+        evolveAffinity: isLast ? null : evo[s].aff,
+      }
+      // 2단계 이상에서만 진화석 + 친밀도 조건 (T2는 히든 분기 없으므로 단순 조건)
+      if (!isLast && s >= 2) {
+        entry.hiddenConditions = [
+          { type: 'has_item',      itemId: 'evo_stone' },
+          { type: 'high_affinity', value: t2.isDominant ? 90 : 92 },
+        ]
+      }
+      CHARACTERS[`${baseId}_${s}`] = entry
+    }
+  }
+})()
 
 module.exports = CHARACTERS
