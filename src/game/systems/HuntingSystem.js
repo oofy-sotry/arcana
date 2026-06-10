@@ -5,10 +5,11 @@ const MANUAL_ENERGY_COST = 15
 const MANUAL_DROP_BONUS  = 0.20
 
 class HuntingSystem {
-  constructor({ Pet, save, combatSystem }) {
+  constructor({ Pet, save, combatSystem, questSystem }) {
     this.Pet          = Pet
     this.save         = save
     this.combatSystem = combatSystem
+    this.questSystem  = questSystem
     this._activeHunts = new Map() // petId → { zoneId, huntLogId }
   }
 
@@ -62,6 +63,7 @@ class HuntingSystem {
       [Date.now(), battles.at(-1)?.result || 'stopped', huntLogId]
     )
     db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [currentEnergy, pet.id])
+    this.questSystem?.recordActivity('hunt', battles.length)
     this.save()
     return { battles, finalEnergy: currentEnergy }
   }
@@ -89,6 +91,7 @@ class HuntingSystem {
     })
 
     db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [newEnergy, pet.id])
+    this.questSystem?.recordActivity('hunt', 1)
     this.save()
     return { monster: monster.name, ...outcome, finalEnergy: newEnergy }
   }
