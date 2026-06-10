@@ -4,7 +4,7 @@ const { PORT } = require('./config')
 const db      = require('./db/database')
 
 const app = express()
-app.use(cors())
+app.use(cors({ origin: false }))
 app.use(express.json())
 
 // 라우터 등록
