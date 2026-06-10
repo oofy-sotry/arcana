@@ -18,6 +18,9 @@ router.post('/register', async (req, res) => {
   if (password.length < 6) {
     return res.status(400).json({ error: 'password_too_short' })
   }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'invalid_email' })
+  }
 
   const existing = db.query('SELECT id FROM users WHERE email = ? OR username = ?', [email, username])
   if (existing.length) return res.status(409).json({ error: 'already_exists' })
@@ -30,7 +33,7 @@ router.post('/register', async (req, res) => {
   const user  = db.query('SELECT id, username FROM users WHERE email = ?', [email])[0]
   const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: JWT_EXPIRY })
 
-  require('../db/database').save()
+  db.save()
   res.json({ ok: true, token, username: user.username })
 })
 
