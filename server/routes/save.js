@@ -7,7 +7,7 @@ const router = Router()
 // POST /save/sync — 클라이언트 펫 스냅샷 업로드
 router.post('/sync', requireAuth, (req, res) => {
   const { pets } = req.body || {}
-  if (!Array.isArray(pets)) return res.status(400).json({ error: 'invalid_data' })
+  if (!Array.isArray(pets) || pets.length === 0) return res.status(400).json({ error: 'invalid_data' })
 
   db.run('DELETE FROM user_pets WHERE user_id = ?', [req.user.id])
   pets.forEach(pet => {
