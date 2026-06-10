@@ -36,14 +36,25 @@ class IpcRouter {
       this.questSystem?.recordActivity('exp', amount)
       return result
     })
-    ipcMain.handle('evolution:attempt', (_e, { petId }) => {
+    // forceType: undefined=자동판단 / 'hidden'=히든강제 / 'normal'=일반강제
+    ipcMain.handle('evolution:attempt', (_e, { petId, forceType }) => {
       const pets = this.petSystem.getAll()
       const pet  = pets.find(p => p.id === petId)
       if (!pet) return { ok: false, reason: 'not_found' }
       const canEvo   = this.evolutionSystem.canEvolve(pet)
       const isHidden = this.evolutionSystem.checkHiddenConditions(pet)
-      if (!canEvo && !isHidden) return { ok: false, reason: 'conditions_not_met' }
-      const result   = this.evolutionSystem.evolve(pet, isHidden ? 'hidden' : 'normal')
+
+      // 히든 가능 + forceType 미지정 → UI에서 confirm 필요
+      if (isHidden && !forceType) {
+        return { ok: false, reason: 'confirm_hidden', canNormal: canEvo }
+      }
+
+      const useHidden = forceType === 'hidden' ? true
+                      : forceType === 'normal' ? false
+                      : isHidden
+      if (!canEvo && !useHidden) return { ok: false, reason: 'conditions_not_met' }
+
+      const result = this.evolutionSystem.evolve(pet, useHidden ? 'hidden' : 'normal')
       this.questSystem?.recordActivity('evolve', 1)
       const freshPet = this.petSystem.getAll().find(p => p.id === petId)
       if (freshPet) this.skillSystem.unlockForStage(freshPet)
@@ -78,6 +89,9 @@ class IpcRouter {
       this.windowManager.toggleMouseEvents(ignore)
     })
 
+    ipcMain.handle('hunting:zone-monsters', (_e, { zoneId }) =>
+      this.huntingSystem.getZoneMonsters(zoneId)
+    )
     ipcMain.handle('hunting:get-zones', (_e, { petId } = {}) => {
       const pet = petId ? this.petSystem.getAll().find(p => p.id === petId) : null
       return this.huntingSystem.getZones(pet)
@@ -131,12 +145,12 @@ class IpcRouter {
     // ── Gacha ─────────────────────────────────────────────────────────────
     ipcMain.handle('gacha:roll-single', (_e, { ownerPetId }) => {
       const result = this.gachaSystem.rollSingle(ownerPetId)
-      if (result.ok) this.questSystem?.recordActivity('gacha', 1)
+      if (result.pets) this.questSystem?.recordActivity('gacha', 1)
       return result
     })
     ipcMain.handle('gacha:roll-ten', (_e, { ownerPetId }) => {
       const result = this.gachaSystem.rollTen(ownerPetId)
-      if (result.ok) this.questSystem?.recordActivity('gacha10', 1)
+      if (result.pets) this.questSystem?.recordActivity('gacha10', 1)
       return result
     })
 
