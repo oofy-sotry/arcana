@@ -24,6 +24,7 @@ const STAGE_POOL = [
 const STAGE_NAMES = ['유년기', '성장기', '완전체', '궁극체', '전설체']
 
 function weightedPick(pool) {
+  if (!pool || pool.length === 0) throw new Error('weightedPick: empty pool')
   const total = pool.reduce((s, e) => s + e.weight, 0)
   let roll    = Math.random() * total
   for (const entry of pool) {
@@ -54,14 +55,18 @@ class GachaSystem {
     if (!owner) return { error: '펫을 찾을 수 없습니다' }
     if ((owner.coins || 0) < cost) return { error: `코인이 부족합니다 (필요: ${cost}, 보유: ${owner.coins || 0})` }
 
-    this.Pet.updatePet(ownerPetId, { coins: (owner.coins || 0) - cost })
-
     const results = []
-    for (let i = 0; i < count; i++) {
-      const forcedHighStage = count === 10 && i === count - 1
-      const pet = this._spawnPet(forcedHighStage)
-      results.push(pet)
+    try {
+      for (let i = 0; i < count; i++) {
+        const forcedHighStage = count === 10 && i === count - 1
+        results.push(this._spawnPet(forcedHighStage))
+      }
+    } catch (err) {
+      // 펫 생성 실패 시 코인 차감 없이 종료
+      return { error: `소환 중 오류가 발생했습니다: ${err.message}` }
     }
+
+    this.Pet.updatePet(ownerPetId, { coins: (owner.coins || 0) - cost })
 
     const db = require('../../db/database')
     results.forEach(pet => {
