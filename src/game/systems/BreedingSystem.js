@@ -69,9 +69,9 @@ class BreedingSystem {
     const db = require('../../db/database')
     db.run(
       `INSERT INTO breeding_log
-         (parent1_id, parent2_id, child_id, batch_count, result_attribute, result_attribute2, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [pet1.id, pet2.id, child.id, batchCount, attribute, attribute2 || null, Date.now()]
+         (parent1_id, parent2_id, child_id, batch_count, result_attribute, result_attribute2, result_species, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [pet1.id, pet2.id, child.id, batchCount, attribute, attribute2 || null, childSpecies, Date.now()]
     )
 
     this.save()
