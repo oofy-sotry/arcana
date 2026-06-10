@@ -3,15 +3,16 @@ const { getDropTable } = require('../data/monsters')
 const SKILLS           = require('../data/skills')
 
 class CombatSystem {
-  constructor({ Pet, save, levelSystem, itemSystem }) {
-    this.Pet = Pet
-    this.save = save
-    this.levelSystem = levelSystem
-    this.itemSystem  = itemSystem
-    this._battles = new Map()
+  constructor({ Pet, save, levelSystem, itemSystem, equipmentSystem }) {
+    this.Pet             = Pet
+    this.save            = save
+    this.levelSystem     = levelSystem
+    this.itemSystem      = itemSystem
+    this.equipmentSystem = equipmentSystem || null
+    this._battles        = new Map()
   }
 
-  // ─── 장비 스탯 합산 ────────────────────────────────────────────────
+  // ─── 장비 스탯 합산 (강화 보너스 + 세트 보너스) ───────────────────
   _getEquipmentStats(petId) {
     const db = require('../../db/database')
     const bonus = { attack: 0, defense: 0, hp: 0, speed: 0 }
@@ -32,6 +33,18 @@ class CombatSystem {
         if (stats[key]) bonus[key] += Math.floor(stats[key] * mult)
       }
     }
+
+    // 세트 보너스: 2피스마다 총 스탯에 10% 추가
+    if (this.equipmentSystem) {
+      const setBonuses = this.equipmentSystem.getSetBonuses(petId)
+      const totalBoost = setBonuses.reduce((sum, b) => sum + b.statBoost, 0)
+      if (totalBoost > 0) {
+        for (const key of Object.keys(bonus)) {
+          bonus[key] = Math.floor(bonus[key] * (1 + totalBoost))
+        }
+      }
+    }
+
     return bonus
   }
 
