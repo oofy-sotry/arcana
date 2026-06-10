@@ -28,14 +28,18 @@ class IpcRouter {
       const pets = this.petSystem.getAll()
       const pet  = pets.find(p => p.id === petId)
       if (!pet) return null
-      return this.levelSystem.addExperience(pet, amount)
+      const result = this.levelSystem.addExperience(pet, amount)
+      this.questSystem?.recordActivity('exp', amount)
+      return result
     })
     ipcMain.handle('evolution:attempt', (_e, { petId }) => {
       const pets = this.petSystem.getAll()
       const pet  = pets.find(p => p.id === petId)
       if (!pet) return { ok: false, reason: 'not_found' }
       if (!this.evolutionSystem.canEvolve(pet)) return { ok: false, reason: 'conditions_not_met' }
-      return { ok: true, result: this.evolutionSystem.evolve(pet) }
+      const result = this.evolutionSystem.evolve(pet)
+      this.questSystem?.recordActivity('evolve', 1)
+      return { ok: true, result }
     })
 
     ipcMain.handle('skill:get', (_e, { petId }) =>
@@ -73,9 +77,11 @@ class IpcRouter {
       const pets = this.petSystem.getAll()
       const pet  = pets.find(p => p.id === petId)
       if (!pet) return { error: 'not_found' }
-      return mode === 'manual'
+      const result = mode === 'manual'
         ? this.explorationSystem.manualExplore(pet)
         : this.explorationSystem.startAutoExplore(pet)
+      this.questSystem?.recordActivity('explore', 1)
+      return result
     })
     ipcMain.handle('hunting:open', () => this.windowManager.createHuntingWindow())
     ipcMain.handle('hunting:start-auto', (_e, { petId, zoneId }) => {
@@ -98,19 +104,25 @@ class IpcRouter {
       const pet1 = pets.find(p => p.id === petId1)
       const pet2 = pets.find(p => p.id === petId2)
       if (!pet1 || !pet2) return { error: 'not_found' }
-      return this.breedingSystem.breed(pet1, pet2, batchCount ?? 1)
+      const result = this.breedingSystem.breed(pet1, pet2, batchCount ?? 1)
+      if (result.ok) this.questSystem?.recordActivity('breed', 1)
+      return result
     })
     ipcMain.handle('breeding:get-lineage', (_e, { petId }) =>
       this.breedingSystem.getLineage(petId)
     )
 
     // ── Gacha ─────────────────────────────────────────────────────────────
-    ipcMain.handle('gacha:roll-single', (_e, { ownerPetId }) =>
-      this.gachaSystem.rollSingle(ownerPetId)
-    )
-    ipcMain.handle('gacha:roll-ten', (_e, { ownerPetId }) =>
-      this.gachaSystem.rollTen(ownerPetId)
-    )
+    ipcMain.handle('gacha:roll-single', async (_e, { ownerPetId }) => {
+      const result = await Promise.resolve(this.gachaSystem.rollSingle(ownerPetId))
+      if (result.ok) this.questSystem?.recordActivity('gacha', 1)
+      return result
+    })
+    ipcMain.handle('gacha:roll-ten', async (_e, { ownerPetId }) => {
+      const result = await Promise.resolve(this.gachaSystem.rollTen(ownerPetId))
+      if (result.ok) this.questSystem?.recordActivity('gacha10', 1)
+      return result
+    })
 
     // ── Party ─────────────────────────────────────────────────────────────
     ipcMain.handle('party:get', () => this.partySystem.getParty())
