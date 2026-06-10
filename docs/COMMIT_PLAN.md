@@ -512,7 +512,62 @@
 
 ---
 
+---
+
+## Phase 5 — 스토리 + 퀘스트
+
+> **완료 기준:** 메인 스토리 5챕터 + 일일·특수 퀘스트가 런처에서 조회되고, 보상 수령 시 코인/EXP/파벌 평판이 반영된다.
+
+---
+
+### 5-A DB 마이그레이션
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 192 | `feat(db): 005_fixes.js — gacha_log owner_pet_id + party_members slot UNIQUE 수정` | src/db/migrations/005_fixes.js | gacha_log ALTER TABLE, party_members 재생성 | ✅ |
+| 193 | `feat(db): 006_quest.js — quest_progress·faction_rep·daily_activity·quest_reward_log 테이블 정의` | src/db/migrations/006_quest.js | 4개 테이블 생성, faction 초기값 삽입 | ✅ |
+
+---
+
+### 5-B 게임 데이터
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 194 | `feat(data): quests.js — 메인 5장·일일 5종·특수 2종 퀘스트 정의` | src/game/data/quests.js | QUESTS 배열, 조건·보상·언락 구조 | ✅ |
+
+---
+
+### 5-C QuestSystem
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 195 | `feat(system): QuestSystem.js — 상태 계산·활동 기록·보상 수령 로직` | src/game/systems/QuestSystem.js | getAllStatuses/getProgress/recordActivity/claimReward/getFactionRep | ✅ |
+
+---
+
+### 5-D GameWorld + IPC + Preload
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 196 | `feat(world): gameWorld.js — QuestSystem 인스턴스화 및 HuntingSystem에 questSystem 주입` | src/main/gameWorld.js | questSystem 필드 + init 인스턴스화 | ✅ |
+| 197 | `feat(system): HuntingSystem.js — questSystem 주입 및 사냥 활동 기록` | src/game/systems/HuntingSystem.js | constructor questSystem, recordActivity('hunt') | ✅ |
+| 198 | `feat(ipc): ipcRouter.js — questSystem 주입 및 quest:* IPC 핸들러 등록` | src/main/ipcRouter.js | quest:get-all/claim/faction-rep | ✅ |
+| 199 | `feat(ipc): ipcRouter.js — 탐사·교배·가챠·경험치·진화 활동 퀘스트 기록 훅 추가` | src/main/ipcRouter.js | recordActivity 훅 5종 | ✅ |
+| 200 | `feat(preload): preload.js — arcana.quest 네임스페이스 추가 (getAll·claim·factionRep)` | src/preload/preload.js | arcana.quest | ✅ |
+| 201 | `feat(main): index.js — IpcRouter에 questSystem 전달` | src/main/index.js | questSystem 전달 | ✅ |
+
+---
+
+### 5-E 런처 UI (퀘스트 탭)
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 202 | `feat(ui): QuestPanel.js — 퀘스트 패널 컴포넌트 (파벌 평판·필터·진행바·보상 수령)` | src/renderer/launcher/components/QuestPanel.js | 파벌바, 타입 필터, 진행도 카드, claim | ✅ |
+| 203 | `feat(ui): index.html — quest 탭 버튼·패널·QuestPanel.js 스크립트 추가` | src/renderer/launcher/index.html | 탭 버튼 + 패널 div + script 태그 | ✅ |
+| 204 | `feat(ui): launcher.js — renderQuestTab() 추가 및 quest 탭 케이스 등록` | src/renderer/launcher/launcher.js | renderQuestTab, setupTabs quest case | ✅ |
+
+---
+
 ## 다음 Phase (예고)
 
-- **Phase 5** — 스토리 + 퀘스트
 - **Phase 6** — 온라인
