@@ -175,7 +175,10 @@ class IpcRouter {
     ipcMain.handle('online:breeding-request', async (_e, { offerId, myPet }) => {
       const res = await this.onlineSystem.requestBreeding(offerId, myPet)
       if (res.ok && res.child) {
-        this.petSystem.createPet(res.child.name, res.child.attribute)
+        const newChild = this.petSystem.createPet(res.child.name, res.child.attribute)
+        const updates  = { parent1_id: myPet.id }
+        if (res.child.attribute2) updates.attribute2 = res.child.attribute2
+        this.petSystem.Pet.updatePet(newChild.id, updates)
       }
       return res
     })
