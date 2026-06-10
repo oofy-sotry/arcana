@@ -7,7 +7,9 @@ const router = Router()
 function calcPower(pet) {
   const stage = pet.evolution_stage || 0
   const level = pet.level           || 1
-  return (pet.attack || 10 + stage * 5) * level + (pet.hp || 50 + stage * 20)
+  const atk   = pet.attack ?? (10 + stage * 5)
+  const hp    = pet.hp     ?? (50 + stage * 20)
+  return atk * level + hp
 }
 
 function runBattle(attPet, defPet) {
@@ -25,7 +27,7 @@ function runBattle(attPet, defPet) {
     log.push({ round, attHp: Math.max(0, attHp), defHp: Math.max(0, defHp) })
   }
 
-  return { winner: attHp > 0 ? 'attacker' : 'defender', log }
+  return { winner: attHp <= 0 ? 'defender' : defHp <= 0 ? 'attacker' : 'draw', log }
 }
 
 // POST /battle/challenge — 배틀 도전 (자동 결과)
@@ -46,7 +48,7 @@ router.post('/challenge', requireAuth, (req, res) => {
     .sort((a, b) => calcPower(b) - calcPower(a))[0]
 
   const { winner, log } = runBattle(myPet, defPet)
-  const winnerId = winner === 'attacker' ? req.user.id : target.id
+  const winnerId = winner === 'attacker' ? req.user.id : winner === 'defender' ? target.id : null
 
   db.run(
     `INSERT INTO battle_log
