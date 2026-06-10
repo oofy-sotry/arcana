@@ -4,9 +4,10 @@ const BASIC_ATTRS = ['fire', 'water', 'wind', 'earth', 'thunder', 'ice', 'poison
 const ALL_ATTRS   = [...BASIC_ATTRS, 'light', 'dark']
 
 class QuestSystem {
-  constructor({ Pet, save }) {
-    this.Pet  = Pet
-    this.save = save
+  constructor({ Pet, save, levelSystem }) {
+    this.Pet         = Pet
+    this.save        = save
+    this.levelSystem = levelSystem
   }
 
   _getToday() {
@@ -255,10 +256,10 @@ class QuestSystem {
     const pet = this.Pet.getPet(petId)
     if (!pet) return { ok: false, reason: 'pet_not_found' }
 
-    this.Pet.updatePet(petId, {
-      coins: (pet.coins || 0) + quest.reward.coins,
-      exp:   (pet.exp   || 0) + quest.reward.exp,
-    })
+    this.Pet.updatePet(petId, { coins: (pet.coins || 0) + quest.reward.coins })
+    if (quest.reward.exp > 0 && this.levelSystem) {
+      this.levelSystem.addExperience(pet, quest.reward.exp)
+    }
 
     if (quest.reward.faction && quest.reward.faction_rep) {
       db.run(
