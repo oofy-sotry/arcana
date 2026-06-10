@@ -301,14 +301,31 @@ const CHARACTERS = {
 
 
   // ══════════════════════════════════════════════════════════════
-  // 최종 형태 — Omnirex (전속성, 5장 스토리 완료 조건)
-  // 10종 속성 에레멘탈 모두 보유 시 특수 퀘스트로 소환
+  // 최종 형태 — Omnirex (전속성)
+  // 획득 경로:
+  //   A. 교배: 양쪽 부모 hybrid + 계보에 10속성 전부 존재 + hybrid 확률
+  //   B. 스토리: 챕터5 히든 엔딩 + chaosrex_4 보유 → 변환
   // ══════════════════════════════════════════════════════════════
 
-  omnirex_0: { name: '아르카 에그', attribute: 'omni', species: 'Omnirex', stage: 0, nextId: 'omnirex_1',
-    evolveLevel: 50, evolveAffinity: 80,
-    hiddenConditions: [{ type: 'has_item', itemId: 'evo_stone' }, { type: 'all_attributes', value: 10 }] },
-  omnirex_1: { name: '옴니렉스',   attribute: 'omni', species: 'Omnirex', stage: 1, nextId: null, evolveLevel: null, evolveAffinity: null },
+  // ── 일반 Omnirex (0~4단계) ──────────────────────────────────
+  omnirex_0: { name: '아르카 에그',       attribute: 'omni', species: 'Omnirex', stage: 0, nextId: 'omnirex_1', evolveLevel: 30, evolveAffinity: 60 },
+  omnirex_1: { name: '아르카 유아체',     attribute: 'omni', species: 'Omnirex', stage: 1, nextId: 'omnirex_2', evolveLevel: 50, evolveAffinity: 70,
+    hiddenConditions: [{ type: 'has_item', itemId: 'evo_stone' }, { type: 'high_affinity', value: 90 }] },
+  omnirex_2: { name: '아르카 각성체',     attribute: 'omni', species: 'Omnirex', stage: 2, nextId: 'omnirex_3', evolveLevel: 65, evolveAffinity: 80,
+    hiddenConditions: [{ type: 'has_item', itemId: 'evo_stone' }, { type: 'high_affinity', value: 93 }] },
+  omnirex_3: { name: '아르카 완전체',     attribute: 'omni', species: 'Omnirex', stage: 3, nextId: 'omnirex_4', evolveLevel: 80, evolveAffinity: 90,
+    hiddenConditions: [{ type: 'has_item', itemId: 'evo_stone' }, { type: 'high_affinity', value: 97 }] },
+  omnirex_4: { name: '아르카나 옴니렉스', attribute: 'omni', species: 'Omnirex', stage: 4, nextId: null,         evolveLevel: null, evolveAffinity: null },
+
+  // ── 히든 Omnirex (0~4단계) — 스탯 일반 대비 40% 강함 ────────
+  omnirex_0_hidden: { name: '균열 에그',      attribute: 'omni', species: 'OmnirexHidden', stage: 0, isHidden: true, nextId: 'omnirex_1_hidden', evolveLevel: 40, evolveAffinity: 75 },
+  omnirex_1_hidden: { name: '균열 유아체',    attribute: 'omni', species: 'OmnirexHidden', stage: 1, isHidden: true, nextId: 'omnirex_2_hidden', evolveLevel: 60, evolveAffinity: 85,
+    hiddenConditions: [{ type: 'has_item', itemId: 'evo_stone' }, { type: 'high_affinity', value: 95 }] },
+  omnirex_2_hidden: { name: '균열 각성체',    attribute: 'omni', species: 'OmnirexHidden', stage: 2, isHidden: true, nextId: 'omnirex_3_hidden', evolveLevel: 75, evolveAffinity: 92,
+    hiddenConditions: [{ type: 'has_item', itemId: 'evo_stone' }, { type: 'high_affinity', value: 97 }] },
+  omnirex_3_hidden: { name: '균열 완전체',    attribute: 'omni', species: 'OmnirexHidden', stage: 3, isHidden: true, nextId: 'omnirex_4_hidden', evolveLevel: 90, evolveAffinity: 97,
+    hiddenConditions: [{ type: 'has_item', itemId: 'evo_stone' }, { type: 'high_affinity', value: 99 }] },
+  omnirex_4_hidden: { name: '균열 옴니렉스',  attribute: 'omni', species: 'OmnirexHidden', stage: 4, isHidden: true, nextId: null,               evolveLevel: null, evolveAffinity: null },
 }
 
 module.exports = CHARACTERS
