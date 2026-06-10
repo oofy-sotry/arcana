@@ -114,10 +114,53 @@ async function onManualAttack() {
   if (!currentPet || mode !== 'manual') return
   const result = await window.arcana.hunting.manualBattle({ petId: currentPet.id, zoneId: currentZoneId })
   if (result?.error) { addLog(`⚠ ${result.error}`); return }
+
+  if (result.hiddenStage) {
+    showHiddenStageOverlay(result)
+    updateEnergyDisplay(result.finalEnergy)
+    return
+  }
+
   addLog(`⚔ ${result.monster}: ${result.result} | 잔여 에너지 ${Math.round(result.finalEnergy)}`)
   if (result.drops?.length) addLog(`  드롭: ${result.drops.map(d => d.itemId).join(', ')}`)
   if (window._combatUI) window._combatUI.showResult(result)
   updateEnergyDisplay(result.finalEnergy)
+}
+
+function showHiddenStageOverlay(result) {
+  const overlay = document.getElementById('hidden-stage-overlay')
+  const battlesEl = document.getElementById('hs-battles')
+  const banner    = document.getElementById('hs-result-banner')
+  const closeBtn  = document.getElementById('hs-close')
+
+  battlesEl.innerHTML = ''
+  result.battles.forEach((b, i) => {
+    const row = document.createElement('div')
+    row.style.cssText = `
+      background: ${b.won ? '#0f3020' : '#3a0f0f'};
+      border: 1px solid ${b.won ? '#2ecc71' : '#e94560'};
+      border-radius: 6px; padding: 8px 14px;
+      color: ${b.won ? '#2ecc71' : '#e94560'}; font-size: 13px;
+    `
+    row.textContent = `전투 ${i + 1}: ${b.monsterId} — ${b.won ? '승리 ✓' : '패배 ✗'}`
+    battlesEl.appendChild(row)
+  })
+
+  if (result.allWon) {
+    banner.style.cssText = 'background:#1a1a2e;border:2px solid #ffb300;color:#ffb300'
+    banner.textContent   = '✨ 전원 격파! 전설 아이템 획득 가능!'
+  } else {
+    banner.style.cssText = 'background:#1a1a2e;border:2px solid #555;color:#aaa'
+    banner.textContent   = '히든 스테이지 종료'
+  }
+
+  if (result.drops?.length) {
+    addLog(`[히든] 드롭: ${result.drops.map(d => d.itemId).join(', ')}`)
+  }
+  addLog(`[히든] 에너지: ${Math.round(result.finalEnergy)}`)
+
+  overlay.classList.add('show')
+  closeBtn.onclick = () => overlay.classList.remove('show')
 }
 
 async function onFlee() {
