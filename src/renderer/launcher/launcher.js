@@ -16,11 +16,13 @@ function setupTabs() {
       btn.classList.add('active')
       document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active')
       const tab = btn.dataset.tab
-      if (tab === 'breeding') renderBreedingTab()
-      if (tab === 'gacha')    renderGachaTab()
-      if (tab === 'party')    renderPartyTab()
-      if (tab === 'quest')    renderQuestTab()
-      if (tab === 'online')   renderOnlineTab()
+      if (tab === 'breeding')  renderBreedingTab()
+      if (tab === 'gacha')     renderGachaTab()
+      if (tab === 'party')     renderPartyTab()
+      if (tab === 'quest')     renderQuestTab()
+      if (tab === 'online')    renderOnlineTab()
+      if (tab === 'equipment') renderEquipmentTab()
+      if (tab === 'faction')   renderFactionTab()
     })
   })
 }
@@ -186,6 +188,45 @@ async function renderOnlineTab() {
       renderOnlineTab()
     },
   }))
+}
+
+async function renderEquipmentTab() {
+  const container = document.getElementById('tab-equipment')
+  container.innerHTML = '<span style="color:#aaa;font-size:13px">로딩 중...</span>'
+  const pet = allPets.find(p => p.id === selectedPetId)
+
+  if (!pet) {
+    container.innerHTML = '<p style="color:#aaa;text-align:center;margin-top:40px">에레멘탈을 먼저 선택하세요</p>'
+    return
+  }
+
+  const [inventory, equipped] = await Promise.all([
+    window.arcana.equipment.getInventory({ petId: pet.id }),
+    window.arcana.equipment.getEquipped({ petId: pet.id }),
+  ])
+  container.innerHTML = ''
+  container.appendChild(
+    new EquipmentPanel(pet, inventory, equipped).render(async () => {
+      allPets = await window.arcana.pet.getAll()
+      renderEquipmentTab()
+    })
+  )
+}
+
+async function renderFactionTab() {
+  const container = document.getElementById('tab-faction')
+  container.innerHTML = '<span style="color:#aaa;font-size:13px">로딩 중...</span>'
+
+  const [repData, soulRes, hiddenCond, chapterRes] = await Promise.all([
+    window.arcana.faction.getAll(),
+    window.arcana.faction.soulFusion(),
+    window.arcana.faction.hiddenEnding(),
+    window.arcana.faction.chapter(),
+  ])
+  container.innerHTML = ''
+  container.appendChild(
+    new FactionPanel(repData, soulRes.value, hiddenCond, chapterRes.chapter).render()
+  )
 }
 
 document.addEventListener('DOMContentLoaded', init)
