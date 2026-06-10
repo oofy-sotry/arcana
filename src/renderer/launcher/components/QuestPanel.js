@@ -98,17 +98,18 @@ class QuestPanel {
               보상: 코인 +${q.reward.coins} · EXP +${q.reward.exp}
               ${q.reward.faction ? `· ${q.reward.faction} +${q.reward.faction_rep}` : ''}
             </div>
-            ${canClaim ? `
-              <div style="display:flex; gap:6px; align-items:center">
-                <select id="q-pet-sel-${q.id}" style="padding:3px; border-radius:4px; background:#333; color:#eee; border:none; font-size:11px">
-                  ${this.allPets.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
-                </select>
-                <button data-claim="${q.id}" style="
-                  padding:3px 10px; border-radius:4px; border:none; cursor:pointer;
-                  background:#f5c518; color:#000; font-size:11px; font-weight:bold
-                ">수령</button>
-              </div>
-            ` : claimed ? `<span style="font-size:11px; color:#555">수령 완료</span>` : ''}
+            ${canClaim ? (this.allPets.length === 0
+              ? `<span style="font-size:11px; color:#e94560">수령할 생존 펫이 없습니다</span>`
+              : `<div style="display:flex; gap:6px; align-items:center">
+                  <select id="q-pet-sel-${q.id}" style="padding:3px; border-radius:4px; background:#333; color:#eee; border:none; font-size:11px">
+                    ${this.allPets.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+                  </select>
+                  <button data-claim="${q.id}" style="
+                    padding:3px 10px; border-radius:4px; border:none; cursor:pointer;
+                    background:#f5c518; color:#000; font-size:11px; font-weight:bold
+                  ">수령</button>
+                </div>`)
+            : claimed ? `<span style="font-size:11px; color:#555">수령 완료</span>` : ''}
           </div>
         </div>
       `
@@ -130,8 +131,8 @@ class QuestPanel {
       btn.addEventListener('click', () => {
         const questId = btn.dataset.claim
         const sel     = el.querySelector(`#q-pet-sel-${questId}`)
-        const petId   = Number(sel?.value)
-        if (petId) onClaim(questId, petId)
+        const petId   = sel?.value ? Number(sel.value) : null
+        if (petId != null && !isNaN(petId)) onClaim(questId, petId)
       })
     })
   }
