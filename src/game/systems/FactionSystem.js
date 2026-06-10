@@ -142,10 +142,23 @@ class FactionSystem {
     return Number(this._worldState('story_chapter') ?? 0)
   }
 
-  advanceChapter(chapter) {
+  // effects: { luxis?, noctis?, hybridRescue?, soulFusion? } (StoryPanel 선택지 결과)
+  advanceChapter(chapter, effects = {}) {
     const current = this.getCurrentChapter()
     if (chapter <= current) return { ok: false, error: '이미 완료된 챕터' }
     this._setWorldState('story_chapter', chapter)
+
+    if (effects.luxis)        this.changeRep('luxis',  effects.luxis)
+    if (effects.noctis)       this.changeRep('noctis', effects.noctis)
+    if (effects.hybridRescue) {
+      const cnt = this.getHybridRescueCount() + effects.hybridRescue
+      this._setWorldState('hybrid_rescue_count', cnt)
+    }
+    if (effects.soulFusion) {
+      const cur  = this.getSoulFusion()
+      this._setWorldState('soul_fusion', Math.min(100, cur + effects.soulFusion))
+    }
+
     this.save()
     return { ok: true, chapter }
   }
