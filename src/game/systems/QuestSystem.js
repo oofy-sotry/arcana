@@ -58,10 +58,10 @@ class QuestSystem {
 
       case 'quest_complete': {
         const req = db.query(
-          'SELECT claimed_at FROM quest_progress WHERE quest_id = ?',
+          'SELECT completed_at FROM quest_progress WHERE quest_id = ?',
           [quest.unlock.required_quest]
         )[0]
-        return !!(req?.claimed_at)
+        return !!(req?.completed_at)
       }
 
       default:
