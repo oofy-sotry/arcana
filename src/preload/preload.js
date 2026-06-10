@@ -43,4 +43,9 @@ contextBridge.exposeInMainWorld('arcana', {
     remove: ({ petId })       => ipcRenderer.invoke('party:remove', { petId }),
     clear:  ()                => ipcRenderer.invoke('party:clear'),
   },
+  quest: {
+    getAll:     ()                        => ipcRenderer.invoke('quest:get-all'),
+    claim:      ({ questId, petId })      => ipcRenderer.invoke('quest:claim', { questId, petId }),
+    factionRep: ()                        => ipcRenderer.invoke('quest:faction-rep'),
+  },
 })
