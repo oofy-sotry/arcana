@@ -246,8 +246,8 @@ class IpcRouter {
     ipcMain.handle('faction:chapter', () =>
       ({ chapter: this.factionSystem.getCurrentChapter() })
     )
-    ipcMain.handle('faction:advance-chapter', (_e, { chapter }) =>
-      this.factionSystem.advanceChapter(chapter)
+    ipcMain.handle('faction:advance-chapter', (_e, { chapter, effects }) =>
+      this.factionSystem.advanceChapter(chapter, effects)
     )
   }
 }
