@@ -20,6 +20,7 @@ function setupTabs() {
       if (tab === 'gacha')    renderGachaTab()
       if (tab === 'party')    renderPartyTab()
       if (tab === 'quest')    renderQuestTab()
+      if (tab === 'online')   renderOnlineTab()
     })
   })
 }
@@ -163,6 +164,28 @@ async function renderQuestTab() {
       }
     })
   )
+}
+
+async function renderOnlineTab() {
+  const container = document.getElementById('tab-online')
+  container.innerHTML = '<span style="color:#aaa; font-size:13px">로딩 중...</span>'
+
+  const [status, serverOnline, freshPets] = await Promise.all([
+    window.arcana.online.status(),
+    window.arcana.online.serverPing(),
+    window.arcana.pet.getAll(),
+  ])
+  allPets = freshPets
+  container.innerHTML = ''
+
+  const panel = new OnlinePanel(status, serverOnline, allPets)
+  container.appendChild(panel.render({
+    refresh: renderOnlineTab,
+    logout:  async () => {
+      await window.arcana.online.logout()
+      renderOnlineTab()
+    },
+  }))
 }
 
 document.addEventListener('DOMContentLoaded', init)
