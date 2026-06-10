@@ -5,12 +5,20 @@ const MANUAL_ENERGY_COST = 15
 const MANUAL_DROP_BONUS  = 0.20
 
 class HuntingSystem {
-  constructor({ Pet, save, combatSystem, questSystem }) {
+  constructor({ Pet, save, combatSystem, questSystem, partySystem }) {
     this.Pet          = Pet
     this.save         = save
     this.combatSystem = combatSystem
     this.questSystem  = questSystem
+    this.partySystem  = partySystem
     this._activeHunts = new Map() // petId → { zoneId, huntLogId }
+  }
+
+  _getSynergyMult(pet) {
+    if (!this.partySystem) return 1.0
+    const { synergy } = this.partySystem.getParty()
+    const match = synergy.find(s => s.attr === pet.attribute)
+    return match ? match.damageMult : 1.0
   }
 
   // 입장 가능 구역 목록 — 펫 레벨을 기준으로 필터링 없이 모두 반환 (난이도는 사용자가 판단)
@@ -34,7 +42,8 @@ class HuntingSystem {
     const energy  = pet.conditions?.energy ?? 100
     if (energy < AUTO_ENERGY_COST) return { error: '에너지 부족 (자동 사냥: -30 필요)' }
 
-    const startedAt = Date.now()
+    const synergyMult = this._getSynergyMult(pet)
+    const startedAt   = Date.now()
     db.run(
       `INSERT INTO hunt_log (pet_id, zone_id, mode, started_at) VALUES (?,?,?,?)`,
       [pet.id, zoneId, 'auto', startedAt]
@@ -51,7 +60,7 @@ class HuntingSystem {
       const outcome = this.combatSystem.runAutoFight(
         { ...pet, energy: currentEnergy },
         monster,
-        { mode: 'auto', huntLogId }
+        { mode: 'auto', huntLogId, synergyMult }
       )
       battles.push({ monster: monster.name, ...outcome })
       if (outcome.result === 'lost') break
@@ -95,10 +104,12 @@ class HuntingSystem {
     const monster = this.spawnMonster(zoneId)
     if (!monster) return { error: '몬스터를 찾을 수 없습니다' }
 
-    const newEnergy = energy - MANUAL_ENERGY_COST
-    const outcome   = this.combatSystem.runAutoFight(pet, monster, {
+    const synergyMult = this._getSynergyMult(pet)
+    const newEnergy   = energy - MANUAL_ENERGY_COST
+    const outcome     = this.combatSystem.runAutoFight(pet, monster, {
       mode: 'manual',
       dropRateBonus: MANUAL_DROP_BONUS,
+      synergyMult,
     })
 
     db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [newEnergy, pet.id])
