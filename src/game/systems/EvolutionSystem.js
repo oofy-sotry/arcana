@@ -103,6 +103,14 @@ class EvolutionSystem {
     if (isHiddenEvo) updates.is_hidden = 1
     if (nextChar)    updates.name = nextChar.name
 
+    // 히든 진화 최초 진입 시 evo_stone 소비
+    if (evoType === 'hidden' && pet.is_hidden !== 1) {
+      db.run(
+        'UPDATE pet_inventory SET quantity = quantity - 1 WHERE pet_id = ? AND item_id = ? AND quantity > 0',
+        [pet.id, 'evo_stone']
+      )
+    }
+
     this.Pet.updatePet(pet.id, updates)
 
     const logType = isHiddenEvo ? 'hidden' : 'normal'
@@ -136,7 +144,8 @@ class EvolutionSystem {
 
         case 'battle_wins': {
           const row = db.query(
-            "SELECT COALESCE(SUM(count), 0) AS total FROM daily_activity WHERE activity = 'hunt'"
+            "SELECT COALESCE(SUM(count), 0) AS total FROM daily_activity WHERE pet_id = ? AND activity = 'hunt'",
+            [pet.id]
           )[0]
           return Number(row?.total ?? 0) >= cond.value
         }
