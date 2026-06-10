@@ -163,9 +163,13 @@ class IpcRouter {
       this.onlineSystem.postBreedingOffer(pet, price)
     )
     ipcMain.handle('online:breeding-cancel', () => this.onlineSystem.cancelBreedingOffer())
-    ipcMain.handle('online:breeding-request', (_e, { offerId, myPet }) =>
-      this.onlineSystem.requestBreeding(offerId, myPet)
-    )
+    ipcMain.handle('online:breeding-request', async (_e, { offerId, myPet }) => {
+      const res = await this.onlineSystem.requestBreeding(offerId, myPet)
+      if (res.ok && res.child) {
+        this.petSystem.createPet(res.child.name, res.child.attribute)
+      }
+      return res
+    })
 
     ipcMain.handle('online:battle-challenge', (_e, { targetUsername, myPet }) =>
       this.onlineSystem.challengeBattle(targetUsername, myPet)
