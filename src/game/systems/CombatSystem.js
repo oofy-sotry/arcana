@@ -11,12 +11,13 @@ class CombatSystem {
   }
 
   // 전투 상태 초기화 — monster는 monsters.js의 MONSTERS 항목 + currentHp
-  startBattle(pet, monster, mode = 'auto') {
+  startBattle(pet, monster, mode = 'auto', synergyMult = 1.0) {
     const state = {
       pet,
       monster: { ...monster, currentHp: monster.hp },
       petHp: pet.hp,
       mode,
+      synergyMult,
       log: [],
     }
     this._battles.set(pet.id, state)
@@ -46,15 +47,16 @@ class CombatSystem {
     const state = this._battles.get(petId)
     if (!state) return null
     const { pet, monster } = state
-    const result = calcDamage({
+    const result      = calcDamage({
       attack: pet.attack,
       defense: monster.defense,
       skillLevel,
       attackerAttr: pet.attribute,
       defenderAttr: monster.attribute,
     })
-    state.monster.currentHp -= result.damage
-    const entry = { actor: 'pet', ...result }
+    const finalDamage = Math.ceil(result.damage * (state.synergyMult || 1.0))
+    state.monster.currentHp -= finalDamage
+    const entry = { actor: 'pet', ...result, damage: finalDamage }
     state.log.push(entry)
     return entry
   }
@@ -137,13 +139,21 @@ class CombatSystem {
 
   // 자동 사냥용: 한 번의 전투를 완전히 시뮬레이션
   runAutoFight(pet, monster, opts = {}) {
-    this.startBattle(pet, monster, opts.mode || 'auto')
+    this.startBattle(pet, monster, opts.mode || 'auto', opts.synergyMult || 1.0)
     const petId = pet.id
     let turns = 0
     while (this.checkBattleEnd(petId) === 'ongoing' && turns < 100) {
-      this.executePetTurn(petId)
-      if (this.checkBattleEnd(petId) !== 'ongoing') break
-      this.executeMonsterTurn(petId)
+      const state    = this._battles.get(petId)
+      const petFirst = (state.pet.speed || 10) >= (state.monster.speed || 10)
+      if (petFirst) {
+        this.executePetTurn(petId)
+        if (this.checkBattleEnd(petId) !== 'ongoing') break
+        this.executeMonsterTurn(petId)
+      } else {
+        this.executeMonsterTurn(petId)
+        if (this.checkBattleEnd(petId) !== 'ongoing') break
+        this.executePetTurn(petId)
+      }
       turns++
     }
     return this.endBattle(petId, opts)
