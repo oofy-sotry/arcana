@@ -236,12 +236,21 @@ class QuestSystem {
     const quest = QUESTS.find(q => q.id === questId)
     if (!quest) return { ok: false, reason: 'quest_not_found' }
 
-    const row = db.query(
-      'SELECT completed_at, claimed_at FROM quest_progress WHERE quest_id = ?',
-      [questId]
-    )[0]
-    if (!row || !row.completed_at) return { ok: false, reason: 'not_completed' }
-    if (row.claimed_at)            return { ok: false, reason: 'already_claimed' }
+    // getAllStatuses 호출 여부와 무관하게 현재 상태를 직접 계산
+    this._ensureProgress(questId, quest.daily)
+    const liveStatus = this.getUnlockStatus(quest)
+    if (liveStatus === 'locked' || liveStatus === 'active') {
+      return { ok: false, reason: 'not_completed' }
+    }
+    if (liveStatus === 'claimed') {
+      return { ok: false, reason: 'already_claimed' }
+    }
+
+    // completed_at 미기록 시 기록
+    const row = db.query('SELECT completed_at FROM quest_progress WHERE quest_id = ?', [questId])[0]
+    if (!row?.completed_at) {
+      db.run('UPDATE quest_progress SET completed_at = ? WHERE quest_id = ?', [Date.now(), questId])
+    }
 
     const pet = this.Pet.getPet(petId)
     if (!pet) return { ok: false, reason: 'pet_not_found' }
