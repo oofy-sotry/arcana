@@ -23,6 +23,10 @@ const STAGE_POOL = [
 
 const STAGE_NAMES = ['유년기', '성장기', '완전체', '궁극체', '전설체']
 
+// 단계별 스탯: 기본값 + 레벨업 누적 성장 (레벨 1 기준, stage*10 레벨 획득 가정)
+const BASE_STATS   = { hp: 100, mp: 100, attack: 10, defense: 5, speed: 10 }
+const LEVEL_GROWTH = { hp: 5,   mp: 3,   attack: 2,  defense: 1, speed: 2  }
+
 function weightedPick(pool) {
   if (!pool || pool.length === 0) throw new Error('weightedPick: empty pool')
   const total = pool.reduce((s, e) => s + e.weight, 0)
@@ -91,7 +95,18 @@ class GachaSystem {
     const name    = `${STAGE_NAMES[stage]} ${attr}형`
     const pet     = this.Pet.createPet(name, attr, 'default')
 
-    if (stage > 0) this.Pet.updatePet(pet.id, { evolution_stage: stage, level: stage * 10 + 1 })
+    if (stage > 0) {
+      const levelsGained = stage * 10
+      this.Pet.updatePet(pet.id, {
+        evolution_stage: stage,
+        level:   stage * 10 + 1,
+        hp:      BASE_STATS.hp      + levelsGained * LEVEL_GROWTH.hp,
+        mp:      BASE_STATS.mp      + levelsGained * LEVEL_GROWTH.mp,
+        attack:  BASE_STATS.attack  + levelsGained * LEVEL_GROWTH.attack,
+        defense: BASE_STATS.defense + levelsGained * LEVEL_GROWTH.defense,
+        speed:   BASE_STATS.speed   + levelsGained * LEVEL_GROWTH.speed,
+      })
+    }
 
     return this.Pet.getPet(pet.id)
   }
