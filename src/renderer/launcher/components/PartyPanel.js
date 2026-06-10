@@ -70,6 +70,7 @@ class PartyPanel {
     el.querySelectorAll('[data-remove]').forEach(btn => {
       btn.addEventListener('click', async () => {
         const res = await window.arcana.party.remove({ petId: parseInt(btn.dataset.remove) })
+        if (res && res.error) return
         if (onPartyChange) onPartyChange(res)
       })
     })
@@ -80,6 +81,7 @@ class PartyPanel {
         const slot  = parseInt(sel.dataset.slot)
         if (!petId) return
         const res = await window.arcana.party.add({ petId, slot })
+        if (res && res.error) { sel.value = ''; return }
         if (onPartyChange) onPartyChange(res)
       })
     })

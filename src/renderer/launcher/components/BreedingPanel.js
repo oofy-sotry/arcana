@@ -57,6 +57,12 @@ class BreedingPanel {
         return
       }
       const info  = await window.arcana.breeding.compatInfo({ petId1: id1, petId2: id2 })
+      if (info.error) {
+        compatBox.textContent = `오류: ${info.error}`
+        btn.disabled = true
+        btn.style.opacity = '0.4'
+        return
+      }
       const label = COMPAT_LABEL[info.compat] ?? info.compat
       const hybrid = info.hybridResult
         ? `<span style="color:#f5a623">혼합속성 가능: ${info.hybridResult.name ?? info.hybridResult.attribute}</span>`
