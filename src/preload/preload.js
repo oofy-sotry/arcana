@@ -67,4 +67,26 @@ contextBridge.exposeInMainWorld('arcana', {
     friendsRemove:   ({ friendId })                   => ipcRenderer.invoke('online:friends-remove', { friendId }),
     friendsPets:     ({ username })                   => ipcRenderer.invoke('online:friends-pets', { username }),
   },
+  equipment: {
+    getInventory: ({ petId })              => ipcRenderer.invoke('equipment:get-inventory', { petId }),
+    getEquipped:  ({ petId })              => ipcRenderer.invoke('equipment:get-equipped',  { petId }),
+    equip:        ({ petId, inventoryId }) => ipcRenderer.invoke('equipment:equip',         { petId, inventoryId }),
+    unequip:      ({ petId, slot })        => ipcRenderer.invoke('equipment:unequip',        { petId, slot }),
+    enhance:      ({ petId, inventoryId }) => ipcRenderer.invoke('equipment:enhance',        { petId, inventoryId }),
+    openBox:      ({ petId, itemId })      => ipcRenderer.invoke('equipment:open-box',       { petId, itemId }),
+    setBonuses:   ({ petId })              => ipcRenderer.invoke('equipment:set-bonuses',    { petId }),
+  },
+  faction: {
+    getAll:          ()              => ipcRenderer.invoke('faction:get-all'),
+    getTier:         ({ faction })   => ipcRenderer.invoke('faction:get-tier',       { faction }),
+    useItem:         ({ itemId })    => ipcRenderer.invoke('faction:use-item',       { itemId }),
+    hiddenEnding:    ()              => ipcRenderer.invoke('faction:hidden-ending'),
+    soulFusion:      ()              => ipcRenderer.invoke('faction:soul-fusion'),
+    chapter:         ()              => ipcRenderer.invoke('faction:chapter'),
+    advanceChapter:  ({ chapter })   => ipcRenderer.invoke('faction:advance-chapter', { chapter }),
+  },
+  explore: {
+    resolveChoice: ({ petId, eventId, choiceIndex }) =>
+      ipcRenderer.invoke('explore:resolve-choice', { petId, eventId, choiceIndex }),
+  },
 })
