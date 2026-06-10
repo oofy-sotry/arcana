@@ -23,6 +23,7 @@ function setupTabs() {
       if (tab === 'online')    renderOnlineTab()
       if (tab === 'equipment') renderEquipmentTab()
       if (tab === 'faction')   renderFactionTab()
+      if (tab === 'story')     renderStoryTab()
     })
   })
 }
@@ -226,6 +227,25 @@ async function renderFactionTab() {
   container.innerHTML = ''
   container.appendChild(
     new FactionPanel(repData, soulRes.value, hiddenCond, chapterRes.chapter).render()
+  )
+}
+
+async function renderStoryTab() {
+  const container = document.getElementById('tab-story')
+  container.innerHTML = '<span style="color:#aaa;font-size:13px">로딩 중...</span>'
+
+  const [repData, soulRes, hiddenCond, chapterRes] = await Promise.all([
+    window.arcana.faction.getAll(),
+    window.arcana.faction.soulFusion(),
+    window.arcana.faction.hiddenEnding(),
+    window.arcana.faction.chapter(),
+  ])
+  container.innerHTML = ''
+  container.appendChild(
+    new StoryPanel(chapterRes.chapter, repData, soulRes.value, hiddenCond).render(async () => {
+      allPets = await window.arcana.pet.getAll()
+      renderStoryTab()
+    })
   )
 }
 
