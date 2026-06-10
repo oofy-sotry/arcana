@@ -67,8 +67,53 @@ class ItemSystem {
         break
       }
       case 'evolve_boost':
-        // EvolutionSystem에서 아이템 보유 여부만 체크, 소모는 여기서
         break
+
+      case 'death_rate_down': {
+        // 다음 사망 1회를 HP 1 생존으로 전환 — CombatSystem에서 소비
+        db.run(
+          "INSERT OR REPLACE INTO world_state (key, value) VALUES (?, '1')",
+          [`death_shield_${pet.id}`]
+        )
+        break
+      }
+
+      case 'revive': {
+        // 사망 후 HP 50%로 자동 부활 — CombatSystem에서 소비
+        db.run(
+          "INSERT OR REPLACE INTO world_state (key, value) VALUES (?, '1')",
+          [`auto_revive_${pet.id}`]
+        )
+        break
+      }
+
+      case 'dark_evolve': {
+        if ((pet.evolution_stage || 0) >= 4) return { ok: false, reason: 'max_stage' }
+        const CHARACTERS = require('../data/characters')
+        const DARK_BONUS = 0.20
+        const fromStage  = pet.evolution_stage || 0
+        const toStage    = fromStage + 1
+        const nextChar   = Object.values(CHARACTERS).find(
+          c => c.attribute === pet.attribute && c.stage === toStage
+        )
+        const updates = {
+          evolution_stage: toStage,
+          attribute2: 'dark',
+          hp:      Math.ceil((pet.hp      || 100) * (1 + DARK_BONUS)),
+          mp:      Math.ceil((pet.mp      || 100) * (1 + DARK_BONUS)),
+          attack:  Math.ceil((pet.attack  || 10)  * (1 + DARK_BONUS)),
+          defense: Math.ceil((pet.defense || 5)   * (1 + DARK_BONUS)),
+          speed:   Math.ceil((pet.speed   || 10)  * (1 + DARK_BONUS)),
+        }
+        if (nextChar) updates.name = nextChar.name
+        Pet.updatePet(pet.id, updates)
+        db.run(
+          `INSERT INTO evolution_log (pet_id, from_stage, to_stage, evo_type, evolved_at) VALUES (?,?,?,?,?)`,
+          [pet.id, fromStage, toStage, 'dark', Date.now()]
+        )
+        break
+      }
+
       default:
         return { ok: false, reason: 'unhandled_effect' }
     }
