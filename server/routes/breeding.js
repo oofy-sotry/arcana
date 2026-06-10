@@ -20,6 +20,7 @@ router.get('/offers', requireAuth, (req, res) => {
 router.post('/offers', requireAuth, (req, res) => {
   const { pet, price = 100 } = req.body || {}
   if (!pet) return res.status(400).json({ error: 'missing_pet' })
+  if (typeof price !== 'number' || price < 1) return res.status(400).json({ error: 'invalid_price' })
 
   // 기존 공고 비활성화
   db.run('UPDATE breeding_offers SET is_active = 0 WHERE user_id = ? AND is_active = 1', [req.user.id])
@@ -41,16 +42,15 @@ router.delete('/offers/mine', requireAuth, (req, res) => {
 
 // POST /breeding/offers/:id/request — 교배 신청 (서버가 자동 배정)
 router.post('/offers/:id/request', requireAuth, (req, res) => {
-  const offer = db.query('SELECT * FROM breeding_offers WHERE id = ? AND is_active = 1', [req.params.id])[0]
-  if (!offer) return res.status(404).json({ error: 'offer_not_found' })
-  if (offer.user_id === req.user.id) return res.status(400).json({ error: 'cannot_breed_own_pet' })
-
   const { myPet } = req.body || {}
   if (!myPet) return res.status(400).json({ error: 'missing_pet' })
 
-  const offerPet = JSON.parse(offer.pet_snapshot)
+  db.run('BEGIN')
+  const offer = db.query('SELECT * FROM breeding_offers WHERE id = ? AND is_active = 1', [req.params.id])[0]
+  if (!offer) { db.run('ROLLBACK'); return res.status(404).json({ error: 'offer_not_found' }) }
+  if (offer.user_id === req.user.id) { db.run('ROLLBACK'); return res.status(400).json({ error: 'cannot_breed_own_pet' }) }
 
-  // 단순 결과 생성: 부모 속성 중 하나를 50% 확률로 선택
+  const offerPet  = JSON.parse(offer.pet_snapshot)
   const childAttr = Math.random() < 0.5 ? offerPet.attribute : myPet.attribute
   const child = {
     name:            `${offerPet.name}×${myPet.name}의 자식`,
@@ -61,8 +61,8 @@ router.post('/offers/:id/request', requireAuth, (req, res) => {
     parents:         [offerPet.name, myPet.name],
   }
 
-  // 공고 비활성화 (1회 사용)
   db.run('UPDATE breeding_offers SET is_active = 0 WHERE id = ?', [offer.id])
+  db.run('COMMIT')
   db.save()
 
   res.json({ ok: true, child, offerPet })
