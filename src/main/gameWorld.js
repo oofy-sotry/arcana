@@ -81,8 +81,10 @@ class GameWorld {
     this._tickEnergyRecovery(pets)
 
     for (const pet of pets) {
-      if (this.evolutionSystem.canEvolve(pet)) {
-        this.evolutionSystem.evolve(pet)
+      const canEvo   = this.evolutionSystem.canEvolve(pet)
+      const isHidden = this.evolutionSystem.checkHiddenConditions(pet)
+      if (canEvo || isHidden) {
+        this.evolutionSystem.evolve(pet, isHidden ? 'hidden' : 'normal')
         const freshPet = this.petSystem.getAll().find(p => p.id === pet.id)
         if (freshPet) this.skillSystem.unlockForStage(freshPet)
       }
