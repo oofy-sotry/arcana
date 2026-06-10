@@ -3,7 +3,7 @@ const { ipcMain } = require('electron')
 class IpcRouter {
   constructor({ petSystem, levelSystem, evolutionSystem, skillSystem, itemSystem,
                 huntingSystem, explorationSystem,
-                breedingSystem, gachaSystem, partySystem,
+                breedingSystem, gachaSystem, partySystem, questSystem,
                 windowManager }) {
     this.petSystem        = petSystem
     this.levelSystem      = levelSystem
@@ -15,6 +15,7 @@ class IpcRouter {
     this.breedingSystem   = breedingSystem
     this.gachaSystem      = gachaSystem
     this.partySystem      = partySystem
+    this.questSystem      = questSystem
     this.windowManager    = windowManager
   }
 
@@ -120,6 +121,13 @@ class IpcRouter {
       this.partySystem.removeFromParty(petId)
     )
     ipcMain.handle('party:clear', () => this.partySystem.clearParty())
+
+    // ── Quest ─────────────────────────────────────────────────────────────
+    ipcMain.handle('quest:get-all', () => this.questSystem.getAllStatuses())
+    ipcMain.handle('quest:claim', (_e, { questId, petId }) =>
+      this.questSystem.claimReward(questId, petId)
+    )
+    ipcMain.handle('quest:faction-rep', () => this.questSystem.getFactionRep())
   }
 }
 
