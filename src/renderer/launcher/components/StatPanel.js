@@ -1,6 +1,7 @@
 class StatPanel {
-  constructor(pet) {
-    this.pet = pet
+  constructor(pet, onEvolve) {
+    this.pet     = pet
+    this.onEvolve = onEvolve || null
   }
 
   render() {
@@ -25,8 +26,12 @@ class StatPanel {
           <span style="font-weight:bold">${s.value}</span>
         </div>`).join('')}
       <div style="margin-top:10px; font-size:12px; color:#888">스킬 포인트: ${pet.skill_points || 0}</div>
-      <div style="font-size:12px; color:#888">친화도: ${Math.round(pet.affinity || 50)}</div>`
+      <div style="font-size:12px; color:#888">친화도: ${Math.round(pet.affinity || 50)}</div>
+      <button id="btn-evolve" style="margin-top:14px; width:100%; padding:8px; background:#0f3460; border:1px solid #e94560; color:#e94560; border-radius:6px; cursor:pointer; font-size:13px">
+        진화 시도
+      </button>`
 
+    el.querySelector('#btn-evolve').addEventListener('click', () => this.onEvolve?.())
     return el
   }
 }
