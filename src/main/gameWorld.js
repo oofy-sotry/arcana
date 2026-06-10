@@ -47,9 +47,9 @@ class GameWorld {
     this.evolutionSystem = new EvolutionSystem({ Pet, save: db.save })
     this.skillSystem     = new SkillSystem({ Pet, save: db.save })
     this.itemSystem      = new ItemSystem({ Pet, save: db.save })
-    this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem })
-    this.factionSystem       = new FactionSystem({ save: db.save })
     this.equipmentSystem     = new EquipmentSystem({ save: db.save, itemSystem: this.itemSystem })
+    this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem, equipmentSystem: this.equipmentSystem })
+    this.factionSystem       = new FactionSystem({ save: db.save })
     this.explorationSystem   = new ExplorationSystem({ Pet, save: db.save, itemSystem: this.itemSystem, factionSystem: this.factionSystem })
     this.breedingSystem      = new BreedingSystem({ Pet, save: db.save })
     this.gachaSystem         = new GachaSystem({ Pet, save: db.save })
@@ -91,12 +91,12 @@ class GameWorld {
     for (const pet of pets) {
       const canEvo   = this.evolutionSystem.canEvolve(pet)
       const isHidden = this.evolutionSystem.checkHiddenConditions(pet)
-      if (canEvo || isHidden) {
-        const evoResult = this.evolutionSystem.evolve(pet, isHidden ? 'hidden' : 'normal')
+      // 히든 조건 충족 시 자동 진화 금지 — UI confirm 후 진화
+      if (isHidden) continue
+      if (canEvo) {
+        const evoResult = this.evolutionSystem.evolve(pet, 'normal')
         const freshPet  = this.petSystem.getAll().find(p => p.id === pet.id)
         if (freshPet) this.skillSystem.unlockForStage(freshPet)
-        // 히든 진화 시 영혼동화도 증가
-        if (evoResult.evoType === 'hidden') this.factionSystem.gainSoulFusion('hidden_evolution')
       }
     }
 
