@@ -57,6 +57,18 @@ function spawnPetSprite() {
   g.destroy()
 }
 
+async function loadZoneMonsters(zoneId) {
+  const monsters = await window.arcana.hunting.zoneMonsters({ zoneId })
+  window._currentZoneMonsters = monsters
+  if (window._monsterRenderer) {
+    window._monsterRenderer.clearAll()
+    const spawnCount = Math.min(3, monsters.length)
+    for (let i = 0; i < spawnCount; i++) {
+      window._monsterRenderer.spawnMonster(monsters[Math.floor(Math.random() * monsters.length)])
+    }
+  }
+}
+
 async function init() {
   await initScene()
 
@@ -68,7 +80,12 @@ async function init() {
     opt.textContent = z.name
     sel.appendChild(opt)
   })
-  sel.addEventListener('change', () => { currentZoneId = sel.value })
+  if (zones.length > 0) currentZoneId = zones[0].id
+  sel.value = currentZoneId
+  sel.addEventListener('change', () => {
+    currentZoneId = sel.value
+    loadZoneMonsters(currentZoneId)
+  })
 
   const pets = await window.arcana.pet.getAll()
   window._combatUI = new CombatUI()
@@ -88,6 +105,9 @@ async function init() {
 
   setupKeyboard()
   app.ticker.add(onTick)
+
+  // 초기 구역 몬스터 스폰
+  if (currentZoneId) await loadZoneMonsters(currentZoneId)
 }
 
 function setupKeyboard() {
