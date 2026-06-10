@@ -55,6 +55,7 @@ function runMigrations() {
     require('./migrations/005_fixes'),
     require('./migrations/006_quest'),
     require('./migrations/007_hidden_equipment'),
+    require('./migrations/008_breeding_species'),
   ]
 
   const [{ values: [[currentVersion]] }] = db.exec('PRAGMA user_version')
