@@ -107,8 +107,24 @@ class CombatSystem {
       this.save()
     } else if (result === 'lost') {
       if (mode === 'auto') {
-        // 소프트 삭제 — FK 제약 보존, getAllPets는 is_alive=1 필터 적용
-        this.Pet.updatePet(petId, { is_alive: 0 })
+        const shieldKey = `death_shield_${petId}`
+        const reviveKey = `auto_revive_${petId}`
+        const shield    = db.query('SELECT value FROM world_state WHERE key = ?', [shieldKey])[0]
+        const revive    = db.query('SELECT value FROM world_state WHERE key = ?', [reviveKey])[0]
+
+        if (shield) {
+          // 생명의 부적: 이번 사망을 HP 1 생존으로 전환
+          db.run('DELETE FROM world_state WHERE key = ?', [shieldKey])
+          this.Pet.updatePet(petId, { hp: 1 })
+        } else if (revive) {
+          // 부활석: 사망 후 HP 50%로 즉시 부활
+          db.run('DELETE FROM world_state WHERE key = ?', [reviveKey])
+          const deadPet  = this.Pet.getPet(petId)
+          const reviveHp = Math.max(1, Math.ceil((deadPet?.hp || 100) * 0.5))
+          this.Pet.updatePet(petId, { hp: reviveHp })
+        } else {
+          this.Pet.updatePet(petId, { is_alive: 0 })
+        }
       } else {
         this.Pet.updatePet(petId, { hp: 1 })
       }
