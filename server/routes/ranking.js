@@ -6,6 +6,9 @@ const router = Router()
 // GET /ranking/:category  — category: level | stage | collection
 router.get('/:category', (req, res) => {
   const { category } = req.params
+  if (!['level', 'stage', 'collection'].includes(category)) {
+    return res.status(400).json({ error: 'invalid_category' })
+  }
   const rows = db.query(
     `SELECT u.username, up.pet_snapshot, up.synced_at
      FROM user_pets up
