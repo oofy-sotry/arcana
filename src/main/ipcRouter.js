@@ -37,8 +37,10 @@ class IpcRouter {
       const pets = this.petSystem.getAll()
       const pet  = pets.find(p => p.id === petId)
       if (!pet) return { ok: false, reason: 'not_found' }
-      if (!this.evolutionSystem.canEvolve(pet)) return { ok: false, reason: 'conditions_not_met' }
-      const result   = this.evolutionSystem.evolve(pet)
+      const canEvo   = this.evolutionSystem.canEvolve(pet)
+      const isHidden = this.evolutionSystem.checkHiddenConditions(pet)
+      if (!canEvo && !isHidden) return { ok: false, reason: 'conditions_not_met' }
+      const result   = this.evolutionSystem.evolve(pet, isHidden ? 'hidden' : 'normal')
       this.questSystem?.recordActivity('evolve', 1)
       const freshPet = this.petSystem.getAll().find(p => p.id === petId)
       if (freshPet) this.skillSystem.unlockForStage(freshPet)
@@ -61,7 +63,12 @@ class IpcRouter {
       const pets = this.petSystem.getAll()
       const pet  = pets.find(p => p.id === petId)
       if (!pet) return { ok: false, reason: 'not_found' }
-      return this.itemSystem.useItem(pet, itemId)
+      const result = this.itemSystem.useItem(pet, itemId)
+      if (result.ok && result.effect === 'dark_evolve') {
+        const freshPet = this.petSystem.getAll().find(p => p.id === petId)
+        if (freshPet) this.skillSystem.unlockForStage(freshPet)
+      }
+      return result
     })
 
     ipcMain.on('overlay:toggle-mouse', (_event, ignore) => {
