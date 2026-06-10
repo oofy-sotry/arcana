@@ -18,7 +18,7 @@ class BreedingSystem {
 
   // 교배 가능 여부 확인
   canBreed(pet, batchCount = 1) {
-    return pet.is_alive === 1 && (pet.max_breeding - pet.used_breeding) >= batchCount
+    return Number(pet.is_alive) === 1 && (pet.max_breeding - pet.used_breeding) >= batchCount
   }
 
   // 두 펫의 호환 정보 반환 (UI 표시용)
@@ -60,8 +60,11 @@ class BreedingSystem {
     }
     this.Pet.updatePet(child.id, childUpdates)
 
-    this.Pet.updatePet(pet1.id, { used_breeding: pet1.used_breeding + batchCount })
-    this.Pet.updatePet(pet2.id, { used_breeding: pet2.used_breeding + batchCount })
+    // DB 최신값 재조회 후 차감 (연속 호출 시 메모리 스냅샷 기반 오버카운트 방지)
+    const fresh1 = this.Pet.getPet(pet1.id)
+    const fresh2 = this.Pet.getPet(pet2.id)
+    this.Pet.updatePet(pet1.id, { used_breeding: fresh1.used_breeding + batchCount })
+    this.Pet.updatePet(pet2.id, { used_breeding: fresh2.used_breeding + batchCount })
 
     const db = require('../../db/database')
     db.run(
