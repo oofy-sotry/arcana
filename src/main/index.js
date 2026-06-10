@@ -20,6 +20,9 @@ app.whenReady().then(async () => {
     itemSystem:       gameWorld.itemSystem,
     huntingSystem:    gameWorld.huntingSystem,
     explorationSystem: gameWorld.explorationSystem,
+    breedingSystem:   gameWorld.breedingSystem,
+    gachaSystem:      gameWorld.gachaSystem,
+    partySystem:      gameWorld.partySystem,
     windowManager,
   })
   ipcRouter.register()
