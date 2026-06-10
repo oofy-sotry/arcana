@@ -30,6 +30,7 @@ class HuntingSystem {
   // 에너지 소진까지 전투를 반복 실행, hunt_log 저장
   startAutoHunt(pet, zoneId) {
     const db      = require('../../db/database')
+    const petId   = pet.id
     const energy  = pet.conditions?.energy ?? 100
     if (energy < AUTO_ENERGY_COST) return { error: '에너지 부족 (자동 사냥: -30 필요)' }
 
@@ -62,8 +63,18 @@ class HuntingSystem {
       `UPDATE hunt_log SET ended_at=?, result=? WHERE id=?`,
       [Date.now(), battles.at(-1)?.result || 'stopped', huntLogId]
     )
-    db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [currentEnergy, pet.id])
+    db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [currentEnergy, petId])
     this.questSystem?.recordActivity('hunt', battles.length)
+
+    // 사냥 승리 수만큼 친밀도 증가 (+0.3/승리)
+    const wins = battles.filter(b => b.result === 'won').length
+    if (wins > 0) {
+      const latestPet = this.Pet.getPet(petId)
+      if (latestPet) {
+        this.Pet.updatePet(petId, { affinity: Math.min(100, (latestPet.affinity || 0) + wins * 0.3) })
+      }
+    }
+
     this.save()
     return { battles, finalEnergy: currentEnergy }
   }
@@ -92,6 +103,9 @@ class HuntingSystem {
 
     db.run(`UPDATE pet_conditions SET energy=? WHERE pet_id=?`, [newEnergy, pet.id])
     this.questSystem?.recordActivity('hunt', 1)
+    if (outcome.result !== 'lost') {
+      this.Pet.updatePet(pet.id, { affinity: Math.min(100, (pet.affinity || 0) + 1.0) })
+    }
     this.save()
     return { monster: monster.name, ...outcome, finalEnergy: newEnergy }
   }
