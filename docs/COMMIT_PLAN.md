@@ -568,6 +568,49 @@
 
 ---
 
-## 다음 Phase (예고)
+## Phase 6 — 온라인
 
-- **Phase 6** — 온라인
+> **완료 기준:** 회원가입/로그인 후 펫 동기화, 랭킹 조회, 다른 유저와 교배 신청, PvP 자동 배틀, 친구 추가·펫 방문이 가능하다.
+
+---
+
+### 6-A 서버 기반 설정
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 205 | `feat(server): 서버 기반 설정 — package.json·DB 초기화·마이그레이션 2종` | server/ | sql.js DB, users + online 스키마 | ✅ |
+
+---
+
+### 6-B 서버 인증
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 206 | `feat(server): 인증 시스템 — config·JWT 미들웨어·register·login 라우터` | server/config.js · middleware/auth.js · routes/auth.js | bcryptjs 해싱, JWT 발급 | ✅ |
+
+---
+
+### 6-C 서버 기능 라우터
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 207 | `feat(server): 기능 라우터 4종 — save·ranking·breeding·battle·friends` | server/routes/ | 5개 라우터 파일 | ✅ |
+| 208 | `feat(server): server/index.js — Express 서버 진입점, 라우터 등록 및 DB 자동 저장` | server/index.js | 진입점 + 30초 DB 플러시 | ✅ |
+
+---
+
+### 6-D 클라이언트 연결
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 209 | `feat(client): ApiService.js + OnlineSystem.js — HTTP 클라이언트 및 온라인 기능 시스템` | src/game/services/ · systems/ | Node.js http 모듈 래퍼, 온라인 기능 전체 | ✅ |
+| 210 | `feat(world): gameWorld.js — OnlineSystem 인스턴스화` | src/main/gameWorld.js | onlineSystem 필드 + init | ✅ |
+| 211 | `feat(ipc): ipcRouter·index·preload — OnlineSystem 주입 및 online:* IPC 핸들러 등록` | ipcRouter.js · index.js · preload.js | 16개 IPC 핸들러 + arcana.online | ✅ |
+
+---
+
+### 6-E 런처 UI (온라인 탭)
+
+| # | 커밋 메시지 | 파일 | 변경 내용 | 완료 |
+|---|------------|------|----------|------|
+| 212 | `feat(ui): OnlinePanel.js + index.html + launcher.js — 온라인 탭 UI` | components/OnlinePanel.js + index.html + launcher.js | 인증·랭킹·교배·배틀·친구 5섹션 | ✅ |
