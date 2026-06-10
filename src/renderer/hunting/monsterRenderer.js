@@ -36,13 +36,22 @@ class MonsterRenderer {
   removeMonster(sprite) {
     const idx = this.monsters.findIndex(m => m.sprite === sprite)
     if (idx === -1) return
+    const respawnMs = this.monsters[idx].data.respawnMs || 2000
     this.stage.removeChild(sprite)
     sprite.destroy()
     this.monsters.splice(idx, 1)
-    // 2초 후 새 몬스터 스폰
+    // 티어 기반 딜레이 후 리스폰 (tier1-2=2s, tier3-4=3s, tier5-6=5s, tier7=8s)
     setTimeout(() => {
       if (this.monsters.length < 3) this._spawnRandom()
-    }, 2000)
+    }, respawnMs)
+  }
+
+  clearAll() {
+    for (const m of this.monsters) {
+      this.stage.removeChild(m.sprite)
+      m.sprite.destroy()
+    }
+    this.monsters = []
   }
 
   _spawnRandom() {
