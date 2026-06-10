@@ -145,10 +145,12 @@ function renderPartyTabWith(container, party) {
 async function renderQuestTab() {
   const container = document.getElementById('tab-quest')
   container.innerHTML = '<span style="color:#aaa; font-size:13px">로딩 중...</span>'
-  const [quests, factionRep] = await Promise.all([
+  const [quests, factionRep, freshPets] = await Promise.all([
     window.arcana.quest.getAll(),
     window.arcana.quest.factionRep(),
+    window.arcana.pet.getAll(),
   ])
+  allPets = freshPets
   container.innerHTML = ''
   container.appendChild(
     new QuestPanel(quests, factionRep, allPets).render(async (questId, petId) => {
