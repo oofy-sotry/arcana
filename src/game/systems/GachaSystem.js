@@ -71,8 +71,8 @@ class GachaSystem {
     const db = require('../../db/database')
     results.forEach(pet => {
       db.run(
-        `INSERT INTO gacha_log (pet_id, cost_coins, roll_count, created_at) VALUES (?, ?, ?, ?)`,
-        [pet.id, Math.floor(cost / count), count, Date.now()]
+        `INSERT INTO gacha_log (pet_id, owner_pet_id, cost_coins, roll_count, created_at) VALUES (?, ?, ?, ?, ?)`,
+        [pet.id, ownerPetId, Math.floor(cost / count), count, Date.now()]
       )
     })
 
