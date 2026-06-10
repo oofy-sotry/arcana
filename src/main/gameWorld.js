@@ -48,7 +48,7 @@ class GameWorld {
     this.breedingSystem     = new BreedingSystem({ Pet, save: db.save })
     this.gachaSystem        = new GachaSystem({ Pet, save: db.save })
     this.partySystem        = new PartySystem({ Pet, save: db.save })
-    this.questSystem        = new QuestSystem({ Pet, save: db.save })
+    this.questSystem        = new QuestSystem({ Pet, save: db.save, levelSystem: this.levelSystem })
     this.huntingSystem      = new HuntingSystem({
       Pet, save: db.save,
       combatSystem: this.combatSystem,
@@ -83,6 +83,8 @@ class GameWorld {
     for (const pet of pets) {
       if (this.evolutionSystem.canEvolve(pet)) {
         this.evolutionSystem.evolve(pet)
+        const freshPet = this.petSystem.getAll().find(p => p.id === pet.id)
+        if (freshPet) this.skillSystem.unlockForStage(freshPet)
       }
     }
 
