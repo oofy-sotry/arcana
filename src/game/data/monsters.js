@@ -376,21 +376,6 @@ const DROP_TABLES = {
   ],
 }
 
-// ── 상성 테이블 ───────────────────────────────────────────────────────
-// 행=공격자 속성, 열=방어자 속성 → 데미지 배율
-const ATTRIBUTE_MATCHUP = {
-  fire:    { fire:1.0, water:0.8,  wind:1.25, earth:1.0,  thunder:1.0,  ice:1.25, poison:1.0,  dragon:1.0,  light:0.8,  dark:1.25 },
-  water:   { fire:1.25,water:1.0,  wind:0.8,  earth:1.25, thunder:0.8,  ice:1.0,  poison:0.8,  dragon:1.25, light:1.0,  dark:1.0  },
-  wind:    { fire:0.8, water:1.25, wind:1.0,  earth:0.8,  thunder:1.25, ice:1.0,  poison:0.8,  dragon:1.25, light:1.0,  dark:1.0  },
-  earth:   { fire:1.0, water:0.8,  wind:1.25, earth:1.0,  thunder:0.8,  ice:1.25, poison:1.25, dragon:1.0,  light:1.0,  dark:1.0  },
-  thunder: { fire:1.0, water:1.25, wind:0.8,  earth:1.25, thunder:1.0,  ice:0.8,  poison:1.0,  dragon:1.25, light:1.0,  dark:0.8  },
-  ice:     { fire:0.8, water:1.0,  wind:1.0,  earth:0.8,  thunder:1.25, ice:1.0,  poison:1.0,  dragon:0.8,  light:1.25, dark:1.25 },
-  poison:  { fire:1.0, water:1.25, wind:1.25, earth:0.8,  thunder:1.0,  ice:1.0,  poison:1.0,  dragon:0.8,  light:0.8,  dark:1.25 },
-  dragon:  { fire:1.25,water:0.8,  wind:0.8,  earth:1.0,  thunder:0.8,  ice:1.25, poison:1.25, dragon:1.0,  light:1.0,  dark:0.8  },
-  light:   { fire:1.25,water:1.0,  wind:1.0,  earth:1.0,  thunder:1.0,  ice:0.8,  poison:1.25, dragon:1.0,  light:1.0,  dark:1.5  },
-  dark:    { fire:0.8, water:1.0,  wind:1.0,  earth:1.0,  thunder:1.25, ice:0.8,  poison:0.8,  dragon:1.25, light:1.5,  dark:1.0  },
-}
-
 // ── 헬퍼 함수 ─────────────────────────────────────────────────────────
 function getMonster(id) {
   return MONSTERS.find(m => m.id === id) || null
@@ -407,8 +392,4 @@ function getDropTable(monsterId) {
   return DROP_TABLES[monster.tier] || []
 }
 
-function getMatchupMult(attackerAttr, defenderAttr) {
-  return (ATTRIBUTE_MATCHUP[attackerAttr] || {})[defenderAttr] || 1.0
-}
-
-module.exports = { MONSTERS, ZONES, DROP_TABLES, ATTRIBUTE_MATCHUP, getMonster, getZone, getDropTable, getMatchupMult }
+module.exports = { MONSTERS, ZONES, DROP_TABLES, getMonster, getZone, getDropTable }
