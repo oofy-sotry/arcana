@@ -113,13 +113,13 @@ class IpcRouter {
     )
 
     // ── Gacha ─────────────────────────────────────────────────────────────
-    ipcMain.handle('gacha:roll-single', async (_e, { ownerPetId }) => {
-      const result = await Promise.resolve(this.gachaSystem.rollSingle(ownerPetId))
+    ipcMain.handle('gacha:roll-single', (_e, { ownerPetId }) => {
+      const result = this.gachaSystem.rollSingle(ownerPetId)
       if (result.ok) this.questSystem?.recordActivity('gacha', 1)
       return result
     })
-    ipcMain.handle('gacha:roll-ten', async (_e, { ownerPetId }) => {
-      const result = await Promise.resolve(this.gachaSystem.rollTen(ownerPetId))
+    ipcMain.handle('gacha:roll-ten', (_e, { ownerPetId }) => {
+      const result = this.gachaSystem.rollTen(ownerPetId)
       if (result.ok) this.questSystem?.recordActivity('gacha10', 1)
       return result
     })
