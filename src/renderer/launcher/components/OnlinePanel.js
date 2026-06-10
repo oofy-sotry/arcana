@@ -138,14 +138,14 @@ class OnlinePanel {
   }
 
   _renderRanking(body) {
-    body.innerHTML = `<div style="display:flex; gap:6px; margin-bottom:10px">
+    body.innerHTML = `<div id="rank-cat-bar" style="display:flex; gap:6px; margin-bottom:10px">
       ${['level','stage','collection'].map(c =>
         `<button data-cat="${c}" style="padding:3px 10px; border-radius:4px; border:none; cursor:pointer; font-size:11px; background:#333; color:#aaa">${CAT_LABELS[c]}</button>`
       ).join('')}
     </div>
     <div id="rank-list"><span style="color:#aaa; font-size:12px">카테고리를 선택하세요</span></div>`
 
-    body.querySelector('div').addEventListener('click', async e => {
+    body.querySelector('#rank-cat-bar').addEventListener('click', async e => {
       const btn = e.target.closest('[data-cat]')
       if (!btn) return
       body.querySelectorAll('[data-cat]').forEach(b => { b.style.background = '#333'; b.style.color = '#aaa' })
@@ -194,7 +194,6 @@ class OnlinePanel {
     window.arcana.online.breedingOffers().then(res => {
       if (res.error || !res.offers) { body.querySelector('#br-offers').innerHTML = `<span style="color:#e94560">${res.error || '오류'}</span>`; return }
       if (!res.offers.length) { body.querySelector('#br-offers').innerHTML = '<span style="color:#aaa; font-size:12px">등록된 공고 없음</span>'; return }
-
       body.querySelector('#br-offers').innerHTML = res.offers.map(o => `
         <div style="background:#1a1a2e; border-radius:6px; padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center">
           <div>
@@ -209,7 +208,7 @@ class OnlinePanel {
           const petId = Number(body.querySelector('#br-pet').value)
           const myPet = this.allPets.find(p => p.id === petId)
           if (!myPet) { alert('내 펫을 선택하세요'); return }
-          const snap = { name: myPet.name, attribute: myPet.attribute, evolution_stage: myPet.evolution_stage, level: myPet.level }
+          const snap = { name: myPet.name, attribute: myPet.attribute, evolution_stage: myPet.evolution_stage, level: myPet.level, hp: myPet.hp, attack: myPet.attack, defense: myPet.defense }
           const res = await window.arcana.online.breedingRequest({ offerId: Number(btn.dataset.offerId), myPet: snap })
           if (res.ok) {
             alert(`교배 성공!\n자식: ${res.child.name} (${res.child.attribute})`)
@@ -217,6 +216,8 @@ class OnlinePanel {
           } else { alert(`실패: ${res.error}`) }
         })
       })
+    }).catch(() => {
+      body.querySelector('#br-offers').innerHTML = '<span style="color:#e94560">네트워크 오류</span>'
     })
   }
 
@@ -245,9 +246,12 @@ class OnlinePanel {
       const res  = await window.arcana.online.battleChallenge({ targetUsername, myPet: snap })
       const div  = body.querySelector('#bt-result')
       if (res.ok) {
-        const won = res.winner === 'attacker'
-        div.innerHTML = `<div style="padding:8px; border-radius:6px; background:${won ? '#1a3a1e' : '#3a1a1e'}; font-size:12px; color:${won ? '#4ae84a' : '#e84a4a'}">
-          ${won ? '승리!' : '패배...'} vs ${res.defUsername} (${res.defPet?.name})
+        const outcome = res.winner === 'attacker' ? 'win' : res.winner === 'draw' ? 'draw' : 'lose'
+        const bg      = outcome === 'win' ? '#1a3a1e' : outcome === 'draw' ? '#2a2a1a' : '#3a1a1e'
+        const color   = outcome === 'win' ? '#4ae84a' : outcome === 'draw' ? '#f5c518' : '#e84a4a'
+        const label   = outcome === 'win' ? '승리!'   : outcome === 'draw' ? '무승부'  : '패배...'
+        div.innerHTML = `<div style="padding:8px; border-radius:6px; background:${bg}; font-size:12px; color:${color}">
+          ${label} vs ${res.defUsername} (${res.defPet?.name})
         </div>`
         this._loadBattleHistory(body)
       } else { div.innerHTML = `<span style="color:#e94560; font-size:12px">오류: ${res.error}</span>` }
@@ -264,6 +268,8 @@ class OnlinePanel {
           <span style="color:#aaa">${r.attacker_username} vs ${r.defender_username}</span>
           <span style="color:${r.won ? '#4ae84a' : '#e84a4a'}">${r.won ? '승' : '패'}</span>
         </div>`).join('') || '<span style="color:#aaa; font-size:12px">기록 없음</span>'
+    }).catch(() => {
+      body.querySelector('#bt-history').innerHTML = '<span style="color:#e94560">네트워크 오류</span>'
     })
   }
 
@@ -304,6 +310,8 @@ class OnlinePanel {
           this._loadFriends(body, cb)
         })
       })
+    }).catch(() => {
+      body.querySelector('#fr-list').innerHTML = '<span style="color:#e94560">네트워크 오류</span>'
     })
   }
 }
