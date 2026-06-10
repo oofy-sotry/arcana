@@ -65,8 +65,9 @@ class ExplorationSystem {
 
     if (result.type === 'item') {
       this.itemSystem.addItem(pet.id, result.itemId, 1)
+      this.Pet.updatePet(pet.id, { affinity: Math.min(100, (pet.affinity || 0) + 0.5) })
     } else if (result.type === 'coins') {
-      this.Pet.updatePet(pet.id, { coins: (pet.coins || 0) + result.coins })
+      this.Pet.updatePet(pet.id, { coins: (pet.coins || 0) + result.coins, affinity: Math.min(100, (pet.affinity || 0) + 0.5) })
     } else if (result.type === 'trap') {
       this.Pet.updatePet(pet.id, { hp: Math.max(1, pet.hp - result.damage) })
     }
