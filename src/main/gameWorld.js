@@ -53,6 +53,7 @@ class GameWorld {
       Pet, save: db.save,
       combatSystem: this.combatSystem,
       questSystem:  this.questSystem,
+      partySystem:  this.partySystem,
     })
     this.onlineSystem       = new OnlineSystem({ Pet, save: db.save })
 
