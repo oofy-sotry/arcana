@@ -16,8 +16,8 @@ const AFFINITY = {
   light:   { fire:1.3,  water:1.0,  wind:1.0,  earth:1.0,  thunder:1.0,  ice:0.77, poison:1.3,  dragon:1.0,  light:1.0,  dark:1.3,  omni:1.0 },
   // 어둠: 빛에 강함(1.3), 번개·얼음에 약함
   dark:    { fire:0.77, water:1.0,  wind:1.0,  earth:1.0,  thunder:1.3,  ice:0.77, poison:0.77, dragon:1.3,  light:1.3,  dark:1.0,  omni:1.0 },
-  // 옴니: 모든 속성에 중립 (최종 보스 특성)
-  omni:    { fire:1.0,  water:1.0,  wind:1.0,  earth:1.0,  thunder:1.0,  ice:1.0,  poison:1.0,  dragon:1.0,  light:1.0,  dark:1.0,  omni:1.0 },
+  // 옴니: 10속성 전부 흡수 — 모든 속성에 2.0x 유리 (공격 배율)
+  omni:    { fire:2.0,  water:2.0,  wind:2.0,  earth:2.0,  thunder:2.0,  ice:2.0,  poison:2.0,  dragon:2.0,  light:2.0,  dark:2.0,  omni:1.0 },
 }
 
 function getMultiplier(attackerAttr, defenderAttr) {
