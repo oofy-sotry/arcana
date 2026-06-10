@@ -1,5 +1,6 @@
-const { calcDamage } = require('../utils/formula')
+const { calcDamage }   = require('../utils/formula')
 const { getDropTable } = require('../data/monsters')
+const SKILLS           = require('../data/skills')
 
 class CombatSystem {
   constructor({ Pet, save, levelSystem, itemSystem }) {
@@ -7,28 +8,105 @@ class CombatSystem {
     this.save = save
     this.levelSystem = levelSystem
     this.itemSystem  = itemSystem
-    this._battles = new Map() // petId → battleState
+    this._battles = new Map()
   }
 
-  // 전투 상태 초기화 — monster는 monsters.js의 MONSTERS 항목 + currentHp
+  // ─── 장비 스탯 합산 ────────────────────────────────────────────────
+  _getEquipmentStats(petId) {
+    const db = require('../../db/database')
+    const bonus = { attack: 0, defense: 0, hp: 0, speed: 0 }
+
+    const rows = db.query(
+      `SELECT ed.stats_json, ei.enhance_level
+       FROM   pet_equipped_slots pes
+       JOIN   equipment_inventory ei ON ei.id  = pes.inventory_id
+       JOIN   equipment_defs      ed ON ed.id  = ei.def_id
+       WHERE  pes.pet_id = ? AND pes.inventory_id IS NOT NULL`,
+      [petId]
+    )
+    for (const { stats_json, enhance_level } of rows) {
+      let stats = {}
+      try { stats = JSON.parse(stats_json || '{}') } catch (_) {}
+      const mult = 1 + (enhance_level || 0) * 0.08   // 강화 레벨당 8% 보너스
+      for (const key of Object.keys(bonus)) {
+        if (stats[key]) bonus[key] += Math.floor(stats[key] * mult)
+      }
+    }
+    return bonus
+  }
+
+  // ─── 속성 기준 패시브 스킬 목록 ────────────────────────────────────
+  // 히든 트랙: unlockStage 'H2'/'H3' 는 pet.is_hidden && stage >= 숫자 조건
+  _getPassiveEffects(pet) {
+    const passives = []
+    const attr  = pet.attribute
+    const stage = pet.evolution_stage
+
+    for (const skill of Object.values(SKILLS)) {
+      if (skill.attribute !== attr || skill.type !== 'passive') continue
+
+      const us = skill.unlockStage
+      let unlocked = false
+      if (typeof us === 'number') {
+        unlocked = stage >= us
+      } else if (typeof us === 'string' && us.startsWith('H')) {
+        const req = Number(us.slice(1))
+        unlocked = pet.is_hidden === 1 && stage >= req
+      }
+      if (unlocked && skill.effect) passives.push(skill.effect)
+    }
+    return passives
+  }
+
+  // ─── 전투 초기화 ───────────────────────────────────────────────────
   startBattle(pet, monster, mode = 'auto', synergyMult = 1.0) {
+    const equip    = this._getEquipmentStats(pet.id)
+    const passives = this._getPassiveEffects(pet)
+
+    // 장비 적용 후 유효 스탯 (HP는 전투용 별도 추적)
+    const effectivePet = {
+      ...pet,
+      attack:  pet.attack  + equip.attack,
+      defense: pet.defense + equip.defense,
+      speed:   pet.speed   + equip.speed,
+    }
+    const startHp = pet.hp + equip.hp
+
+    // 패시브 도트(독성 신체 등) 상태: { value, duration }
+    const monsterDot = passives
+      .filter(p => p.type === 'dot' && p.duration >= 99)
+      .reduce((sum, p) => sum + p.value, 0)
+
     const state = {
-      pet,
+      pet: effectivePet,
       monster: { ...monster, currentHp: monster.hp },
-      petHp: pet.hp,
+      petHp: startHp,
       mode,
       synergyMult,
+      passives,
+      monsterDotPerTurn: monsterDot,  // 매 펫 턴마다 몬스터에 주는 패시브 독 피해
       log: [],
     }
     this._battles.set(pet.id, state)
     return state
   }
 
-  // 몬스터 공격 턴: 몬스터는 스킬 없이 기본 공격만 사용
+  // ─── 몬스터 공격 턴 ────────────────────────────────────────────────
   executeMonsterTurn(petId) {
     const state = this._battles.get(petId)
     if (!state) return null
-    const { pet, monster } = state
+    const { pet, monster, passives } = state
+
+    // 패시브 회피 (wind_dodge: dodge 15%)
+    const dodgeRate = passives
+      .filter(p => p.type === 'dodge')
+      .reduce((sum, p) => sum + p.value, 0)
+    if (dodgeRate > 0 && Math.random() < dodgeRate) {
+      const entry = { actor: 'monster', damage: 0, dodged: true }
+      state.log.push(entry)
+      return entry
+    }
+
     const result = calcDamage({
       attack: monster.attack,
       defense: pet.defense,
@@ -36,32 +114,61 @@ class CombatSystem {
       attackerAttr: monster.attribute,
       defenderAttr: pet.attribute,
     })
-    state.petHp -= result.damage
-    const entry = { actor: 'monster', ...result }
+
+    // 패시브 피해 감소 (water_shield / earth_armor / dragon_scale)
+    const reduction = passives
+      .filter(p => p.type === 'damage_reduction')
+      .reduce((sum, p) => sum + p.value, 0)
+    const finalDamage = Math.max(1, result.damage - reduction)
+
+    state.petHp -= finalDamage
+
+    // 패시브 반격 (static_field / frost_skin)
+    const counterDmg = passives
+      .filter(p => p.type === 'counter')
+      .reduce((sum, p) => sum + p.value, 0)
+    if (counterDmg > 0) {
+      state.monster.currentHp -= counterDmg
+    }
+
+    const entry = { actor: 'monster', ...result, damage: finalDamage, reduction, counter: counterDmg }
     state.log.push(entry)
     return entry
   }
 
-  // 펫 공격 턴: 스킬 미지정 시 기본 공격(skillLevel=1) 사용
+  // ─── 펫 공격 턴 ────────────────────────────────────────────────────
   executePetTurn(petId, skillLevel = 1) {
     const state = this._battles.get(petId)
     if (!state) return null
-    const { pet, monster } = state
-    const result      = calcDamage({
+    const { pet, monster, passives } = state
+
+    const result = calcDamage({
       attack: pet.attack,
       defense: monster.defense,
       skillLevel,
       attackerAttr: pet.attribute,
       defenderAttr: monster.attribute,
     })
-    const finalDamage = Math.ceil(result.damage * (state.synergyMult || 1.0))
+
+    // 파티 시너지 배율 + 패시브 추가 피해 (fire_aura)
+    const bonusDmg = passives
+      .filter(p => p.type === 'bonus_damage')
+      .reduce((sum, p) => sum + p.value, 0)
+    const finalDamage = Math.ceil(result.damage * (state.synergyMult || 1.0)) + bonusDmg
+
     state.monster.currentHp -= finalDamage
-    const entry = { actor: 'pet', ...result, damage: finalDamage }
+
+    // 패시브 지속 독 피해 (toxic_body)
+    if (state.monsterDotPerTurn > 0) {
+      state.monster.currentHp -= state.monsterDotPerTurn
+    }
+
+    const entry = { actor: 'pet', ...result, damage: finalDamage, bonusDmg }
     state.log.push(entry)
     return entry
   }
 
-  // 'ongoing' | 'won' | 'lost' 반환
+  // ─── 전투 종료 체크 ────────────────────────────────────────────────
   checkBattleEnd(petId) {
     const state = this._battles.get(petId)
     if (!state) return 'ongoing'
@@ -70,8 +177,7 @@ class CombatSystem {
     return 'ongoing'
   }
 
-  // 승리: exp/코인/드롭 지급 + drop_log 기록
-  // 패배: 자동 모드 사망(영구) / 수동 모드는 HP 1로 생존 처리
+  // ─── 전투 결산 ─────────────────────────────────────────────────────
   endBattle(petId, { dropRateBonus = 0, huntLogId = null } = {}) {
     const db = require('../../db/database')
     const state = this._battles.get(petId)
@@ -87,7 +193,7 @@ class CombatSystem {
 
       const table = getDropTable(monster.id)
       for (const entry of table) {
-        const roll = Math.random()
+        const roll      = Math.random()
         const effective = Math.min(entry.rate + dropRateBonus, 1.0)
         if (roll < effective) {
           this.itemSystem.addItem(petId, entry.itemId, entry.quantity)
@@ -107,6 +213,7 @@ class CombatSystem {
         )
       }
       this.save()
+
     } else if (result === 'lost') {
       if (mode === 'auto') {
         const shieldKey = `death_shield_${petId}`
@@ -115,11 +222,9 @@ class CombatSystem {
         const revive    = db.query('SELECT value FROM world_state WHERE key = ?', [reviveKey])[0]
 
         if (shield) {
-          // 생명의 부적: 이번 사망을 HP 1 생존으로 전환
           db.run('DELETE FROM world_state WHERE key = ?', [shieldKey])
           this.Pet.updatePet(petId, { hp: 1 })
         } else if (revive) {
-          // 부활석: 사망 후 HP 50%로 즉시 부활
           db.run('DELETE FROM world_state WHERE key = ?', [reviveKey])
           const deadPet  = this.Pet.getPet(petId)
           const reviveHp = Math.max(1, Math.ceil((deadPet?.hp || 100) * 0.5))
@@ -137,7 +242,7 @@ class CombatSystem {
     return { result, drops, log }
   }
 
-  // 자동 사냥용: 한 번의 전투를 완전히 시뮬레이션
+  // ─── 자동 전투 시뮬레이션 ─────────────────────────────────────────
   runAutoFight(pet, monster, opts = {}) {
     this.startBattle(pet, monster, opts.mode || 'auto', opts.synergyMult || 1.0)
     const petId = pet.id
