@@ -8,8 +8,9 @@ function requireAuth(req, res, next) {
   try {
     req.user = jwt.verify(token, JWT_SECRET)
     next()
-  } catch {
-    res.status(401).json({ error: 'invalid_token' })
+  } catch (err) {
+    const isExpired = err.name === 'TokenExpiredError'
+    res.status(401).json({ error: isExpired ? 'token_expired' : 'invalid_token' })
   }
 }
 
