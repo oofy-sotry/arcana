@@ -40,7 +40,8 @@ function runMigrations() {
     require('./migrations/001_users'),
     require('./migrations/002_online'),
   ]
-  const [{ values: [[ver]] }] = db.exec('PRAGMA user_version')
+  const _vResult = db.exec('PRAGMA user_version')
+  const ver = _vResult[0]?.values[0]?.[0] ?? 0
   MIGRATIONS.forEach((sqls, i) => {
     if (ver >= i + 1) return
     sqls.forEach(s => db.run(s))
