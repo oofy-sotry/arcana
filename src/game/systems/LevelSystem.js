@@ -44,7 +44,8 @@ class LevelSystem {
 
     while (exp >= this.getExpRequired(level)) {
       exp -= this.getExpRequired(level)
-      level = this.levelUp(pet, level)
+      const freshPet = this.Pet.getPet(pet.id) || pet
+      level = this.levelUp(freshPet, level)
     }
 
     this.Pet.updatePet(pet.id, { level, exp })
