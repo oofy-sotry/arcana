@@ -28,4 +28,19 @@ contextBridge.exposeInMainWorld('arcana', {
     explore:      ({ petId, mode })            => ipcRenderer.invoke('hunting:explore', { petId, mode }),
     open:         ()                           => ipcRenderer.invoke('hunting:open'),
   },
+  breeding: {
+    compatInfo: ({ petId1, petId2 })             => ipcRenderer.invoke('breeding:compat-info', { petId1, petId2 }),
+    breed:      ({ petId1, petId2, batchCount }) => ipcRenderer.invoke('breeding:breed', { petId1, petId2, batchCount }),
+    getLineage: ({ petId })                      => ipcRenderer.invoke('breeding:get-lineage', { petId }),
+  },
+  gacha: {
+    rollSingle: ({ ownerPetId }) => ipcRenderer.invoke('gacha:roll-single', { ownerPetId }),
+    rollTen:    ({ ownerPetId }) => ipcRenderer.invoke('gacha:roll-ten',    { ownerPetId }),
+  },
+  party: {
+    get:    ()                => ipcRenderer.invoke('party:get'),
+    add:    ({ petId, slot }) => ipcRenderer.invoke('party:add',    { petId, slot }),
+    remove: ({ petId })       => ipcRenderer.invoke('party:remove', { petId }),
+    clear:  ()                => ipcRenderer.invoke('party:clear'),
+  },
 })
