@@ -1,5 +1,5 @@
 module.exports = [
-  `ALTER TABLE pets ADD COLUMN level      INTEGER NOT NULL DEFAULT 1`,
+  // level 컬럼은 001_init.js의 pets 테이블 DDL에 이미 포함됨
   `ALTER TABLE pets ADD COLUMN exp        INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE pets ADD COLUMN skill_points INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE pets ADD COLUMN affinity   REAL    NOT NULL DEFAULT 50`,
