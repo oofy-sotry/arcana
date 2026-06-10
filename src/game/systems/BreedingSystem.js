@@ -34,12 +34,12 @@ class BreedingSystem {
 
   // 교배 실행 (batchCount: 몰빵 시 한 번에 소진할 교배 횟수)
   breed(pet1, pet2, batchCount = 1) {
-    if (pet1.id === pet2.id) return { error: '같은 펫끼리는 교배할 수 없습니다' }
+    if (pet1.id === pet2.id) return { ok: false, error: '같은 펫끼리는 교배할 수 없습니다' }
     if (!this.canBreed(pet1, batchCount)) {
-      return { error: `${pet1.name}의 교배 횟수가 부족합니다 (남은 횟수: ${pet1.max_breeding - pet1.used_breeding})` }
+      return { ok: false, error: `${pet1.name}의 교배 횟수가 부족합니다 (남은 횟수: ${pet1.max_breeding - pet1.used_breeding})` }
     }
     if (!this.canBreed(pet2, batchCount)) {
-      return { error: `${pet2.name}의 교배 횟수가 부족합니다 (남은 횟수: ${pet2.max_breeding - pet2.used_breeding})` }
+      return { ok: false, error: `${pet2.name}의 교배 횟수가 부족합니다 (남은 횟수: ${pet2.max_breeding - pet2.used_breeding})` }
     }
 
     const { attribute, attribute2, species } = this._rollChildAttr(
@@ -82,6 +82,7 @@ class BreedingSystem {
       : null
 
     return {
+      ok: true,
       child:      this.Pet.getPet(child.id),
       isHybrid,
       hybridName,
