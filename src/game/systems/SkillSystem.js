@@ -32,6 +32,14 @@ class SkillSystem {
     return true
   }
 
+  unlockForStage(pet) {
+    Object.entries(SKILLS).forEach(([skillId, skill]) => {
+      if (skill.attribute === pet.attribute && skill.unlockStage === pet.evolution_stage) {
+        this.unlockSkill(pet, skillId)
+      }
+    })
+  }
+
   upgradeSkill(pet, skillId) {
     const rows = db.query(
       'SELECT * FROM pet_skills WHERE pet_id = ? AND skill_id = ?',
