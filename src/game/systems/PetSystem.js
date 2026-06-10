@@ -7,6 +7,9 @@ const CONDITION_DECAY = {
   cleanliness: 0.015,
 }
 
+// 매 tick(60s)마다 쌓이는 자연 친밀도 — 6/hour, 최대 100
+const AFFINITY_GAIN_PER_TICK = 0.1
+
 class PetSystem {
   // Pet, World: db 모델 주입 (game/이 Electron에 직접 의존하지 않도록)
   // save: db.save 함수 주입
@@ -39,6 +42,9 @@ class PetSystem {
         happiness:   Math.max(0, cond.happiness   - CONDITION_DECAY.happiness),
         cleanliness: Math.max(0, cond.cleanliness - CONDITION_DECAY.cleanliness),
         last_updated: now,
+      })
+      this.Pet.updatePet(pet.id, {
+        affinity: Math.min(100, (pet.affinity || 0) + AFFINITY_GAIN_PER_TICK),
       })
     }
   }
