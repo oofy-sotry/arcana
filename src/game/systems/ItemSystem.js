@@ -46,16 +46,19 @@ class ItemSystem {
       case 'hunger_restore': {
         const cond = Pet.getConditions(pet.id)
         Pet.updateConditions(pet.id, { hunger: Math.min(100, cond.hunger + 40) })
+        Pet.updatePet(pet.id, { affinity: Math.min(100, (pet.affinity || 0) + 0.3) })
         break
       }
       case 'clean_restore': {
         const cond = Pet.getConditions(pet.id)
         Pet.updateConditions(pet.id, { cleanliness: Math.min(100, cond.cleanliness + 50) })
+        Pet.updatePet(pet.id, { affinity: Math.min(100, (pet.affinity || 0) + 0.2) })
         break
       }
       case 'happy_restore': {
         const cond = Pet.getConditions(pet.id)
         Pet.updateConditions(pet.id, { happiness: Math.min(100, cond.happiness + 30) })
+        Pet.updatePet(pet.id, { affinity: Math.min(100, (pet.affinity || 0) + 0.5) })
         break
       }
       case 'energy_restore': {
