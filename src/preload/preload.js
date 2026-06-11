@@ -90,6 +90,12 @@ contextBridge.exposeInMainWorld('arcana', {
     resolveChoice: ({ petId, eventId, choiceIndex }) =>
       ipcRenderer.invoke('explore:resolve-choice', { petId, eventId, choiceIndex }),
   },
+  summoner: {
+    get:             ()          => ipcRenderer.invoke('summoner:get'),
+    create:          ({ name })  => ipcRenderer.invoke('summoner:create', { name }),
+    hasFreeGachaUsed: ()         => ipcRenderer.invoke('summoner:has-free-gacha-used'),
+    freeGacha:       ()          => ipcRenderer.invoke('summoner:free-gacha'),
+  },
   pvp: {
     currentSeason: ()               => ipcRenderer.invoke('pvp:current-season'),
     ranking:       ({ seasonNum } = {}) => ipcRenderer.invoke('pvp:ranking', { seasonNum }),
