@@ -260,9 +260,27 @@ class IpcRouter {
     ipcMain.handle('faction:chapter', () =>
       ({ chapter: this.factionSystem.getCurrentChapter() })
     )
-    ipcMain.handle('faction:advance-chapter', (_e, { chapter, effects }) =>
-      this.factionSystem.advanceChapter(chapter, effects)
-    )
+    ipcMain.handle('faction:advance-chapter', (_e, { chapter, effects }) => {
+      const result = this.factionSystem.advanceChapter(chapter, effects)
+      // 챕터 6(스토리 완료) + 히든 엔딩(soulFusion 포함) 시 chaosrex_4 → omnirex_0 변환
+      if (result.ok && chapter === 6 && effects?.soulFusion) {
+        const transformed = this._triggerHiddenOmnirex()
+        if (transformed.length > 0) result.omnirexTransformed = true
+      }
+      return result
+    })
+  }
+
+  _triggerHiddenOmnirex() {
+    const pets        = this.petSystem.getAll()
+    const transformed = []
+    for (const pet of pets) {
+      if (pet.species === 'Chaosrex' && pet.evolution_stage === 4) {
+        const r = this.evolutionSystem.transformToOmnirex(pet)
+        if (r.ok) transformed.push(r.pet)
+      }
+    }
+    return transformed
   }
 }
 
