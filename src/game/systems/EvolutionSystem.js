@@ -12,30 +12,48 @@ class EvolutionSystem {
   }
 
   // ─── 현재 스테이지에 맞는 캐릭터 데이터 반환 ─────────────────────────
-  // 우선순위: omni > hybrid(attribute2) > hidden > normal
   _findCharData(pet) {
     const stage = pet.evolution_stage
 
+    // Omnirex: 키 직접 조회 (일반/히든 구분)
     if (pet.attribute === 'omni') {
-      return Object.values(CHARACTERS).find(c => c.attribute === 'omni' && c.stage === stage)
+      const key = pet.is_hidden ? `omnirex_${stage}_hidden` : `omnirex_${stage}`
+      return CHARACTERS[key] ?? null
     }
-    if (pet.attribute2) {
-      if (pet.is_hidden) {
-        return Object.values(CHARACTERS).find(
+
+    // T1/T2 혼합종: species 키 직접 조회 (비히든 트랙)
+    if (pet.species && pet.species !== 'default' && !pet.is_hidden) {
+      const key = `${pet.species.toLowerCase()}_${stage}`
+      if (CHARACTERS[key]) return CHARACTERS[key]
+    }
+
+    // 히든 T1 혼합종
+    if (pet.attribute2 && pet.is_hidden) {
+      return (
+        Object.values(CHARACTERS).find(
           c => c.attribute === pet.attribute && c.attribute2 === pet.attribute2 && c.stage === stage && c.isHidden
-        ) || Object.values(CHARACTERS).find(
+        ) ||
+        Object.values(CHARACTERS).find(
           c => c.attribute === pet.attribute && c.stage === stage && c.isHidden
         )
-      }
+      )
+    }
+
+    // 일반 T1 혼합종 (species 조회 실패 시 폴백)
+    if (pet.attribute2) {
       return Object.values(CHARACTERS).find(
         c => c.attribute === pet.attribute && c.attribute2 === pet.attribute2 && c.stage === stage && !c.isHidden
       )
     }
+
+    // 히든 단속성
     if (pet.is_hidden) {
       return Object.values(CHARACTERS).find(
         c => c.attribute === pet.attribute && c.stage === stage && c.isHidden
       )
     }
+
+    // 일반 단속성
     return Object.values(CHARACTERS).find(
       c => c.attribute === pet.attribute && c.stage === stage && !c.isHidden
     )
@@ -45,26 +63,47 @@ class EvolutionSystem {
   _findNextChar(pet, isHiddenEvo) {
     const toStage = pet.evolution_stage + 1
 
+    // Omnirex: 키 직접 조회
     if (pet.attribute === 'omni') {
-      return Object.values(CHARACTERS).find(c => c.attribute === 'omni' && c.stage === toStage)
+      if (isHiddenEvo || pet.is_hidden) {
+        return CHARACTERS[`omnirex_${toStage}_hidden`] ?? null
+      }
+      return CHARACTERS[`omnirex_${toStage}`] ?? null
     }
-    if (pet.attribute2) {
-      if (isHiddenEvo) {
-        return Object.values(CHARACTERS).find(
+
+    // T1/T2 혼합종: species 키 직접 조회 (비히든 진화)
+    if (pet.species && pet.species !== 'default' && !isHiddenEvo) {
+      const key = `${pet.species.toLowerCase()}_${toStage}`
+      if (CHARACTERS[key]) return CHARACTERS[key]
+    }
+
+    // 히든 T1 혼합종 진화
+    if (pet.attribute2 && isHiddenEvo) {
+      return (
+        Object.values(CHARACTERS).find(
           c => c.attribute === pet.attribute && c.attribute2 === pet.attribute2 && c.stage === toStage && c.isHidden
-        ) || Object.values(CHARACTERS).find(
+        ) ||
+        Object.values(CHARACTERS).find(
           c => c.attribute === pet.attribute && c.stage === toStage && c.isHidden
         )
-      }
+      )
+    }
+
+    // 일반 T1 혼합종 (폴백)
+    if (pet.attribute2) {
       return Object.values(CHARACTERS).find(
         c => c.attribute === pet.attribute && c.attribute2 === pet.attribute2 && c.stage === toStage && !c.isHidden
       )
     }
-    if (isHiddenEvo) {
+
+    // 히든 단속성 진화
+    if (isHiddenEvo || pet.is_hidden) {
       return Object.values(CHARACTERS).find(
         c => c.attribute === pet.attribute && c.stage === toStage && c.isHidden
       )
     }
+
+    // 일반 단속성
     return Object.values(CHARACTERS).find(
       c => c.attribute === pet.attribute && c.stage === toStage && !c.isHidden
     )
@@ -83,7 +122,6 @@ class EvolutionSystem {
 
   // ─── 진화 실행 ────────────────────────────────────────────────────────
   // evoType: 'normal' | 'hidden'
-  // pet.is_hidden = 1 인 경우에도 히든 트랙 유지 (evoType 무관)
   evolve(pet, evoType = 'normal') {
     const fromStage   = pet.evolution_stage
     const toStage     = fromStage + 1
@@ -124,6 +162,30 @@ class EvolutionSystem {
     return { fromStage, toStage, evoType: logType, bonus }
   }
 
+  // ─── 스토리 경로: chaosrex_4 → omnirex_0 변환 ────────────────────────
+  // 챕터 5 히든 엔딩 달성 시 호출
+  transformToOmnirex(pet) {
+    if (pet.species !== 'Chaosrex' || pet.evolution_stage !== 4) {
+      return { ok: false, reason: 'not_chaosrex_4' }
+    }
+    const targetChar = CHARACTERS['omnirex_0']
+    this.Pet.updatePet(pet.id, {
+      attribute:       'omni',
+      attribute2:      null,
+      species:         'Omnirex',
+      evolution_stage: 0,
+      name:            targetChar.name,
+      is_hidden:       0,
+    })
+    db.run(
+      `INSERT INTO evolution_log (pet_id, from_stage, to_stage, evo_type, evolved_at)
+       VALUES (?, ?, ?, ?, ?)`,
+      [pet.id, 4, 0, 'transform', Date.now()]
+    )
+    this.save()
+    return { ok: true, pet: this.Pet.getPet(pet.id) }
+  }
+
   // ─── 히든 분기 조건 검사 (노말 트랙 펫에서만 호출) ────────────────────
   checkHiddenConditions(pet) {
     const charData = this._findCharData(pet)
@@ -154,7 +216,6 @@ class EvolutionSystem {
           return (pet.age_seconds || 0) >= cond.value
 
         case 'all_attributes': {
-          // 옴니렉스 전용: 10속성 펫 보유 여부
           const row = db.query(
             'SELECT COUNT(DISTINCT attribute) AS cnt FROM pets WHERE is_alive = 1 OR is_alive IS NULL'
           )[0]
