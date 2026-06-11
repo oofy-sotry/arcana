@@ -171,7 +171,10 @@ class StoryPanel {
             <p style="color:#ddd;font-size:13px;line-height:1.7;padding-left:10px;border-left:2px solid ${ch.accent}40">${line}</p>
           `).join('')}
         </div>
-        ${ch.choices ? this._renderChoices(ch, isCurrentChapter) : ''}
+        ${ch.choices
+            ? this._renderChoices(ch, isCurrentChapter)
+            : (isCurrentChapter ? this._renderContinue(ch) : '')
+        }
       </div>
       <button id="story-back"
         style="padding:6px 18px;background:#0f3460;border:1px solid #1a4a7a;color:#eee;border-radius:4px;cursor:pointer;font-size:13px">
@@ -190,6 +193,27 @@ class StoryPanel {
         btn.addEventListener('click', () => this._makeChoice(ch, i))
       })
     }
+
+    if (!ch.choices && isCurrentChapter) {
+      this._readerEl.querySelector('#story-continue')?.addEventListener('click', () =>
+        this._advanceNoChoice(ch)
+      )
+    }
+  }
+
+  _renderContinue(ch) {
+    return `
+      <div style="text-align:center;margin-top:8px">
+        <button id="story-continue"
+          style="padding:10px 28px;background:${ch.accent};border:none;color:#fff;border-radius:6px;cursor:pointer;font-size:14px">
+          계속하기 →
+        </button>
+      </div>`
+  }
+
+  async _advanceNoChoice(ch) {
+    const result = await window.arcana.faction.advanceChapter({ chapter: ch.id + 1, effects: {} })
+    if (result.ok && this._onAdvance) this._onAdvance()
   }
 
   _renderChoices(ch, isCurrentChapter) {
