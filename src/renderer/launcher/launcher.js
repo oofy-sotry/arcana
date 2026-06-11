@@ -1,12 +1,85 @@
 let allPets       = []
 let selectedPetId = null
+let gameUIReady   = false
+
+// ── Screen management ──────────────────────────────────
+
+function _hideAll() {
+  document.querySelectorAll('.screen').forEach(s => { s.style.display = 'none' })
+  document.getElementById('game-ui').style.display = 'none'
+}
+
+function showStartScreen() {
+  _hideAll()
+  const el = document.getElementById('screen-start')
+  el.innerHTML = ''
+  el.appendChild(new StartScreen().render(showSummonerCreate))
+  el.style.display = 'flex'
+}
+
+function showSummonerCreate() {
+  _hideAll()
+  const el = document.getElementById('screen-create')
+  el.innerHTML = ''
+  el.appendChild(new SummonerCreate().render(summoner => showTownScreen(summoner, true)))
+  el.style.display = 'flex'
+}
+
+async function showTownScreen(summoner, hasFreeGacha) {
+  if (hasFreeGacha === undefined) {
+    const used = await window.arcana.summoner.hasFreeGachaUsed()
+    hasFreeGacha = !used
+  }
+  _hideAll()
+  const el = document.getElementById('screen-town')
+  el.innerHTML = ''
+  const town = new TownScreen(summoner, hasFreeGacha)
+  el.appendChild(town.render({
+    onFreeGacha: pet => {
+      allPets.push(pet)
+      if (gameUIReady) renderPetList()
+    },
+    onOpenTab:   tabId => showGameUI(tabId),
+    onEnterGame: () => showGameUI(),
+  }))
+  el.style.display = 'flex'
+}
+
+async function showGameUI(activateTab) {
+  _hideAll()
+  const gui = document.getElementById('game-ui')
+  gui.style.display = 'flex'
+
+  if (!gameUIReady) {
+    setupTabs()
+    document.getElementById('btn-hunting').addEventListener('click', () => window.arcana.hunting.open())
+    document.getElementById('btn-town').addEventListener('click', async () => {
+      const summoner = await window.arcana.summoner.get()
+      showTownScreen(summoner)
+    })
+    allPets = await window.arcana.pet.getAll()
+    renderPetList()
+    gameUIReady = true
+  }
+
+  if (activateTab) {
+    const btn = document.querySelector(`nav button[data-tab="${activateTab}"]`)
+    if (btn) btn.click()
+  }
+}
+
+// ── Init ───────────────────────────────────────────────
 
 async function init() {
-  setupTabs()
-  document.getElementById('btn-hunting').addEventListener('click', () => window.arcana.hunting.open())
-  allPets = await window.arcana.pet.getAll()
-  renderPetList()
+  const summoner = await window.arcana.summoner.get()
+  if (!summoner) {
+    showStartScreen()
+  } else {
+    showTownScreen(summoner)
+  }
 }
+
+// ── Tabs ───────────────────────────────────────────────
 
 function setupTabs() {
   document.querySelectorAll('nav button[data-tab]').forEach(btn => {
@@ -27,6 +100,8 @@ function setupTabs() {
     })
   })
 }
+
+// ── Pet list / selection ───────────────────────────────
 
 function renderPetList() {
   const container = document.getElementById('tab-pets')
@@ -155,6 +230,8 @@ async function onEvolve(petId) {
     alert(`진화 불가: ${result.reason}`)
   }
 }
+
+// ── Tab renderers ──────────────────────────────────────
 
 function renderBreedingTab() {
   const container = document.getElementById('tab-breeding')
