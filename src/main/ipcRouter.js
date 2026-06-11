@@ -4,7 +4,7 @@ class IpcRouter {
   constructor({ petSystem, levelSystem, evolutionSystem, skillSystem, itemSystem,
                 huntingSystem, explorationSystem,
                 breedingSystem, gachaSystem, partySystem, questSystem, onlineSystem,
-                equipmentSystem, factionSystem, pvpSystem,
+                equipmentSystem, factionSystem, pvpSystem, summonerSystem,
                 windowManager }) {
     this.petSystem         = petSystem
     this.levelSystem       = levelSystem
@@ -21,6 +21,7 @@ class IpcRouter {
     this.equipmentSystem   = equipmentSystem
     this.factionSystem     = factionSystem
     this.pvpSystem         = pvpSystem
+    this.summonerSystem    = summonerSystem
     this.windowManager     = windowManager
   }
 
@@ -250,6 +251,16 @@ class IpcRouter {
     ipcMain.handle('equipment:set-bonuses', (_e, { petId }) =>
       this.equipmentSystem.getSetBonuses(petId)
     )
+
+    // ── Summoner ──────────────────────────────────────────────────────
+    ipcMain.handle('summoner:get', () => this.summonerSystem.getSummoner())
+    ipcMain.handle('summoner:create', (_e, { name }) =>
+      this.summonerSystem.createSummoner(name)
+    )
+    ipcMain.handle('summoner:has-free-gacha-used', () =>
+      this.summonerSystem.hasFreeGachaUsed()
+    )
+    ipcMain.handle('summoner:free-gacha', () => this.summonerSystem.rollFreeGacha())
 
     // ── PvP ───────────────────────────────────────────────────────────
     ipcMain.handle('pvp:current-season', () => this.pvpSystem.getCurrentSeason())
