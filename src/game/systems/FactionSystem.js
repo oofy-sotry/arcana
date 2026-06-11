@@ -78,6 +78,10 @@ class FactionSystem {
       const val = this._worldState('story_chapter')
       return Number(val ?? 0) >= 5
     }
+    if (zoneUnlock === 'story_ch6') {
+      const val = this._worldState('story_chapter')
+      return Number(val ?? 0) >= 6
+    }
     const m = zoneUnlock.match(/^(luxis|noctis)_(\d+)$/)
     if (m) {
       const [, faction, minRepStr] = m
