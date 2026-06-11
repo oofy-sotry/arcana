@@ -4,7 +4,7 @@ class IpcRouter {
   constructor({ petSystem, levelSystem, evolutionSystem, skillSystem, itemSystem,
                 huntingSystem, explorationSystem,
                 breedingSystem, gachaSystem, partySystem, questSystem, onlineSystem,
-                equipmentSystem, factionSystem,
+                equipmentSystem, factionSystem, pvpSystem,
                 windowManager }) {
     this.petSystem         = petSystem
     this.levelSystem       = levelSystem
@@ -20,6 +20,7 @@ class IpcRouter {
     this.onlineSystem      = onlineSystem
     this.equipmentSystem   = equipmentSystem
     this.factionSystem     = factionSystem
+    this.pvpSystem         = pvpSystem
     this.windowManager     = windowManager
   }
 
@@ -203,9 +204,16 @@ class IpcRouter {
       return res
     })
 
-    ipcMain.handle('online:battle-challenge', (_e, { targetUsername, myPet }) =>
-      this.onlineSystem.challengeBattle(targetUsername, myPet)
-    )
+    ipcMain.handle('online:battle-challenge', async (_e, { targetUsername, myPet }) => {
+      const res = await this.onlineSystem.challengeBattle(targetUsername, myPet)
+      if (res.ok) {
+        const username = this.onlineSystem.getUsername()
+        if (username) {
+          this.pvpSystem?.recordResult(username, res.winner === 'attacker')
+        }
+      }
+      return res
+    })
     ipcMain.handle('online:battle-history', () => this.onlineSystem.getBattleHistory())
 
     ipcMain.handle('online:friends', () => this.onlineSystem.getFriends())
@@ -242,6 +250,13 @@ class IpcRouter {
     ipcMain.handle('equipment:set-bonuses', (_e, { petId }) =>
       this.equipmentSystem.getSetBonuses(petId)
     )
+
+    // ── PvP ───────────────────────────────────────────────────────────
+    ipcMain.handle('pvp:current-season', () => this.pvpSystem.getCurrentSeason())
+    ipcMain.handle('pvp:ranking', (_e, { seasonNum } = {}) =>
+      this.pvpSystem.getRanking(seasonNum)
+    )
+    ipcMain.handle('pvp:end-season', () => this.pvpSystem.endSeason())
 
     // ── Faction ───────────────────────────────────────────────────────
     ipcMain.handle('faction:get-all', () => this.factionSystem.getAllRep())
