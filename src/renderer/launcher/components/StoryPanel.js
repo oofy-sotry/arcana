@@ -241,13 +241,19 @@ class StoryPanel {
     const choice  = ch.choices[choiceIndex]
     const effects = choice.effects || {}
 
-    // 챕터 전진 + effects를 백엔드에서 일괄 처리
     const result = await window.arcana.faction.advanceChapter({ chapter: ch.id + 1, effects })
 
-    // 결과 표시
     const effectDesc = Object.entries(effects)
       .map(([k, v]) => `${k} +${v}`)
       .join(', ')
+
+    const omnirexBlock = result.omnirexTransformed ? `
+      <div style="background:#0a0a2a;border:1px solid #ffb300;border-radius:8px;padding:16px;margin-top:16px;text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">🌟</div>
+        <h4 style="color:#ffb300;margin-bottom:6px">옴니렉스 각성!</h4>
+        <p style="color:#eee;font-size:13px">카오스렉스가 전속성을 품은 존재, 옴니렉스로 변환되었습니다!</p>
+        <p style="color:#aaa;font-size:11px;margin-top:4px">에레멘탈 탭에서 확인하세요.</p>
+      </div>` : ''
 
     this._readerEl.innerHTML = `
       <div style="background:#0d1117;border:1px solid #2ecc71;border-radius:8px;padding:24px;text-align:center">
@@ -257,6 +263,7 @@ class StoryPanel {
         <p style="color:#aaa;font-size:12px;margin-bottom:20px">${effectDesc}</p>
         <p style="color:#ffd54f;font-size:13px">다음 챕터가 열렸습니다.</p>
       </div>
+      ${omnirexBlock}
       <button id="story-done"
         style="margin-top:12px;padding:8px 24px;background:#e94560;border:none;color:#fff;border-radius:6px;cursor:pointer;font-size:14px">
         확인
