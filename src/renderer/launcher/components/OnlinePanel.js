@@ -44,11 +44,11 @@ class OnlinePanel {
 
       // 섹션 탭
       html += `<div id="ol-section-bar" style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap">
-        ${['ranking','breeding','battle','friends'].map(s =>
+        ${['ranking','breeding','battle','pvp','friends'].map(s =>
           `<button data-section="${s}" style="padding:3px 10px; border-radius:4px; border:none; cursor:pointer; font-size:11px;
             background:${this._section === s ? '#4a90e2' : '#333'};
             color:${this._section === s ? '#fff' : '#aaa'}
-          ">${{ranking:'랭킹', breeding:'온라인 교배', battle:'배틀', friends:'친구'}[s]}</button>`
+          ">${{ranking:'랭킹', breeding:'온라인 교배', battle:'배틀', pvp:'PvP 시즌', friends:'친구'}[s]}</button>`
         ).join('')}
       </div>
       <div id="ol-body"></div>`
@@ -134,7 +134,35 @@ class OnlinePanel {
     if (s === 'ranking')  this._renderRanking(body)
     if (s === 'breeding') this._renderBreeding(body, cb)
     if (s === 'battle')   this._renderBattle(body, cb)
+    if (s === 'pvp')      this._renderPvp(body)
     if (s === 'friends')  this._renderFriends(body, cb)
+  }
+
+  _renderPvp(body) {
+    body.innerHTML = '<span style="color:#aaa; font-size:12px">로딩 중...</span>'
+    window.arcana.pvp.ranking().then(({ season, ranking }) => {
+      const seasonLabel = season
+        ? `시즌 ${season.season_num}${season.is_active ? ' (진행 중)' : ' (종료)'}`
+        : '시즌 없음'
+
+      const rankRows = ranking.length
+        ? ranking.map((r, i) => `
+            <div style="display:flex; justify-content:space-between; padding:6px 8px;
+              background:${i % 2 ? '#1a1a2e' : '#16213e'}; border-radius:4px; margin-bottom:3px; font-size:12px">
+              <span style="color:${i < 3 ? '#f5c518' : '#eee'}">${i + 1}. ${r.username}</span>
+              <span style="color:#aaa">${r.wins}승 ${r.losses}패 (${r.winRate}%)</span>
+            </div>`).join('')
+        : '<span style="color:#aaa; font-size:12px">데이터 없음</span>'
+
+      body.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+          <span style="color:#f5c518; font-size:13px; font-weight:bold">🏆 ${seasonLabel}</span>
+        </div>
+        <div style="font-size:12px; color:#aaa; margin-bottom:6px">랭킹 TOP 50</div>
+        <div>${rankRows}</div>`
+    }).catch(() => {
+      body.innerHTML = '<span style="color:#e94560; font-size:12px">데이터 로딩 실패</span>'
+    })
   }
 
   _renderRanking(body) {
