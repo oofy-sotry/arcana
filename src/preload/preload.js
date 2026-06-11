@@ -90,4 +90,9 @@ contextBridge.exposeInMainWorld('arcana', {
     resolveChoice: ({ petId, eventId, choiceIndex }) =>
       ipcRenderer.invoke('explore:resolve-choice', { petId, eventId, choiceIndex }),
   },
+  pvp: {
+    currentSeason: ()               => ipcRenderer.invoke('pvp:current-season'),
+    ranking:       ({ seasonNum } = {}) => ipcRenderer.invoke('pvp:ranking', { seasonNum }),
+    endSeason:     ()               => ipcRenderer.invoke('pvp:end-season'),
+  },
 })
