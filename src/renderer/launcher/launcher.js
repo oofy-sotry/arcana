@@ -82,7 +82,7 @@ function showCreateForm() {
 async function onSelectPet(petId) {
   selectedPetId = petId
   const pet     = allPets.find(p => p.id === petId)
-  if (!pet) return
+  if (!pet || Number(pet.is_alive) === 0) return
 
   const [skills, inventory] = await Promise.all([
     window.arcana.skill.get({ petId }),
