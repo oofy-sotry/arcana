@@ -1,21 +1,7 @@
 const db = require('../../db/database')
 
-const T1_POOL = [
-  { species: 'Steamar',    attribute: 'fire',    attribute2: 'water'   },
-  { species: 'Magmaron',   attribute: 'fire',    attribute2: 'ice'     },
-  { species: 'Helflaron',  attribute: 'dark',    attribute2: 'fire'    },
-  { species: 'Stormtidex', attribute: 'thunder', attribute2: 'water'   },
-  { species: 'Acidrax',    attribute: 'poison',  attribute2: 'water'   },
-  { species: 'Sandorrex',  attribute: 'earth',   attribute2: 'wind'    },
-  { species: 'Venomstrix', attribute: 'poison',  attribute2: 'wind'    },
-  { species: 'Metalrox',   attribute: 'earth',   attribute2: 'thunder' },
-  { species: 'Frostoltex', attribute: 'ice',     attribute2: 'thunder' },
-  { species: 'Glacidrax',  attribute: 'dragon',  attribute2: 'ice'     },
-  { species: 'Sacrotox',   attribute: 'light',   attribute2: 'poison'  },
-  { species: 'Venomrex',   attribute: 'dragon',  attribute2: 'poison'  },
-  { species: 'Shadowrex',  attribute: 'dark',    attribute2: 'dragon'  },
-  { species: 'Chaosrex',   attribute: 'dark',    attribute2: 'light'   },
-]
+// 무료 소환 히든 풀 — 빛(루시나) · 어둠(노크티아) 2종
+const FREE_GACHA_HIDDEN = ['light_0', 'dark_0']
 
 const BASIC_ATTRS = ['fire','water','wind','earth','thunder','ice','poison','dragon','light','dark']
 
@@ -51,31 +37,28 @@ class SummonerSystem {
   rollFreeGacha() {
     if (this.hasFreeGachaUsed()) return { ok: false, error: '이미 무료 소환을 사용했습니다' }
 
-    // 3% T1 혼합종, 97% 기본 속성
-    const isHybrid = Math.random() < 0.03
+    // 3% 히든(빛/어둠 2종 랜덤), 97% 기본 속성
+    const CHARACTERS = require('../data/characters')
+    const isHidden   = Math.random() < 0.03
     let pet
 
-    if (isHybrid) {
-      const t1 = T1_POOL[Math.floor(Math.random() * T1_POOL.length)]
-      const CHARACTERS = require('../data/characters')
-      const charData   = CHARACTERS[`${t1.species.toLowerCase()}_0`]
-      const petName    = charData?.name ?? `${t1.species} 에그`
-      pet = this.Pet.createPet(petName, t1.attribute, t1.species)
-      this.Pet.updatePet(pet.id, { attribute2: t1.attribute2, max_breeding: 2 })
+    if (isHidden) {
+      const charKey  = FREE_GACHA_HIDDEN[Math.floor(Math.random() * FREE_GACHA_HIDDEN.length)]
+      const charData = CHARACTERS[charKey]
+      pet = this.Pet.createPet(charData.name, charData.attribute)
       pet = this.Pet.getPet(pet.id)
     } else {
-      const attr = BASIC_ATTRS[Math.floor(Math.random() * BASIC_ATTRS.length)]
-      const CHARACTERS = require('../data/characters')
-      const charData   = Object.values(CHARACTERS).find(
+      const attr     = BASIC_ATTRS[Math.floor(Math.random() * BASIC_ATTRS.length)]
+      const charData = Object.values(CHARACTERS).find(
         c => c.attribute === attr && c.stage === 0 && !c.isHidden && !c.attribute2 && !c.species
       )
-      const petName = charData?.name ?? `${ATTR_NAMES[attr]} 에그`
+      const petName  = charData?.name ?? `${ATTR_NAMES[attr]} 에그`
       pet = this.Pet.createPet(petName, attr)
     }
 
     db.run("INSERT OR IGNORE INTO one_time_events (event_key) VALUES ('free_gacha')")
     this.save()
-    return { ok: true, pet, isHybrid }
+    return { ok: true, pet, isHybrid: isHidden }
   }
 }
 
