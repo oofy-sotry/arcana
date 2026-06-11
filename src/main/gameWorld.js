@@ -16,6 +16,7 @@ const QuestSystem       = require('../game/systems/QuestSystem')
 const OnlineSystem       = require('../game/systems/OnlineSystem')
 const EquipmentSystem    = require('../game/systems/EquipmentSystem')
 const FactionSystem      = require('../game/systems/FactionSystem')
+const PvpSystem          = require('../game/systems/PvpSystem')
 const { TICK_INTERVAL_SECONDS, getElapsedSeconds } = require('../game/utils/time')
 
 class GameWorld {
@@ -35,6 +36,7 @@ class GameWorld {
     this.onlineSystem        = null
     this.equipmentSystem     = null
     this.factionSystem       = null
+    this.pvpSystem           = null
     this._tickTimer          = null
   }
 
@@ -63,6 +65,7 @@ class GameWorld {
       factionSystem: this.factionSystem,
     })
     this.onlineSystem        = new OnlineSystem({ Pet, save: db.save })
+    this.pvpSystem           = new PvpSystem({ save: db.save })
 
     const pets = this.petSystem.getAll()
     if (pets.length > 0) {
