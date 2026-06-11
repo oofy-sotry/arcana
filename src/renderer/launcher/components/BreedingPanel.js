@@ -1,5 +1,5 @@
-const ATTR_EMOJI_B = { fire: '🔥', water: '💧', wind: '🌪️', earth: '🌍', thunder: '⚡', ice: '❄️', poison: '☠️', dragon: '🐉' }
-const COMPAT_LABEL = { good: '✅ 궁합 좋음', neutral: '⚖️ 보통', bad: '❌ 궁합 나쁨' }
+const ATTR_EMOJI_B = { fire: '🔥', water: '💧', wind: '🌪️', earth: '🌍', thunder: '⚡', ice: '❄️', poison: '☠️', dragon: '🐉', omni: '🌟' }
+const COMPAT_LABEL = { S: '💖 같은 속성', C: '❤️ 호환', N: '💛 중립', I: '💔 불호환' }
 
 class BreedingPanel {
   constructor(allPets) {
@@ -63,14 +63,32 @@ class BreedingPanel {
         btn.style.opacity = '0.4'
         return
       }
-      const label = COMPAT_LABEL[info.compat] ?? info.compat
-      const hybrid = info.hybridResult
-        ? `<span style="color:#f5a623">혼합속성 가능: ${info.hybridResult.name ?? info.hybridResult.attribute}</span>`
-        : '<span style="color:#666">혼합속성 없음</span>'
-      compatBox.innerHTML = `
-        <div style="font-size:14px; margin-bottom:6px">${label}</div>
-        <div style="font-size:12px; color:#aaa">최대 몰빵: ${info.maxBatch}회 &nbsp;|&nbsp; ${hybrid}</div>
-      `
+      let compatHtml = ''
+      if (info.compat === 'T2') {
+        const t2 = info.t2Result
+        compatHtml = `
+          <div style="font-size:14px;color:#ce93d8;margin-bottom:6px">🧬 T2 혼합종 교배 가능!</div>
+          <div style="font-size:12px;color:#aaa">
+            결과: <span style="color:#f5a623">${t2?.name ?? '불명'} (${t2?.species ?? ''})</span>
+            &nbsp;·&nbsp; 확률 3% &nbsp;·&nbsp; 최대 몰빵: ${info.maxBatch}회
+          </div>`
+      } else if (info.compat === 'Omni') {
+        compatHtml = `
+          <div style="font-size:14px;color:#ffb300;margin-bottom:6px">🌟 옴니렉스 교배 가능!</div>
+          <div style="font-size:12px;color:#aaa">
+            결과: <span style="color:#ffb300">옴니렉스 (Omnirex)</span>
+            &nbsp;·&nbsp; 확률 3% &nbsp;·&nbsp; 최대 몰빵: ${info.maxBatch}회
+          </div>`
+      } else {
+        const label  = COMPAT_LABEL[info.compat] ?? info.compat
+        const hybrid = info.hybridResult
+          ? `<span style="color:#f5a623">혼합속성 가능: ${info.hybridResult.name ?? info.hybridResult.attribute}</span>`
+          : '<span style="color:#666">혼합속성 없음</span>'
+        compatHtml = `
+          <div style="font-size:14px;margin-bottom:6px">${label}</div>
+          <div style="font-size:12px;color:#aaa">최대 몰빵: ${info.maxBatch}회 &nbsp;|&nbsp; ${hybrid}</div>`
+      }
+      compatBox.innerHTML = compatHtml
       batchInput.max   = info.maxBatch
       batchInput.value = Math.min(parseInt(batchInput.value) || 1, info.maxBatch)
       btn.disabled     = false
@@ -86,23 +104,34 @@ class BreedingPanel {
       const batch = parseInt(batchInput.value) || 1
       resultBox.innerHTML = '<span style="color:#aaa">교배 중...</span>'
       const res = await window.arcana.breeding.breed({ petId1: id1, petId2: id2, batchCount: batch })
-      if (res.error) {
-        resultBox.innerHTML = `<div style="color:#e94560">${res.error}</div>`
+      if (!res.ok) {
+        resultBox.innerHTML = `<div style="color:#e94560">${res.error ?? '교배 실패'}</div>`
         return
       }
-      const child    = res.child
-      const hybridTag = res.isHybrid
-        ? `<span style="color:#f5a623; font-size:11px"> [혼합: ${res.hybridName}]</span>`
-        : ''
-      const attr2    = child.attribute2 ? ` / ${child.attribute2}` : ''
+      const child = res.child
+      let tagHtml = ''
+      let borderColor = '#0f3460'
+      let headerText  = '✨ 새 에레멘탈 탄생!'
+      if (res.isOmnirex) {
+        tagHtml     = `<span style="color:#ffb300;font-size:11px"> [🌟 옴니렉스 탄생!]</span>`
+        borderColor = '#ffb300'
+        headerText  = '🌟 옴니렉스 각성!'
+      } else if (res.isT2) {
+        tagHtml     = `<span style="color:#ce93d8;font-size:11px"> [🧬 T2: ${res.t2Name ?? ''}]</span>`
+        borderColor = '#ce93d8'
+        headerText  = '🧬 T2 혼합종 탄생!'
+      } else if (res.isHybrid) {
+        tagHtml = `<span style="color:#f5a623;font-size:11px"> [혼합: ${res.hybridName}]</span>`
+      }
+      const attrDisplay = (child.attribute2 ? `${child.attribute} / ${child.attribute2}` : child.attribute)
       resultBox.innerHTML = `
-        <div style="background:#0f3460; border-radius:8px; padding:12px">
-          <div style="color:#aaa; font-size:12px; margin-bottom:6px">✨ 새 에레멘탈 탄생!</div>
-          <div style="font-size:16px; font-weight:bold">
-            ${ATTR_EMOJI_B[child.attribute] || ''} ${child.name}${hybridTag}
+        <div style="background:#0f3460;border:1px solid ${borderColor};border-radius:8px;padding:12px">
+          <div style="color:#aaa;font-size:12px;margin-bottom:6px">${headerText}</div>
+          <div style="font-size:16px;font-weight:bold">
+            ${ATTR_EMOJI_B[child.attribute] || ''} ${child.name}${tagHtml}
           </div>
-          <div style="font-size:12px; color:#aaa; margin-top:4px">
-            속성: ${child.attribute}${attr2} &nbsp;·&nbsp; 몰빵 ${res.batchCount}회 소모
+          <div style="font-size:12px;color:#aaa;margin-top:4px">
+            속성: ${attrDisplay} &nbsp;·&nbsp; 몰빵 ${res.batchCount}회 소모
           </div>
         </div>
       `
