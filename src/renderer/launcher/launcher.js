@@ -21,26 +21,26 @@ function showSummonerCreate() {
   _hideAll()
   const el = document.getElementById('screen-create')
   el.innerHTML = ''
-  el.appendChild(new SummonerCreate().render(summoner => showTownScreen(summoner, true)))
+  el.appendChild(new SummonerCreate().render(summoner => showWorldScreen(summoner)))
   el.style.display = 'flex'
 }
 
-async function showTownScreen(summoner, hasFreeGacha) {
-  if (hasFreeGacha === undefined) {
-    const used = await window.arcana.summoner.hasFreeGachaUsed()
-    hasFreeGacha = !used
-  }
+let _worldScreen = null
+
+async function showWorldScreen(summoner) {
   _hideAll()
-  const el = document.getElementById('screen-town')
+  const mapState = await window.arcana.summoner.getMapState({ summonerId: summoner.id })
+  const el = document.getElementById('screen-world')
   el.innerHTML = ''
-  const town = new TownScreen(summoner, hasFreeGacha)
-  el.appendChild(town.render({
-    onFreeGacha: pet => {
+
+  if (_worldScreen) _worldScreen.destroy()
+  _worldScreen = new WorldScreen(summoner, mapState)
+  el.appendChild(_worldScreen.render({
+    onOpenMenu:  () => showGameUI(),
+    onFreeGacha: (pet) => {
       allPets.push(pet)
       if (gameUIReady) renderPetList()
     },
-    onOpenTab:   tabId => showGameUI(tabId),
-    onEnterGame: () => showGameUI(),
   }))
   el.style.display = 'flex'
 }
@@ -55,7 +55,7 @@ async function showGameUI(activateTab) {
     document.getElementById('btn-hunting').addEventListener('click', () => window.arcana.hunting.open())
     document.getElementById('btn-town').addEventListener('click', async () => {
       const summoner = await window.arcana.summoner.get()
-      showTownScreen(summoner)
+      showWorldScreen(summoner)
     })
     allPets = await window.arcana.pet.getAll()
     renderPetList()
@@ -75,7 +75,7 @@ async function init() {
   if (!summoner) {
     showStartScreen()
   } else {
-    showTownScreen(summoner)
+    showWorldScreen(summoner)
   }
 }
 
