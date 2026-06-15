@@ -37,6 +37,7 @@ async function showWorldScreen(summoner) {
   _worldScreen = new WorldScreen(summoner, mapState)
   el.appendChild(_worldScreen.render({
     onOpenMenu:  () => showGameUI(),
+    onOpenTab:   tabId => showGameUI(tabId),
     onFreeGacha: (pet) => {
       allPets.push(pet)
       if (gameUIReady) renderPetList()
