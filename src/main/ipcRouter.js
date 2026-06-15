@@ -254,13 +254,31 @@ class IpcRouter {
 
     // ── Summoner ──────────────────────────────────────────────────────
     ipcMain.handle('summoner:get', () => this.summonerSystem.getSummoner())
-    ipcMain.handle('summoner:create', (_e, { name }) =>
-      this.summonerSystem.createSummoner(name)
+    ipcMain.handle('summoner:create', (_e, { name, appearance }) =>
+      this.summonerSystem.createSummoner(name, appearance)
     )
     ipcMain.handle('summoner:has-free-gacha-used', () =>
       this.summonerSystem.hasFreeGachaUsed()
     )
     ipcMain.handle('summoner:free-gacha', () => this.summonerSystem.rollFreeGacha())
+    ipcMain.handle('summoner:set-personality', (_e, { summonerId, personality }) =>
+      this.summonerSystem.setPersonality(summonerId, personality)
+    )
+    ipcMain.handle('summoner:get-stats', (_e, { summonerId }) =>
+      this.summonerSystem.getSummonerStats(summonerId)
+    )
+    ipcMain.handle('summoner:invest-stat', (_e, { summonerId, statKey }) =>
+      this.summonerSystem.investStat(summonerId, statKey)
+    )
+    ipcMain.handle('summoner:add-exp', (_e, { summonerId, amount }) =>
+      this.summonerSystem.addExp(summonerId, amount)
+    )
+    ipcMain.handle('summoner:get-map-state', (_e, { summonerId }) =>
+      this.summonerSystem.getMapState(summonerId)
+    )
+    ipcMain.handle('summoner:save-map-state', (_e, { summonerId, mapId, tileX, tileY }) =>
+      this.summonerSystem.saveMapState(summonerId, mapId, tileX, tileY)
+    )
 
     // ── PvP ───────────────────────────────────────────────────────────
     ipcMain.handle('pvp:current-season', () => this.pvpSystem.getCurrentSeason())
