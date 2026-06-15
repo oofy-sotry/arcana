@@ -102,6 +102,9 @@ contextBridge.exposeInMainWorld('arcana', {
     getMapState:      ({ summonerId })                => ipcRenderer.invoke('summoner:get-map-state', { summonerId }),
     saveMapState:     ({ summonerId, mapId, tileX, tileY }) => ipcRenderer.invoke('summoner:save-map-state', { summonerId, mapId, tileX, tileY }),
   },
+  world: {
+    getMap: ({ mapId }) => ipcRenderer.invoke('world:get-map', { mapId }),
+  },
   pvp: {
     currentSeason: ()               => ipcRenderer.invoke('pvp:current-season'),
     ranking:       ({ seasonNum } = {}) => ipcRenderer.invoke('pvp:ranking', { seasonNum }),
