@@ -184,8 +184,10 @@ class WorldEngine {
   }
 
   _checkEdgeExit(nx, ny) {
-    // 맵 경계 밖으로 나갔을 때 → exit 확인
-    const exit = this.map.exits?.find(e => e.tile_x === nx || e.tile_y === ny)
+    // 맵 경계 밖으로 나갔을 때 → 인접 출구 타일 확인
+    const clampX = Math.max(0, Math.min(this.map.width - 1, nx))
+    const clampY = Math.max(0, Math.min(this.map.height - 1, ny))
+    const exit = this.map.exits?.find(e => e.tile_x === clampX && e.tile_y === clampY)
     if (exit && this.callbacks.onExit) this.callbacks.onExit(exit)
   }
 
