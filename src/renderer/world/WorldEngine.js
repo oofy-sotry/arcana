@@ -4,16 +4,17 @@ const VIEWPORT_H = 11
 
 // 타일 색상 팔레트
 const TILE_COLORS = {
-  0: { base: '#4a7c40', border: '#3d6b34' },   // 잔디
-  1: { base: '#2d5a1b', border: '#1e3d10' },   // 나무
-  2: { base: '#3a6fa8', border: '#2d5a8a' },   // 물
-  3: { base: '#8b7355', border: '#7a6244' },   // 길
-  4: { base: '#5a4a3a', border: '#4a3a2a' },   // 건물 벽
-  5: { base: '#3a2a1a', border: '#8b7355' },   // 건물 입구
-  6: { base: '#6aaa50', border: '#4a8a30' },   // 출구 동
-  7: { base: '#6aaa50', border: '#4a8a30' },   // 출구 남
-  8: { base: '#6aaa50', border: '#4a8a30' },   // 출구 서
-  9: { base: '#6aaa50', border: '#4a8a30' },   // 출구 북
+  0:  { base: '#4a7c40', border: '#3d6b34' },   // 잔디
+  1:  { base: '#2d5a1b', border: '#1e3d10' },   // 나무
+  2:  { base: '#3a6fa8', border: '#2d5a8a' },   // 물
+  3:  { base: '#8b7355', border: '#7a6244' },   // 길
+  4:  { base: '#5a4a3a', border: '#4a3a2a' },   // 건물 벽
+  5:  { base: '#3a2a1a', border: '#8b7355' },   // 건물 입구
+  6:  { base: '#6aaa50', border: '#4a8a30' },   // 출구 동
+  7:  { base: '#6aaa50', border: '#4a8a30' },   // 출구 남
+  8:  { base: '#6aaa50', border: '#4a8a30' },   // 출구 서
+  9:  { base: '#6aaa50', border: '#4a8a30' },   // 출구 북
+  10: { base: '#3a6b2a', border: '#2a5a1a' },   // 야생 풀밭 (배틀 발생)
 }
 
 const APPEARANCE_COLORS = {
@@ -23,7 +24,8 @@ const APPEARANCE_COLORS = {
   female_b: { hair: '#9c27b0', robe: '#9b59b6', skin: '#f5d5b0' },
 }
 
-const WALKABLE = new Set([0, 3, 5, 6, 7, 8, 9])
+const WALKABLE = new Set([0, 3, 5, 6, 7, 8, 9, 10])
+const WILD_GRASS = new Set([10])
 
 // BFS 경로탐색
 function findPath(tiles, sx, sy, ex, ey, w, h) {
@@ -192,12 +194,22 @@ class WorldEngine {
   }
 
   _onArrival() {
-    // 도착 시 NPC/출구 체크
+    // NPC 체크
     const npc = this.map.npcs?.find(n => n.tile_x === this.playerX && n.tile_y === this.playerY)
     if (npc && this.callbacks.onNpc) { this.callbacks.onNpc(npc); return }
 
+    // 출구 체크
     const exit = this.map.exits?.find(e => e.tile_x === this.playerX && e.tile_y === this.playerY)
-    if (exit && this.callbacks.onExit) this.callbacks.onExit(exit)
+    if (exit && this.callbacks.onExit) { this.callbacks.onExit(exit); return }
+
+    // 야생 풀밭 배틀 체크
+    const tile = this.map.tiles[this.playerY]?.[this.playerX]
+    if (WILD_GRASS.has(tile) && this.map.wildConfig) {
+      const rate = this.map.wildConfig.encounterRate ?? 0.15
+      if (Math.random() < rate && this.callbacks.onWildEncounter) {
+        this.callbacks.onWildEncounter(this.map.wildConfig)
+      }
+    }
   }
 
   _draw() {
@@ -274,6 +286,14 @@ class WorldEngine {
       ctx.beginPath()
       ctx.arc(px + S * 0.65, py + S/2, 2, 0, Math.PI * 2)
       ctx.fill()
+    } else if (tileId === 10) {
+      // 야생 풀밭: 풀잎 장식
+      ctx.fillStyle = '#2a5a1a'
+      const blades = [[8,8],[16,12],[24,8],[32,12],[40,8],[12,20],[28,20],[20,16]]
+      blades.forEach(([bx, by]) => {
+        ctx.fillRect(px + bx, py + by, 2, 8)
+        ctx.fillRect(px + bx - 2, py + by + 3, 2, 5)
+      })
     } else if (tileId >= 6) {
       // 출구: 밝은 화살표
       ctx.fillStyle = 'rgba(255,255,100,0.3)'
