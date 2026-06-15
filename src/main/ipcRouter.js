@@ -280,6 +280,16 @@ class IpcRouter {
       this.summonerSystem.saveMapState(summonerId, mapId, tileX, tileY)
     )
 
+    // ── World Map ─────────────────────────────────────────────────────
+    ipcMain.handle('world:get-map', (_e, { mapId }) => {
+      try {
+        const mapData = require(`../game/data/maps/${mapId}`)
+        return { ok: true, map: mapData }
+      } catch {
+        return { ok: false, error: `맵을 찾을 수 없습니다: ${mapId}` }
+      }
+    })
+
     // ── PvP ───────────────────────────────────────────────────────────
     ipcMain.handle('pvp:current-season', () => this.pvpSystem.getCurrentSeason())
     ipcMain.handle('pvp:ranking', (_e, { seasonNum } = {}) =>
