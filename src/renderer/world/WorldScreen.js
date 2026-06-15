@@ -67,8 +67,57 @@ class WorldScreen {
     // 엔진 초기화
     setTimeout(() => this._initEngine(el), 0)
 
+    // 메뉴 오버레이 (월드맵 위에 반투명 패널)
+    el.innerHTML += `
+      <div id="world-menu-overlay" style="
+        display:none; position:absolute; inset:0; z-index:50;
+        background:rgba(0,0,0,0.85); flex-direction:column;
+      ">
+        <div style="background:#16213e; border-bottom:1px solid #0f3460;
+          padding:10px 16px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+          <span style="color:#e94560; font-weight:bold">☰ 메뉴</span>
+          <button id="btn-close-menu" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:18px">✕</button>
+        </div>
+        <div style="flex:1; overflow-y:auto; padding:16px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:360px; margin:0 auto;">
+            ${[
+              {id:'pets',     icon:'🐉', label:'내 에레멘탈'},
+              {id:'stats',    icon:'📊', label:'스탯'},
+              {id:'skills',   icon:'✨', label:'스킬'},
+              {id:'items',    icon:'🎒', label:'아이템'},
+              {id:'breeding', icon:'🧬', label:'교배'},
+              {id:'gacha',    icon:'🎰', label:'가챠'},
+              {id:'party',    icon:'👥', label:'파티'},
+              {id:'quest',    icon:'📋', label:'퀘스트'},
+              {id:'online',   icon:'🌐', label:'온라인'},
+              {id:'equipment',icon:'⚔️', label:'장비'},
+              {id:'faction',  icon:'⚖️', label:'세력'},
+              {id:'story',    icon:'📖', label:'스토리'},
+            ].map(m => `
+              <button data-menu-tab="${m.id}" style="
+                padding:14px 8px; background:#0f1a2e; border:1px solid #0f3460;
+                border-radius:8px; cursor:pointer; color:#eee; font-size:13px;
+                display:flex; align-items:center; gap:8px;
+              "><span style="font-size:20px">${m.icon}</span>${m.label}</button>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `
+
     // 이벤트
-    el.querySelector('#btn-menu').addEventListener('click', () => callbacks.onOpenMenu())
+    el.querySelector('#btn-menu').addEventListener('click', () => {
+      el.querySelector('#world-menu-overlay').style.display = 'flex'
+    })
+    el.querySelector('#btn-close-menu').addEventListener('click', () => {
+      el.querySelector('#world-menu-overlay').style.display = 'none'
+    })
+    el.querySelectorAll('[data-menu-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        el.querySelector('#world-menu-overlay').style.display = 'none'
+        callbacks.onOpenTab(btn.dataset.menuTab)
+      })
+    })
     el.querySelector('#btn-close-dialog').addEventListener('click', () => this._closeDialog())
 
     this._el = el
@@ -78,16 +127,20 @@ class WorldScreen {
   async _initEngine(el) {
     const canvas = el.querySelector('#world-canvas')
 
-    // 맵 데이터 로드
-    const mapData = await this._loadMap(this.mapState?.map_id ?? 'town')
+    // 맵 데이터 로드 (실패 시 마을로 폴백)
+    let mapData = await this._loadMap(this.mapState?.map_id ?? 'town')
+    if (!mapData) mapData = await this._loadMap('town')
+    if (!mapData) return
+
     mapData.startX = this.mapState?.tile_x ?? 7
     mapData.startY = this.mapState?.tile_y ?? 7
 
     // WorldEngine은 script 태그로 전역 로드됨
     this.engine = new WorldEngine(canvas, mapData, this.summoner)
 
-    this.engine.on('onNpc',  npc  => this._showNpcDialog(npc))
-    this.engine.on('onExit', exit => this._handleExit(exit))
+    this.engine.on('onNpc',            npc    => this._showNpcDialog(npc))
+    this.engine.on('onExit',           exit   => this._handleExit(exit))
+    this.engine.on('onWildEncounter',  config => this._handleWildEncounter(config))
   }
 
   async _loadMap(mapId) {
@@ -129,6 +182,13 @@ class WorldScreen {
 
   _closeDialog() {
     this._el.querySelector('#npc-dialog').style.display = 'none'
+  }
+
+  _handleWildEncounter(config) {
+    // 야생 배틀 트리거 → 사냥터 시스템 연동
+    this.callbacks.onWildBattle?.(config)
+    // 일단 사냥터 창 열기로 연결
+    window.arcana.hunting.open()
   }
 
   async _handleExit(exit) {
