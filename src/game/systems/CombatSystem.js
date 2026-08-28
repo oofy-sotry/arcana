@@ -178,7 +178,11 @@ class CombatSystem {
       .reduce((sum, p) => sum + p.value, 0)
     // 소환사 스탯: battle_bonus — 투자 포인트당 데미지 +1%
     const battleBonus = this.summonerSystem?.getActiveStat('battle_bonus') || 0
-    const finalDamage = Math.ceil(result.damage * (state.synergyMult || 1.0) * (1 + battleBonus * 0.01)) + bonusDmg
+    // 소환사 스탯: boss_bonus — 투자 포인트당 보스 상대 데미지 +1%
+    const bossBonus = state.monster.isBoss ? (this.summonerSystem?.getActiveStat('boss_bonus') || 0) : 0
+    const finalDamage = Math.ceil(
+      result.damage * (state.synergyMult || 1.0) * (1 + battleBonus * 0.01) * (1 + bossBonus * 0.01)
+    ) + bonusDmg
 
     state.monster.currentHp -= finalDamage
 
