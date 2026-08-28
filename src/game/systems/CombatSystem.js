@@ -77,12 +77,15 @@ class CombatSystem {
     const equip    = this._getEquipmentStats(pet.id)
     const passives = this._getPassiveEffects(pet)
 
+    // 소환사 스탯: speed_bonus — 투자 포인트당 유효 속도 +1
+    const speedBonus = this.summonerSystem?.getActiveStat('speed_bonus') || 0
+
     // 장비 적용 후 유효 스탯 (HP는 전투용 별도 추적)
     const effectivePet = {
       ...pet,
       attack:  pet.attack  + equip.attack,
       defense: pet.defense + equip.defense,
-      speed:   pet.speed   + equip.speed,
+      speed:   pet.speed   + equip.speed + speedBonus,
     }
     const startHp = pet.hp + equip.hp
 
