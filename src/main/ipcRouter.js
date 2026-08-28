@@ -316,6 +316,10 @@ class IpcRouter {
     )
     ipcMain.handle('faction:advance-chapter', (_e, { chapter, effects }) => {
       const result = this.factionSystem.advanceChapter(chapter, effects)
+      // 챕터 4(거짓된 전면전) 진입 시 파티 펫 충성도 판정 — 이탈/설득 필요
+      if (result.ok && chapter === 4) {
+        result.loyaltyResolution = this._resolveChapter4Loyalty()
+      }
       // 챕터 6(스토리 완료) + 히든 엔딩(soulFusion 포함) 시 chaosrex_4 → omnirex_0 변환
       if (result.ok && chapter === 6 && effects?.soulFusion) {
         const transformed = this._triggerHiddenOmnirex()
@@ -323,6 +327,35 @@ class IpcRouter {
       }
       return result
     })
+  }
+
+  // 4장 진입 시 파티 펫 충성도 판정: 70+ 유지, 30~70 설득 필요, 30 미만 이탈
+  _resolveChapter4Loyalty() {
+    const db     = require('../db/database')
+    const { members } = this.partySystem.getParty()
+    const result = { kept: [], persuasionNeeded: [], departed: [] }
+
+    for (const pet of members) {
+      const loyalty = pet.loyalty ?? 70
+      if (loyalty >= 70) {
+        result.kept.push({ id: pet.id, name: pet.name })
+      } else if (loyalty >= 30) {
+        db.run(
+          `INSERT INTO world_state (key, value) VALUES (?, '1')
+           ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+          [`persuasion_needed_${pet.id}`]
+        )
+        result.persuasionNeeded.push({ id: pet.id, name: pet.name, loyalty })
+      } else {
+        this.partySystem.removeFromParty(pet.id)
+        db.run(
+          `INSERT INTO party_departure_log (pet_id, loyalty, chapter, departed_at) VALUES (?, ?, 4, ?)`,
+          [pet.id, loyalty, Date.now()]
+        )
+        result.departed.push({ id: pet.id, name: pet.name, loyalty })
+      }
+    }
+    return result
   }
 
   _triggerHiddenOmnirex() {
