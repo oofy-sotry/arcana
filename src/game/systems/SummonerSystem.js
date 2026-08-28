@@ -74,6 +74,17 @@ class SummonerSystem {
     return stats
   }
 
+  // 단일 플레이어 전제 — 현재 소환사의 스탯 포인트 값을 즉시 조회 (없으면 0)
+  getActiveStat(statKey) {
+    const summoner = this.getSummoner()
+    if (!summoner) return 0
+    const row = db.query(
+      'SELECT value FROM summoner_stats WHERE summoner_id = ? AND stat_key = ?',
+      [summoner.id, statKey]
+    )[0]
+    return row?.value ?? 0
+  }
+
   investStat(summonerId, statKey) {
     const summoner = db.query('SELECT * FROM summoner WHERE id = ?', [summonerId])[0]
     if (!summoner || summoner.stat_points < 1) return { ok: false, error: '투자할 포인트가 없습니다' }
