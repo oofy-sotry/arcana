@@ -89,10 +89,14 @@ class CombatSystem {
     }
     const startHp = pet.hp + equip.hp
 
+    // 소환사 스탯: debuff_bonus — 투자 포인트당 패시브 감소/독/반격 효과 +1%
+    const debuffBonus = this.summonerSystem?.getActiveStat('debuff_bonus') || 0
+    const debuffMult   = 1 + debuffBonus * 0.01
+
     // 패시브 도트(독성 신체 등) 상태: { value, duration }
     const monsterDot = passives
       .filter(p => p.type === 'dot' && p.duration >= 99)
-      .reduce((sum, p) => sum + p.value, 0)
+      .reduce((sum, p) => sum + p.value, 0) * debuffMult
 
     const state = {
       pet: effectivePet,
@@ -101,6 +105,7 @@ class CombatSystem {
       mode,
       synergyMult,
       passives,
+      debuffMult,
       monsterDotPerTurn: monsterDot,  // 매 펫 턴마다 몬스터에 주는 패시브 독 피해
       log: [],
     }
@@ -135,7 +140,7 @@ class CombatSystem {
     // 패시브 피해 감소 (water_shield / earth_armor / dragon_scale)
     const reduction = passives
       .filter(p => p.type === 'damage_reduction')
-      .reduce((sum, p) => sum + p.value, 0)
+      .reduce((sum, p) => sum + p.value, 0) * (state.debuffMult || 1)
     const finalDamage = Math.max(1, result.damage - reduction)
 
     state.petHp -= finalDamage
@@ -143,7 +148,7 @@ class CombatSystem {
     // 패시브 반격 (static_field / frost_skin)
     const counterDmg = passives
       .filter(p => p.type === 'counter')
-      .reduce((sum, p) => sum + p.value, 0)
+      .reduce((sum, p) => sum + p.value, 0) * (state.debuffMult || 1)
     if (counterDmg > 0) {
       state.monster.currentHp -= counterDmg
     }
