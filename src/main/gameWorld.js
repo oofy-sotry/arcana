@@ -55,7 +55,7 @@ class GameWorld {
     this.equipmentSystem     = new EquipmentSystem({ save: db.save, itemSystem: this.itemSystem })
     this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem, equipmentSystem: this.equipmentSystem, summonerSystem: this.summonerSystem })
     this.factionSystem       = new FactionSystem({ save: db.save })
-    this.explorationSystem   = new ExplorationSystem({ Pet, save: db.save, itemSystem: this.itemSystem, factionSystem: this.factionSystem })
+    this.explorationSystem   = new ExplorationSystem({ Pet, save: db.save, itemSystem: this.itemSystem, factionSystem: this.factionSystem, summonerSystem: this.summonerSystem })
     this.breedingSystem      = new BreedingSystem({ Pet, save: db.save })
     this.gachaSystem         = new GachaSystem({ Pet, save: db.save })
     this.partySystem         = new PartySystem({ Pet, save: db.save, summonerSystem: this.summonerSystem })

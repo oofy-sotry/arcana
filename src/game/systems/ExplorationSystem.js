@@ -70,11 +70,12 @@ const FACTION_EVENTS = [
 ]
 
 class ExplorationSystem {
-  constructor({ Pet, save, itemSystem, factionSystem }) {
+  constructor({ Pet, save, itemSystem, factionSystem, summonerSystem }) {
     this.Pet           = Pet
     this.save          = save
     this.itemSystem    = itemSystem
     this.factionSystem = factionSystem
+    this.summonerSystem = summonerSystem || null
   }
 
   // ─── 가중치 롤 ─────────────────────────────────────────────────────
@@ -161,7 +162,9 @@ class ExplorationSystem {
     if (energy < energyCost) return { error: `에너지 부족 (${errLabel})` }
 
     const newEnergy = energy - energyCost
-    const result    = this.rollEvent(dropBoost, factionBoost)
+    // 소환사 스탯: explore_bonus — 투자 포인트당 아이템/코인 드롭 가중치 +1%
+    const exploreBonus = this.summonerSystem?.getActiveStat('explore_bonus') || 0
+    const result    = this.rollEvent(dropBoost + exploreBonus * 0.01, factionBoost)
 
     if (result.type === 'item') {
       this.itemSystem.addItem(pet.id, result.itemId, 1)
