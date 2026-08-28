@@ -1,7 +1,10 @@
 const db = require('../../db/database')
 
-// 무료 소환 히든 풀 — 빛(루시나) · 어둠(노크티아) 2종
-const FREE_GACHA_HIDDEN = ['light_0', 'dark_0']
+// 무료 소환 히든 풀 — 빛(Luxis) · 어둠(Noctis) 2종. faction: 대응 세력 평판(rollFreeGacha 가중치 계산용)
+const FREE_GACHA_HIDDEN = [
+  { key: 'light_0', faction: 'luxis' },
+  { key: 'dark_0',  faction: 'noctis' },
+]
 
 const BASIC_ATTRS = ['fire','water','wind','earth','thunder','ice','poison','dragon','light','dark']
 
@@ -27,9 +30,10 @@ const PERSONALITY_BASE = {
 const EXP_TABLE = Array.from({ length: 100 }, (_, i) => Math.floor(100 * Math.pow(1.4, i)))
 
 class SummonerSystem {
-  constructor({ Pet, save }) {
+  constructor({ Pet, save, factionSystem }) {
     this.Pet  = Pet
     this.save = save
+    this.factionSystem = factionSystem || null
   }
 
   getSummoner() {
@@ -145,7 +149,16 @@ class SummonerSystem {
     let pet
 
     if (isHidden) {
-      const charKey  = FREE_GACHA_HIDDEN[Math.floor(Math.random() * FREE_GACHA_HIDDEN.length)]
+      // 세력 평판 50+(normal 티어) 시 해당 속성 히든 출생확률 +5%p (FACTION_SYSTEM 설계)
+      const weights = FREE_GACHA_HIDDEN.map(({ key, faction }) => ({
+        key, weight: 50 + ((this.factionSystem?.getRep(faction) ?? 50) >= 50 ? 5 : 0),
+      }))
+      const total = weights.reduce((sum, w) => sum + w.weight, 0)
+      let   roll  = Math.random() * total
+      let   picked = weights[weights.length - 1].key
+      for (const w of weights) { roll -= w.weight; if (roll <= 0) { picked = w.key; break } }
+
+      const charKey  = picked
       const charData = CHARACTERS[charKey]
       pet = this.Pet.createPet(charData.name, charData.attribute)
       pet = this.Pet.getPet(pet.id)
