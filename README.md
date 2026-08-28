@@ -25,15 +25,24 @@
 
 ---
 
-## 현재 상태
+## 현재 상태 (2026-08-28 기준)
 
 | 단계 | 상태 |
 |------|------|
-| 기획 (GDD) | ✅ 완료 |
-| 아키텍처 설계 | 🔄 진행 예정 |
-| 스프라이트 제작 | ⏳ 대기 |
-| 핵심 시스템 구현 | ⏳ 대기 |
-| 온라인 기능 | ⏳ Phase 2 |
+| 기획 (GDD) | ✅ 완료 (구현 후 갱신 반영 — [GDD 25장](https://github.com/oofy-sotry/arcana/wiki/GDD)) |
+| 아키텍처 설계 | ✅ 완료 ([ARCHITECTURE](https://github.com/oofy-sotry/arcana/wiki/ARCHITECTURE)) |
+| Core Loop (펫 생성·시간·컨디션) | ✅ 완료 |
+| 성장·진화·스킬·아이템 + 런처 UI | ✅ 완료 |
+| 사냥터·전투 | ✅ 완료 |
+| 교배·가챠·파티 | ✅ 완료 |
+| 스토리 5챕터·퀘스트 | ✅ 완료 |
+| 온라인 (서버·인증·PvP·친구) | ✅ 완료 |
+| 장비·세력·히든엔딩·PvP 시즌 | ✅ 완료 |
+| 소환사·월드맵 | ✅ 완료 |
+| 스프라이트 제작 | ⏳ 대기 (`assets/sprites`·`ui`·`audio`·`items` 전부 `.gitkeep`만 존재, 실제 에셋 없음) |
+
+> 전체 진행 체크리스트는 [COMMIT_PLAN](https://github.com/oofy-sotry/arcana/wiki/COMMIT_PLAN), 남은 작업은
+> [ROADMAP](https://github.com/oofy-sotry/arcana/wiki/ROADMAP) Phase 8 "남은 작업 후보" 참조.
 
 ---
 
@@ -51,17 +60,24 @@ legacy/tamagotchi → 초기 프로토타입 코드 보존 (구 다마고치)
 | 항목 | 내용 |
 |------|------|
 | 플랫폼 | Electron |
-| 언어 | JavaScript (예정) |
-| 저장소 | 로컬 JSON → 추후 SQLite 전환 검토 |
-| 온라인 | Phase 2에서 결정 |
-
-> 세부 기술 스택은 아키텍처 설계 단계에서 확정됩니다.
+| 언어 | JavaScript (CommonJS, Main/DB/Game 레이어 — 프리로드 contextBridge) |
+| 렌더링 | PixiJS v8 (ES 모듈) |
+| 저장소 (클라이언트) | sql.js (WebAssembly SQLite) |
+| 저장소 (서버) | sql.js — `server/` Express 앱 |
+| 온라인 | 완료 — JWT 인증, 랭킹, 온라인 교배, PvP 시즌, 친구 |
 
 ---
 
 ## 문서
 
-- 📋 [게임 디자인 문서 (GDD)](docs/GDD.md) — 전체 게임 설계 상세 내용
+모든 설계·기획 문서는 **[GitHub Wiki](https://github.com/oofy-sotry/arcana/wiki)** 로 이관되었습니다.
+
+- 📋 [게임 디자인 문서 (GDD)](https://github.com/oofy-sotry/arcana/wiki/GDD) — 전체 게임 설계 + 구현 현황 갱신(25장)
+- 🏗️ [아키텍처 설계서](https://github.com/oofy-sotry/arcana/wiki/ARCHITECTURE) — 프로세스 구조, DB, IPC 규칙
+- 🗺️ [전체 로드맵](https://github.com/oofy-sotry/arcana/wiki/ROADMAP) — Phase별 완료 기준·의존성
+- ✅ [커밋 계획 체크리스트](https://github.com/oofy-sotry/arcana/wiki/COMMIT_PLAN) — 커밋 단위 진행 이력
+- ⚖️ [세력 시스템](https://github.com/oofy-sotry/arcana/wiki/FACTION_SYSTEM) · 📖 [스토리 설계](https://github.com/oofy-sotry/arcana/wiki/STORY_DESIGN) · 🗺️ [구역 설계](https://github.com/oofy-sotry/arcana/wiki/ZONES_DESIGN)
+- 📐 [커밋 규칙](https://github.com/oofy-sotry/arcana/wiki/COMMIT_RULES)
 
 ---
 
@@ -69,16 +85,18 @@ legacy/tamagotchi → 초기 프로토타입 코드 보존 (구 다마고치)
 
 ```
 arcana/
-├── docs/
-│   └── GDD.md          # 게임 디자인 문서
-├── src/                # 소스 코드 (구현 예정)
+├── src/                 # Electron 클라이언트 (main/game/db/renderer/preload)
+├── server/              # 온라인 기능 서버 (Express + sql.js)
 ├── assets/
-│   ├── sprites/        # 캐릭터 스프라이트
-│   ├── ui/             # UI 에셋
-│   ├── audio/          # 사운드
-│   └── items/          # 아이템 이미지
+│   ├── sprites/         # 캐릭터 스프라이트 — 아직 미제작 (.gitkeep만 존재)
+│   ├── ui/               # UI 에셋 — 아직 미제작
+│   ├── audio/            # 사운드 — 아직 미제작
+│   └── items/             # 아이템 이미지 — 아직 미제작
 └── README.md
 ```
+
+> 설계 문서는 [Wiki](https://github.com/oofy-sotry/arcana/wiki)에 있습니다 (저장소에는 더 이상 `docs/` 폴더가 없습니다).
+> 상세 폴더 구조는 [ARCHITECTURE](https://github.com/oofy-sotry/arcana/wiki/ARCHITECTURE) 9절 참조.
 
 ---
 
@@ -92,4 +110,4 @@ arcana/
 - **에레멘탈** — 10가지 속성의 생명체, 계약자의 동반자
 - **옴니렉스** — 전속성을 지닌 시원적 존재, 최종 목표
 
-자세한 스토리는 [GDD 세계관 섹션](docs/GDD.md#3-세계관-및-스토리)을 참고하세요.
+자세한 스토리는 [GDD 세계관 섹션](https://github.com/oofy-sotry/arcana/wiki/GDD#3-세계관-및-스토리)을 참고하세요.
