@@ -1,24 +1,27 @@
 const MAX_PARTY_SIZE = 3
 
 // 속성별 파티 시너지 (Tier 1: 중복 속성)
-function calcSynergy(pets) {
+// partyBonus: 소환사 스탯 party_bonus — 투자 포인트당 시너지 배율 +1%
+function calcSynergy(pets, partyBonus = 0) {
   const attrCount = {}
   pets.forEach(p => {
     attrCount[p.attribute] = (attrCount[p.attribute] || 0) + 1
   })
+  const extra = partyBonus * 0.01
 
   const bonuses = []
   Object.entries(attrCount).forEach(([attr, count]) => {
-    if (count === 2) bonuses.push({ attr, type: 'double', damageMult: 1.10, desc: `${attr} 2마리: 데미지 +10%` })
-    if (count >= 3) bonuses.push({ attr, type: 'triple', damageMult: 1.20, cdReduction: 0.20, desc: `${attr} 3마리: 데미지 +20%, 쿨다운 -20%` })
+    if (count === 2) bonuses.push({ attr, type: 'double', damageMult: 1.10 + extra, desc: `${attr} 2마리: 데미지 +10%` })
+    if (count >= 3) bonuses.push({ attr, type: 'triple', damageMult: 1.20 + extra, cdReduction: 0.20, desc: `${attr} 3마리: 데미지 +20%, 쿨다운 -20%` })
   })
   return bonuses
 }
 
 class PartySystem {
-  constructor({ Pet, save }) {
+  constructor({ Pet, save, summonerSystem }) {
     this.Pet  = Pet
     this.save = save
+    this.summonerSystem = summonerSystem || null
   }
 
   getParty() {
@@ -26,7 +29,8 @@ class PartySystem {
     const members = db.query(
       `SELECT pm.slot, p.* FROM party_members pm JOIN pets p ON pm.pet_id = p.id ORDER BY pm.slot`
     )
-    return { members, synergy: calcSynergy(members) }
+    const partyBonus = this.summonerSystem?.getActiveStat('party_bonus') || 0
+    return { members, synergy: calcSynergy(members, partyBonus) }
   }
 
   addToParty(petId, slot) {
