@@ -52,7 +52,8 @@ class GameWorld {
     this.skillSystem     = new SkillSystem({ Pet, save: db.save })
     this.itemSystem      = new ItemSystem({ Pet, save: db.save })
     this.equipmentSystem     = new EquipmentSystem({ save: db.save, itemSystem: this.itemSystem })
-    this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem, equipmentSystem: this.equipmentSystem })
+    this.summonerSystem      = new SummonerSystem({ Pet, save: db.save })
+    this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem, equipmentSystem: this.equipmentSystem, summonerSystem: this.summonerSystem })
     this.factionSystem       = new FactionSystem({ save: db.save })
     this.explorationSystem   = new ExplorationSystem({ Pet, save: db.save, itemSystem: this.itemSystem, factionSystem: this.factionSystem })
     this.breedingSystem      = new BreedingSystem({ Pet, save: db.save })
@@ -68,7 +69,6 @@ class GameWorld {
     })
     this.onlineSystem        = new OnlineSystem({ Pet, save: db.save })
     this.pvpSystem           = new PvpSystem({ save: db.save })
-    this.summonerSystem      = new SummonerSystem({ Pet, save: db.save })
 
     const pets = this.petSystem.getAll()
     if (pets.length > 0) {

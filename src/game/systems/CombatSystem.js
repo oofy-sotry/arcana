@@ -3,12 +3,13 @@ const { getDropTable } = require('../data/monsters')
 const SKILLS           = require('../data/skills')
 
 class CombatSystem {
-  constructor({ Pet, save, levelSystem, itemSystem, equipmentSystem }) {
+  constructor({ Pet, save, levelSystem, itemSystem, equipmentSystem, summonerSystem }) {
     this.Pet             = Pet
     this.save            = save
     this.levelSystem     = levelSystem
     this.itemSystem      = itemSystem
     this.equipmentSystem = equipmentSystem || null
+    this.summonerSystem  = summonerSystem || null
     this._battles        = new Map()
   }
 
@@ -167,7 +168,9 @@ class CombatSystem {
     const bonusDmg = passives
       .filter(p => p.type === 'bonus_damage')
       .reduce((sum, p) => sum + p.value, 0)
-    const finalDamage = Math.ceil(result.damage * (state.synergyMult || 1.0)) + bonusDmg
+    // 소환사 스탯: battle_bonus — 투자 포인트당 데미지 +1%
+    const battleBonus = this.summonerSystem?.getActiveStat('battle_bonus') || 0
+    const finalDamage = Math.ceil(result.damage * (state.synergyMult || 1.0) * (1 + battleBonus * 0.01)) + bonusDmg
 
     state.monster.currentHp -= finalDamage
 
