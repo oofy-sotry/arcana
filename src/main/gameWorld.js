@@ -104,6 +104,7 @@ class GameWorld {
         const freshPet  = this.petSystem.getAll().find(p => p.id === pet.id)
         if (freshPet) this.skillSystem.unlockForStage(freshPet)
       }
+      this.skillSystem.unlockFactionHiddenSkills(pet, this.factionSystem)
     }
 
     // 영혼동화도 시간 경과 증가 (+0.01/tick)

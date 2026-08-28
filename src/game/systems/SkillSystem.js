@@ -130,6 +130,28 @@ class SkillSystem {
     })
   }
 
+  // ─── 세력 평판 90+(divine) 히든 스킬 해금 ─────────────────────────
+  // 히든 진화 트랙(is_hidden)과 무관하게, light/dark 펫이 소속 세력 평판 90+ 달성 시
+  // 해당 속성의 H-트랙 스킬을 직접 해금 (FACTION_SYSTEM 위키 90+ 티어 효과)
+  unlockFactionHiddenSkills(pet, factionSystem) {
+    if (!factionSystem) return
+    const faction = pet.attribute === 'light' ? 'luxis' : pet.attribute === 'dark' ? 'noctis' : null
+    if (!faction) return
+    if (factionSystem.getTierInfo(faction).tier !== 'divine') return
+
+    Object.entries(SKILLS).forEach(([skillId, skill]) => {
+      if (skill.attribute !== pet.attribute) return
+      const us = skill.unlockStage
+      if (typeof us !== 'string' || !us.startsWith('H')) return
+      if (pet.evolution_stage < Number(us.slice(1))) return
+      db.run(
+        `INSERT OR IGNORE INTO pet_skills (pet_id, skill_id, unlocked_at) VALUES (?, ?, ?)`,
+        [pet.id, skillId, Date.now()]
+      )
+    })
+    this.save()
+  }
+
   // ─── 스킬 강화 ────────────────────────────────────────────────────
   upgradeSkill(pet, skillId) {
     const rows = db.query(
