@@ -49,7 +49,7 @@ class GameWorld {
     this.petSystem   = new PetSystem({ Pet, World, save: db.save })
     this.summonerSystem      = new SummonerSystem({ Pet, save: db.save })
     this.levelSystem     = new LevelSystem({ Pet, save: db.save, summonerSystem: this.summonerSystem })
-    this.evolutionSystem = new EvolutionSystem({ Pet, save: db.save })
+    this.evolutionSystem = new EvolutionSystem({ Pet, save: db.save, summonerSystem: this.summonerSystem })
     this.skillSystem     = new SkillSystem({ Pet, save: db.save })
     this.itemSystem      = new ItemSystem({ Pet, save: db.save })
     this.equipmentSystem     = new EquipmentSystem({ save: db.save, itemSystem: this.itemSystem })

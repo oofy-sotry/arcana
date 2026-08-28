@@ -6,9 +6,10 @@ const db = require('../../db/database')
 const HIDDEN_BONUS = { 1: 0.10, 2: 0.15, 3: 0.20, 4: 0.30 }
 
 class EvolutionSystem {
-  constructor({ Pet, save }) {
+  constructor({ Pet, save, summonerSystem }) {
     this.Pet  = Pet
     this.save = save
+    this.summonerSystem = summonerSystem || null
   }
 
   // ─── 현재 스테이지에 맞는 캐릭터 데이터 반환 ─────────────────────────
@@ -191,10 +192,14 @@ class EvolutionSystem {
     const charData = this._findCharData(pet)
     if (!charData?.hiddenConditions?.length) return false
 
+    // 소환사 스탯: hidden_bonus — 투자 포인트당 히든 조건 임계값 -1%
+    const hiddenBonus = this.summonerSystem?.getActiveStat('hidden_bonus') || 0
+    const relax = value => Math.max(0, value * (1 - hiddenBonus * 0.01))
+
     return charData.hiddenConditions.every(cond => {
       switch (cond.type) {
         case 'high_affinity':
-          return (pet.affinity || 0) >= cond.value
+          return (pet.affinity || 0) >= relax(cond.value)
 
         case 'has_item': {
           const row = db.query(
@@ -209,17 +214,17 @@ class EvolutionSystem {
             "SELECT COALESCE(SUM(count), 0) AS total FROM daily_activity WHERE pet_id = ? AND activity = 'hunt'",
             [pet.id]
           )[0]
-          return Number(row?.total ?? 0) >= cond.value
+          return Number(row?.total ?? 0) >= relax(cond.value)
         }
 
         case 'age_seconds':
-          return (pet.age_seconds || 0) >= cond.value
+          return (pet.age_seconds || 0) >= relax(cond.value)
 
         case 'all_attributes': {
           const row = db.query(
             'SELECT COUNT(DISTINCT attribute) AS cnt FROM pets WHERE is_alive = 1 OR is_alive IS NULL'
           )[0]
-          return Number(row?.cnt ?? 0) >= cond.value
+          return Number(row?.cnt ?? 0) >= relax(cond.value)
         }
 
         default:
