@@ -1,7 +1,8 @@
 class LevelSystem {
-  constructor({ Pet, save }) {
+  constructor({ Pet, save, summonerSystem }) {
     this.Pet  = Pet
     this.save = save
+    this.summonerSystem = summonerSystem || null
   }
 
   getExpRequired(level) {
@@ -13,12 +14,15 @@ class LevelSystem {
   calcStatGrowth(pet) {
     const hash       = pet.id % 10
     const multiplier = hash < 6 ? 1.0 : hash < 9 ? 1.5 : 2.0
+    // 소환사 스탯: growth_bonus — 투자 포인트당 레벨업 증가량 +1%
+    const growthBonus = this.summonerSystem?.getActiveStat('growth_bonus') || 0
+    const bonusMult    = 1 + growthBonus * 0.01
     return {
-      hp:      Math.ceil(5 * multiplier),
-      mp:      Math.ceil(3 * multiplier),
-      attack:  Math.ceil(2 * multiplier),
-      defense: Math.ceil(1 * multiplier),
-      speed:   Math.ceil(2 * multiplier),
+      hp:      Math.ceil(5 * multiplier * bonusMult),
+      mp:      Math.ceil(3 * multiplier * bonusMult),
+      attack:  Math.ceil(2 * multiplier * bonusMult),
+      defense: Math.ceil(1 * multiplier * bonusMult),
+      speed:   Math.ceil(2 * multiplier * bonusMult),
     }
   }
 
