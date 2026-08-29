@@ -42,19 +42,29 @@ function drawBackground() {
   app.stage.addChild(g)
 }
 
-function spawnPetSprite() {
-  if (!app) return
+// index.html 기준 상대경로 — src/renderer/hunting/ → 프로젝트 루트까지 3단계
+const PET_SPRITE_BASE = '../../../assets/sprites/characters/'
+
+async function spawnPetSprite() {
+  if (!app || !currentPet) return
   if (petSprite) { app.stage.removeChild(petSprite); petSprite = null }
 
-  const g = new PIXI.Graphics()
-  g.circle(0, 0, 16).fill(0xe94560)
-  const tex = app.renderer.generateTexture(g)
+  let tex
+  try {
+    tex = await PIXI.Assets.load(`${PET_SPRITE_BASE}${currentPet.attribute}_${currentPet.evolution_stage}.png`)
+  } catch {
+    const g = new PIXI.Graphics()
+    g.circle(0, 0, 16).fill(0xe94560)
+    tex = app.renderer.generateTexture(g)
+    g.destroy()
+  }
   petSprite = new PIXI.Sprite(tex)
   petSprite.anchor.set(0.5)
+  petSprite.width  = 40
+  petSprite.height = 40
   petSprite.x = app.screen.width  / 2
   petSprite.y = app.screen.height / 2
   app.stage.addChild(petSprite)
-  g.destroy()
 }
 
 async function loadZoneMonsters(zoneId) {
@@ -93,7 +103,7 @@ async function init() {
   if (pets.length > 0) {
     currentPet = pets[0]
     updateEnergyDisplay()
-    spawnPetSprite()
+    await spawnPetSprite()
     window._combatUI.setPetHp(currentPet.hp || 100, currentPet.hp || 100)
   }
 
