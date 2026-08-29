@@ -2,6 +2,9 @@ const ATTR_EMOJI_G  = { fire: '🔥', water: '💧', wind: '🌪️', earth: '�
 const STAGE_NAMES_G = ['유년기', '성장기', '완전체', '궁극체', '전설체']
 const STAGE_COLOR_G = ['#888', '#4ecdc4', '#45b7d1', '#f5a623', '#e94560']
 
+// index.html 기준 상대경로 — src/renderer/launcher/ → 프로젝트 루트까지 3단계
+const SPRITE_BASE_G = '../../../assets/sprites/characters/'
+
 class GachaPanel {
   constructor(allPets) {
     this.allPets = allPets.filter(p => p.is_alive === 1)
@@ -61,13 +64,29 @@ class GachaPanel {
         const color = STAGE_COLOR_G[stage] || '#888'
         const card  = document.createElement('div')
         card.style.cssText = `background:#16213e; border:1px solid ${color}; border-radius:6px; padding:10px; margin-bottom:8px; display:flex; align-items:center; gap:12px`
-        card.innerHTML = `
-          <div style="font-size:28px">${ATTR_EMOJI_G[pet.attribute] || '❓'}</div>
-          <div>
-            <div style="font-weight:bold">${pet.name}</div>
-            <div style="font-size:11px; color:${color}">${STAGE_NAMES_G[stage]} · ${pet.attribute}</div>
-          </div>
+
+        const iconWrap = document.createElement('div')
+        iconWrap.style.cssText = 'width:40px; height:40px; flex-shrink:0; display:flex; align-items:center; justify-content:center;'
+        const img = document.createElement('img')
+        img.src   = `${SPRITE_BASE_G}${pet.attribute}_${stage}.png`
+        img.style.cssText = 'width:40px; height:40px; object-fit:contain;'
+        img.onerror = () => {
+          iconWrap.innerHTML = ''
+          const span = document.createElement('span')
+          span.style.cssText = 'font-size:28px'
+          span.textContent = ATTR_EMOJI_G[pet.attribute] || '❓'
+          iconWrap.appendChild(span)
+        }
+        iconWrap.appendChild(img)
+
+        const info = document.createElement('div')
+        info.innerHTML = `
+          <div style="font-weight:bold">${pet.name}</div>
+          <div style="font-size:11px; color:${color}">${STAGE_NAMES_G[stage]} · ${pet.attribute}</div>
         `
+
+        card.appendChild(iconWrap)
+        card.appendChild(info)
         resultBox.appendChild(card)
       })
 
