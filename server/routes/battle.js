@@ -73,6 +73,31 @@ router.post('/challenge', requireAuth, (req, res) => {
   })
 })
 
+// GET /battle/ranking — 실시간 PvP 글로벌 랭킹 (battle_log 집계, 클라 로컬 pvp_stats와 별개)
+router.get('/ranking', requireAuth, (_req, res) => {
+  const rows = db.query(`
+    SELECT username, SUM(wins) AS wins, SUM(losses) AS losses
+    FROM (
+      SELECT attacker_username AS username, (winner_id = attacker_id) AS wins, (winner_id != attacker_id AND winner_id IS NOT NULL) AS losses
+      FROM battle_log
+      UNION ALL
+      SELECT defender_username AS username, (winner_id = defender_id) AS wins, (winner_id != defender_id AND winner_id IS NOT NULL) AS losses
+      FROM battle_log
+    )
+    GROUP BY username
+    ORDER BY wins DESC, losses ASC
+    LIMIT 50
+  `)
+  res.json({
+    ranking: rows.map(r => ({
+      username: r.username,
+      wins:     Number(r.wins),
+      losses:   Number(r.losses),
+      winRate:  Math.round((Number(r.wins) / Math.max(Number(r.wins) + Number(r.losses), 1)) * 1000) / 10,
+    })),
+  })
+})
+
 // GET /battle/history — 내 배틀 기록
 router.get('/history', requireAuth, (req, res) => {
   const rows = db.query(
