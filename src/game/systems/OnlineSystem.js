@@ -95,6 +95,14 @@ class OnlineSystem {
   getFriendPets(username)      { return api.get(`/friends/${username}/pets`) }
 
   isServerReachable() { return api.isServerReachable() }
+
+  // 렌더러가 실시간 PvP WS 소켓을 직접 여는 데 필요한 정보 (토큰 + ws:// URL)
+  getWsConnectionInfo() {
+    return {
+      token: api.getToken(),
+      wsUrl: api.BASE_URL.replace(/^http/, 'ws'),
+    }
+  }
 }
 
 module.exports = OnlineSystem

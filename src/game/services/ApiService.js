@@ -59,3 +59,4 @@ class ApiService {
 }
 
 module.exports = new ApiService()
+module.exports.BASE_URL = BASE_URL
