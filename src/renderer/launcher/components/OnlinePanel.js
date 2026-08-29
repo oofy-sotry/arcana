@@ -44,11 +44,11 @@ class OnlinePanel {
 
       // 섹션 탭
       html += `<div id="ol-section-bar" style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap">
-        ${['ranking','breeding','battle','pvp','friends'].map(s =>
+        ${['ranking','breeding','battle','pvp','party-hunt','friends'].map(s =>
           `<button data-section="${s}" style="padding:3px 10px; border-radius:4px; border:none; cursor:pointer; font-size:11px;
             background:${this._section === s ? '#4a90e2' : '#333'};
             color:${this._section === s ? '#fff' : '#aaa'}
-          ">${{ranking:'랭킹', breeding:'온라인 교배', battle:'배틀', pvp:'PvP 시즌', friends:'친구'}[s]}</button>`
+          ">${{ranking:'랭킹', breeding:'온라인 교배', battle:'배틀', pvp:'PvP 시즌', 'party-hunt':'파티 사냥', friends:'친구'}[s]}</button>`
         ).join('')}
       </div>
       <div id="ol-body"></div>`
@@ -134,8 +134,9 @@ class OnlinePanel {
     if (s === 'ranking')  this._renderRanking(body)
     if (s === 'breeding') this._renderBreeding(body, cb)
     if (s === 'battle')   this._renderBattle(body, cb)
-    if (s === 'pvp')      this._renderPvp(body)
-    if (s === 'friends')  this._renderFriends(body, cb)
+    if (s === 'pvp')        this._renderPvp(body)
+    if (s === 'party-hunt') this._renderPartyHunt(body)
+    if (s === 'friends')    this._renderFriends(body, cb)
   }
 
   _renderPvp(body) {
@@ -278,6 +279,122 @@ class OnlinePanel {
       name: pet?.name || '이름없음', attribute: pet?.attribute || 'fire', level: pet?.level || 1,
       hp: pet?.hp || 50, attack: pet?.attack || 10, defense: pet?.defense || 5, speed: pet?.speed || 10,
     }
+  }
+
+  _renderPartyHunt(body) {
+    body.innerHTML = `
+      <div style="background:#0d1117; border:1px solid #2ecc71; border-radius:8px; padding:12px; margin-bottom:14px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:6px">
+          <span style="color:#2ecc71; font-size:13px; font-weight:bold">🗡️ 파티 사냥</span>
+          <select id="ph-zone" style="flex:1; padding:3px 6px; border-radius:4px; background:#333; color:#eee; border:none; font-size:11px"></select>
+          <select id="ph-pet" style="padding:3px 6px; border-radius:4px; background:#333; color:#eee; border:none; font-size:11px">
+            ${this.allPets.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+          </select>
+        </div>
+        <div id="ph-status">
+          <button id="ph-start" style="padding:6px 14px; background:#2ecc71; border:none; color:#0a0a1a; border-radius:4px; cursor:pointer; font-size:12px">사냥 시작</button>
+        </div>
+        <div id="ph-log" style="margin-top:8px; max-height:160px; overflow-y:auto; font-size:11px; color:#ccc"></div>
+      </div>
+      <p style="font-size:11px; color:#666">같은 구역을 고른 2~3명이 모이면 시작합니다. 세력 평판·스토리로 잠긴 구역은 목록에 없습니다.</p>
+    `
+
+    window.arcana.hunting.getZones().then(zones => {
+      const sel = body.querySelector('#ph-zone')
+      zones.filter(z => !z.unlock).forEach(z => {
+        const opt = document.createElement('option')
+        opt.value = z.id
+        opt.textContent = `${z.name} (Lv.${z.minLevel}-${z.maxLevel})`
+        sel.appendChild(opt)
+      })
+    })
+
+    this._bindPartyHunt(body)
+  }
+
+  // 파티 사냥 상태 머신: idle → waiting/forming → hunting → result → idle
+  _bindPartyHunt(body) {
+    const statusEl  = body.querySelector('#ph-status')
+    const logEl     = body.querySelector('#ph-log')
+    const petSelect = body.querySelector('#ph-pet')
+    const zoneSelect = body.querySelector('#ph-zone')
+
+    const socket = new RealtimeSocket()
+    let authed = false
+    let myUserId = null
+    let selectedPetId = null
+
+    const appendLog = html => {
+      const line = document.createElement('div')
+      line.innerHTML = html
+      logEl.appendChild(line)
+      logEl.scrollTop = logEl.scrollHeight
+    }
+
+    const setIdle = () => {
+      statusEl.innerHTML = `<button id="ph-start" style="padding:6px 14px; background:#2ecc71; border:none; color:#0a0a1a; border-radius:4px; cursor:pointer; font-size:12px">사냥 시작</button>`
+      statusEl.querySelector('#ph-start').addEventListener('click', start)
+    }
+    const setWaiting = count => {
+      statusEl.innerHTML = `<span style="color:#aaa; font-size:12px">파티원을 찾는 중... (${count}/3)</span>
+        <button id="ph-cancel" style="margin-left:8px; padding:3px 8px; background:#555; border:none; color:#eee; border-radius:4px; cursor:pointer; font-size:11px">취소</button>`
+      statusEl.querySelector('#ph-cancel').addEventListener('click', () => { socket.leavePartyHunt(); setIdle() })
+    }
+    const setHunting = () => {
+      statusEl.innerHTML = `<span style="color:#2ecc71; font-size:12px">⚔️ 사냥 중...</span>`
+    }
+    const setResult = summary => {
+      const text = summary.reason === 'cleared' ? `클리어! ${summary.cleared}/${summary.total} 처치` : `전멸... ${summary.cleared}/${summary.total} 처치`
+      const color = summary.reason === 'cleared' ? '#4ae84a' : '#e84a4a'
+      statusEl.innerHTML = `<span style="color:${color}; font-size:13px; font-weight:bold">${text}</span>
+        <button id="ph-again" style="margin-left:8px; padding:3px 10px; background:#2ecc71; border:none; color:#0a0a1a; border-radius:4px; cursor:pointer; font-size:11px">다시 사냥</button>`
+      statusEl.querySelector('#ph-again').addEventListener('click', start)
+    }
+
+    socket.on('auth:ok', m => {
+      authed = true
+      myUserId = m.userId
+      socket.joinPartyHunt({ zoneId: zoneSelect.value, pet: this._selectedRtPet(petSelect) })
+    })
+    socket.on('auth:error', e => { statusEl.innerHTML = `<span style="color:#e94560; font-size:12px">인증 실패: ${e.error}</span>` })
+    socket.on('party:queue-status', m => { if (m.status !== 'locked') setWaiting(m.count) })
+    socket.on('party:formed', m => {
+      logEl.innerHTML = ''
+      appendLog(`파티 결성: ${m.members.map(x => x.username).join(', ')}`)
+      setHunting()
+    })
+    socket.on('encounter:start', m => appendLog(`<b style="color:#ffd54f">${m.monsterName}${m.isBoss ? ' (보스!)' : ''} 등장!</b>`))
+    socket.on('hunt:turn', t => {
+      if (t.target === 'monster') {
+        const who = t.actor === myUserId ? '내 펫' : t.actor
+        appendLog(`${who} → 몬스터 ${t.damage} 데미지${t.isCrit ? ' (크리티컬!)' : ''}`)
+      } else {
+        const who = t.target === myUserId ? '내 펫' : t.target
+        appendLog(`<span style="color:#e84a4a">몬스터 → ${who} ${t.damage} 데미지${t.targetAlive === false ? ' (쓰러짐)' : ''}</span>`)
+      }
+    })
+    socket.on('monster:defeated', m => {
+      appendLog(`<span style="color:#4ae84a">✅ 처치!</span>`)
+      const myReward = m.rewards[myUserId]
+      if (myReward && selectedPetId) {
+        window.arcana.hunting.applyRealtimeReward({
+          petId: selectedPetId, exp: myReward.exp, coins: myReward.coins, drops: myReward.drops,
+        })
+        const dropText = myReward.drops.length ? `, 드롭: ${myReward.drops.map(d => d.itemId).join(', ')}` : ''
+        appendLog(`&nbsp;&nbsp;보상: exp+${myReward.exp}, 코인+${myReward.coins}${dropText}`)
+      }
+    })
+    socket.on('hunt:end', summary => setResult(summary))
+
+    const start = async () => {
+      selectedPetId = Number(petSelect.value)
+      if (authed) { socket.joinPartyHunt({ zoneId: zoneSelect.value, pet: this._selectedRtPet(petSelect) }); return }
+      const { token, wsUrl } = await window.arcana.online.getWsInfo()
+      if (!token) { statusEl.innerHTML = '<span style="color:#e94560; font-size:12px">먼저 로그인하세요</span>'; return }
+      socket.connect({ wsUrl, token })
+    }
+
+    statusEl.querySelector('#ph-start').addEventListener('click', start)
   }
 
   _renderRanking(body) {
