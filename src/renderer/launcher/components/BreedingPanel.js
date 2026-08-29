@@ -1,4 +1,7 @@
 const ATTR_EMOJI_B = { fire: '🔥', water: '💧', wind: '🌪️', earth: '🌍', thunder: '⚡', ice: '❄️', poison: '☠️', dragon: '🐉', omni: '🌟' }
+
+// index.html 기준 상대경로 — src/renderer/launcher/ → 프로젝트 루트까지 3단계
+const SPRITE_BASE_B = '../../../assets/sprites/characters/'
 const COMPAT_LABEL = { S: '💖 같은 속성', C: '❤️ 호환', N: '💛 중립', I: '💔 불호환' }
 
 class BreedingPanel {
@@ -125,16 +128,29 @@ class BreedingPanel {
       }
       const attrDisplay = (child.attribute2 ? `${child.attribute} / ${child.attribute2}` : child.attribute)
       resultBox.innerHTML = `
-        <div style="background:#0f3460;border:1px solid ${borderColor};border-radius:8px;padding:12px">
-          <div style="color:#aaa;font-size:12px;margin-bottom:6px">${headerText}</div>
-          <div style="font-size:16px;font-weight:bold">
-            ${ATTR_EMOJI_B[child.attribute] || ''} ${child.name}${tagHtml}
-          </div>
-          <div style="font-size:12px;color:#aaa;margin-top:4px">
-            속성: ${attrDisplay} &nbsp;·&nbsp; 몰빵 ${res.batchCount}회 소모
+        <div style="background:#0f3460;border:1px solid ${borderColor};border-radius:8px;padding:12px;display:flex;align-items:center;gap:12px">
+          <div id="breed-child-icon" style="width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center"></div>
+          <div>
+            <div style="color:#aaa;font-size:12px;margin-bottom:6px">${headerText}</div>
+            <div style="font-size:16px;font-weight:bold">${child.name}${tagHtml}</div>
+            <div style="font-size:12px;color:#aaa;margin-top:4px">
+              속성: ${attrDisplay} &nbsp;·&nbsp; 몰빵 ${res.batchCount}회 소모
+            </div>
           </div>
         </div>
       `
+      const iconWrap = resultBox.querySelector('#breed-child-icon')
+      const img = document.createElement('img')
+      img.src   = `${SPRITE_BASE_B}${child.attribute}_${child.evolution_stage}.png`
+      img.style.cssText = 'width:40px;height:40px;object-fit:contain'
+      img.onerror = () => {
+        iconWrap.innerHTML = ''
+        const span = document.createElement('span')
+        span.style.cssText = 'font-size:28px'
+        span.textContent = ATTR_EMOJI_B[child.attribute] || ''
+        iconWrap.appendChild(span)
+      }
+      iconWrap.appendChild(img)
       if (onBreedDone) onBreedDone()
     })
 
