@@ -47,4 +47,8 @@ class RealtimeSocket {
   }
 }
 
-module.exports = RealtimeSocket
+// 렌더러는 번들러 없는 plain <script> 태그라 module이 없음 — 전역 클래스 선언으로 남겨둠.
+// Node(node:test)에서 require할 때만 CommonJS export 사용.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = RealtimeSocket
+}
