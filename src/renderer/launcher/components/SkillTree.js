@@ -10,7 +10,10 @@ class SkillTree {
     el.innerHTML = `<h3 style="margin-bottom:12px; color:#e94560">스킬 (포인트: ${this.pet.skill_points || 0})</h3>`
 
     if (this.skills.length === 0) {
-      el.innerHTML += `<p style="color:#aaa">해금된 스킬이 없습니다.</p>`
+      const empty = document.createElement('p')
+      empty.style.color = '#aaa'
+      empty.textContent = '해금된 스킬이 없습니다.'
+      el.appendChild(empty)
       return el
     }
 
