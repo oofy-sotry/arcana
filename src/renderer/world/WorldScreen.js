@@ -184,7 +184,8 @@ class WorldScreen {
   }
 
   _closeDialog() {
-    this._el?.querySelector('#npc-dialog').style.display = 'none'
+    const dialog = this._el?.querySelector('#npc-dialog')
+    if (dialog) dialog.style.display = 'none'
   }
 
   _handleWildEncounter(config) {
