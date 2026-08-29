@@ -41,6 +41,9 @@ class RealtimeSocket {
   joinQueue(pet)  { this._send({ type: 'queue:join', pet }) }
   leaveQueue()    { this._send({ type: 'queue:leave' }) }
 
+  joinPartyHunt({ zoneId, pet }) { this._send({ type: 'party:join', zoneId, pet }) }
+  leavePartyHunt()               { this._send({ type: 'party:leave' }) }
+
   close() {
     this._ws?.close()
     this._ws = null
