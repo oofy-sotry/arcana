@@ -6,8 +6,14 @@ class PetRenderer {
     this.sprites = new Map()
   }
 
-  async addPet(pet, imagePath) {
-    const texture = await Assets.load(imagePath)
+  async addPet(pet, fallbackImagePath) {
+    const specificPath = `../../../assets/sprites/characters/${pet.attribute}_${pet.evolution_stage}.png`
+    let texture
+    try {
+      texture = await Assets.load(specificPath)
+    } catch {
+      texture = await Assets.load(fallbackImagePath) // 아직 그려지지 않은 종·단계는 기본 이미지로 폴백
+    }
     const sprite  = Sprite.from(texture)
     sprite.anchor.set(0.5)
     sprite.x = Math.random() * window.innerWidth
