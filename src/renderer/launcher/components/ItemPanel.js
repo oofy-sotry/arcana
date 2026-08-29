@@ -70,7 +70,10 @@ class ItemPanel {
     this._body.innerHTML = `<p style="font-size:11px; color:#aaa; margin-bottom:8px">보유 코인: ${this.pet.coins || 0}</p>`
 
     if (this.shopCatalog.length === 0) {
-      this._body.innerHTML += `<p style="color:#aaa">판매 중인 아이템이 없습니다.</p>`
+      const empty = document.createElement('p')
+      empty.style.color = '#aaa'
+      empty.textContent = '판매 중인 아이템이 없습니다.'
+      this._body.appendChild(empty)
       return
     }
 
