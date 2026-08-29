@@ -3,8 +3,10 @@ const db = require('../db/database')
 const { verifyToken } = require('../middleware/auth')
 const queue = require('./queue')
 const { runMatch } = require('./match')
+const partyQueue = require('./partyQueue')
+const { runHunt } = require('./huntMatch')
 
-// userId -> { ws, matchController }
+// userId -> { ws, matchController, partyZoneId, huntController }
 const connections = new Map()
 
 function send(ws, msg) {
@@ -45,6 +47,23 @@ function startMatch(a, b) {
   if (connB) connB.matchController = controller
 }
 
+function startHunt(zoneId, members) {
+  const controller = runHunt(zoneId, members, {
+    broadcast: event => members.forEach(m => send(m.ws, event)),
+    onEnd: () => {
+      members.forEach(m => {
+        const conn = connections.get(m.userId)
+        if (conn) conn.huntController = null
+      })
+    },
+  })
+
+  members.forEach(m => {
+    const conn = connections.get(m.userId)
+    if (conn) { conn.huntController = controller; conn.partyZoneId = null }
+  })
+}
+
 function attach(wss) {
   wss.on('connection', ws => {
     let userId   = null
@@ -59,7 +78,7 @@ function attach(wss) {
         if (result.error) { send(ws, { type: 'auth:error', error: result.error }); return }
         userId   = result.user.id
         username = result.user.username
-        connections.set(userId, { ws, matchController: null })
+        connections.set(userId, { ws, matchController: null, partyZoneId: null, huntController: null })
         send(ws, { type: 'auth:ok', userId, username })
         return
       }
@@ -76,6 +95,24 @@ function attach(wss) {
         if (userId) queue.leave(userId)
         return
       }
+
+      if (msg.type === 'party:join') {
+        if (!userId) { send(ws, { type: 'error', error: 'not_authenticated' }); return }
+        const zoneId = msg.zoneId
+        const conn = connections.get(userId)
+        if (conn) conn.partyZoneId = zoneId
+        const result = partyQueue.join(zoneId, { userId, username, ws, pet: msg.pet }, {
+          onLock: members => startHunt(zoneId, members),
+        })
+        send(ws, { type: 'party:queue-status', zoneId, ...result })
+        return
+      }
+
+      if (msg.type === 'party:leave') {
+        const conn = connections.get(userId)
+        if (conn?.partyZoneId) { partyQueue.leave(conn.partyZoneId, userId); conn.partyZoneId = null }
+        return
+      }
     })
 
     ws.on('close', () => {
@@ -83,6 +120,8 @@ function attach(wss) {
       queue.leave(userId)
       const conn = connections.get(userId)
       if (conn?.matchController) conn.matchController.forfeit(userId)
+      if (conn?.partyZoneId) partyQueue.leave(conn.partyZoneId, userId)
+      if (conn?.huntController) conn.huntController.removeMember(userId)
       connections.delete(userId)
     })
   })
