@@ -2,7 +2,7 @@
 // 그 안에 3번째가 오면 즉시 확정, 아니면 유예 만료 시 2명으로 확정.
 const MIN_PARTY = 2
 const MAX_PARTY = 3
-const DEFAULT_GRACE_MS = 8000
+const DEFAULT_GRACE_MS = Number(process.env.PARTY_GRACE_MS) || 8000
 
 const forming = new Map() // zoneId -> { members: [entry], timer: Timeout|null }
 
