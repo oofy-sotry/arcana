@@ -1,3 +1,4 @@
+const { Notification } = require('electron')
 const db          = require('../db/database')
 const Pet         = require('../db/models/Pet')
 const World       = require('../db/models/World')
@@ -18,7 +19,7 @@ const EquipmentSystem    = require('../game/systems/EquipmentSystem')
 const FactionSystem      = require('../game/systems/FactionSystem')
 const PvpSystem          = require('../game/systems/PvpSystem')
 const SummonerSystem     = require('../game/systems/SummonerSystem')
-const { TICK_INTERVAL_SECONDS, getElapsedSeconds } = require('../game/utils/time')
+const { TICK_INTERVAL_SECONDS, getElapsedSeconds, secondsToAge } = require('../game/utils/time')
 
 class GameWorld {
   constructor() {
@@ -93,6 +94,7 @@ class GameWorld {
     this.petSystem.tickConditions(pets)
     this.petSystem.tickAge(pets)
     this._tickEnergyRecovery(pets)
+    this._checkNotifications(this.petSystem.getAll())
 
     for (const pet of pets) {
       const canEvo   = this.evolutionSystem.canEvolve(pet)
@@ -136,6 +138,43 @@ class GameWorld {
       if (!row) continue
       const newEnergy = Math.min(100, (row.energy || 0) + energyPerTick)
       db.run('UPDATE pet_conditions SET energy=? WHERE pet_id=?', [newEnergy, pet.id])
+    }
+  }
+
+  // GDD 23절 즉시 알림 — 임계값을 넘는 순간 1회만 발송, 회복하면 재발송 가능하도록 플래그 초기화
+  _checkNotifications(pets) {
+    const isSupported = typeof Notification !== 'undefined' && Notification.isSupported?.()
+    const send = (title, body) => { if (isSupported) new Notification({ title, body }).show() }
+
+    const flagKey  = (type, petId) => `notif_${type}_${petId}`
+    const isFlagged = key => db.query('SELECT value FROM world_state WHERE key = ?', [key])[0]?.value === '1'
+    const setFlag   = (key, on) => db.run(
+      `INSERT INTO world_state (key, value) VALUES (?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+      [key, on ? '1' : '0']
+    )
+
+    for (const pet of pets) {
+      const cond = pet.conditions || {}
+      const checks = [
+        { type: 'hunger',      active: cond.hunger      < 30, title: `${pet.name}이(가) 배고파요!` },
+        { type: 'happiness',   active: cond.happiness   < 30, title: `${pet.name}이(가) 슬퍼해요!` },
+        { type: 'cleanliness', active: cond.cleanliness < 30, title: `${pet.name}을(를) 씻겨주세요!` },
+        { type: 'energy_full', active: (cond.energy ?? 0) >= 100, title: '에너지가 완충됐어요!' },
+        { type: 'age',         active: secondsToAge(pet.age_seconds) >= 70, title: `${pet.name}이(가) 노령이에요. 잘 돌봐주세요` },
+        { type: 'evolve_hidden', active: this.evolutionSystem.checkHiddenConditions(pet), title: `${pet.name}이(가) 진화할 준비가 됐어요!` },
+      ]
+
+      for (const c of checks) {
+        const key     = flagKey(c.type, pet.id)
+        const flagged = isFlagged(key)
+        if (c.active && !flagged) {
+          send(c.title, '')
+          setFlag(key, true)
+        } else if (!c.active && flagged) {
+          setFlag(key, false)
+        }
+      }
     }
   }
 
