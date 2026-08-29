@@ -103,6 +103,21 @@ class IpcRouter {
       return this.huntingSystem.getZones(pet)
     })
     ipcMain.handle('hunting:stop-auto', (_e, { petId }) => this.huntingSystem.stopAutoHunt(petId))
+    // 실시간 파티 사냥 — 서버가 이미 계산한 보상을 로컬 DB에 반영 (CombatSystem.endBattle의 'won' 분기와 동일한 시스템 재사용)
+    ipcMain.handle('hunting:apply-realtime-reward', (_e, { petId, exp, coins, drops }) => {
+      const pet = this.petSystem.getAll().find(p => p.id === petId)
+      if (!pet) return { ok: false, error: 'pet_not_found' }
+
+      if (exp) this.levelSystem.addExperience(pet, exp)
+      if (coins) {
+        const freshPet = this.petSystem.getAll().find(p => p.id === petId) || pet
+        this.petSystem.Pet.updatePet(petId, { coins: (freshPet.coins || 0) + coins })
+      }
+      for (const drop of drops || []) {
+        this.itemSystem.addItem(petId, drop.itemId, drop.quantity)
+      }
+      return { ok: true }
+    })
     ipcMain.handle('hunting:manual-battle', (_e, { petId, zoneId }) => {
       const pets = this.petSystem.getAll()
       const pet  = pets.find(p => p.id === petId)

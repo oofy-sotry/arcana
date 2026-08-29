@@ -30,6 +30,8 @@ contextBridge.exposeInMainWorld('arcana', {
     explore:      ({ petId, mode })            => ipcRenderer.invoke('hunting:explore', { petId, mode }),
     open:         ()                           => ipcRenderer.invoke('hunting:open'),
     zoneMonsters: ({ zoneId })                 => ipcRenderer.invoke('hunting:zone-monsters', { zoneId }),
+    applyRealtimeReward: ({ petId, exp, coins, drops }) =>
+      ipcRenderer.invoke('hunting:apply-realtime-reward', { petId, exp, coins, drops }),
   },
   breeding: {
     compatInfo: ({ petId1, petId2 })             => ipcRenderer.invoke('breeding:compat-info', { petId1, petId2 }),
