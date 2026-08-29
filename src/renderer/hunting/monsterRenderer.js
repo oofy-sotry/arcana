@@ -3,6 +3,9 @@ const ATTR_COLORS = {
   thunder: 0xf1c40f, ice: 0xaed6f1, poison: 0x8e44ad, dragon: 0xff6b35,
 }
 
+// index.html 기준 상대경로 — src/renderer/hunting/ → 프로젝트 루트까지 3단계
+const MONSTER_SPRITE_BASE = '../../../assets/sprites/monsters/'
+
 class MonsterRenderer {
   constructor(stage, screenWidth, screenHeight, renderer) {
     this.stage    = stage
@@ -13,20 +16,27 @@ class MonsterRenderer {
     this._collisionCooldown = false
   }
 
-  spawnMonster(monsterData) {
+  async spawnMonster(monsterData) {
     const margin = 40
     const x      = margin + Math.random() * (this.W - margin * 2)
     const y      = margin + Math.random() * (this.H - margin * 2)
     const color  = ATTR_COLORS[monsterData.attribute] || 0xaaaaaa
 
-    const g   = new PIXI.Graphics()
-    g.rect(-16, -16, 32, 32).fill(color)
-    const tex    = this.renderer.generateTexture(g)
+    let tex
+    try {
+      tex = await PIXI.Assets.load(`${MONSTER_SPRITE_BASE}${monsterData.id}.png`)
+    } catch {
+      const g = new PIXI.Graphics()
+      g.rect(-16, -16, 32, 32).fill(color)
+      tex = this.renderer.generateTexture(g)
+      g.destroy()
+    }
     const sprite = new PIXI.Sprite(tex)
     sprite.anchor.set(0.5)
+    sprite.width  = 32
+    sprite.height = 32
     sprite.x = x
     sprite.y = y
-    g.destroy()
 
     this.stage.addChild(sprite)
     this.monsters.push({ sprite, data: monsterData })
