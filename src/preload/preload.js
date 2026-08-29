@@ -115,5 +115,6 @@ contextBridge.exposeInMainWorld('arcana', {
     currentSeason: ()               => ipcRenderer.invoke('pvp:current-season'),
     ranking:       ({ seasonNum } = {}) => ipcRenderer.invoke('pvp:ranking', { seasonNum }),
     endSeason:     ()               => ipcRenderer.invoke('pvp:end-season'),
+    recordRealtimeResult: ({ won }) => ipcRenderer.invoke('pvp:record-realtime-result', { won }),
   },
 })

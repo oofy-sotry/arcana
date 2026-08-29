@@ -235,6 +235,12 @@ class IpcRouter {
       return res
     })
     ipcMain.handle('online:battle-history', () => this.onlineSystem.getBattleHistory())
+    // 실시간 PvP 결과도 즉시대전과 동일하게 로컬 시즌 랭킹(pvp_stats)에 반영
+    ipcMain.handle('pvp:record-realtime-result', (_e, { won }) => {
+      const username = this.onlineSystem?.getUsername()
+      if (username) this.pvpSystem?.recordResult(username, won)
+      return { ok: !!username }
+    })
 
     ipcMain.handle('online:friends', () => this.onlineSystem.getFriends())
     ipcMain.handle('online:friends-add', (_e, { username }) => this.onlineSystem.addFriend(username))
