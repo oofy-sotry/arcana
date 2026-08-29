@@ -160,9 +160,10 @@ async function onSelectPet(petId) {
   const pet     = allPets.find(p => p.id === petId)
   if (!pet || Number(pet.is_alive) === 0) return
 
-  const [skills, inventory] = await Promise.all([
+  const [skills, inventory, shopCatalog] = await Promise.all([
     window.arcana.skill.get({ petId }),
     window.arcana.item.getInventory({ petId }),
+    window.arcana.item.getShop(),
   ])
 
   document.getElementById('tab-stats').innerHTML  = ''
@@ -178,11 +179,18 @@ async function onSelectPet(petId) {
     })
   )
   document.getElementById('tab-items').appendChild(
-    new ItemPanel(pet, inventory).render(async itemId => {
-      await window.arcana.item.use({ petId, itemId })
-      allPets = await window.arcana.pet.getAll()
-      onSelectPet(petId)
-    })
+    new ItemPanel(pet, inventory, shopCatalog).render(
+      async itemId => {
+        await window.arcana.item.use({ petId, itemId })
+        allPets = await window.arcana.pet.getAll()
+        onSelectPet(petId)
+      },
+      async itemId => {
+        await window.arcana.item.buy({ petId, itemId, quantity: 1 })
+        allPets = await window.arcana.pet.getAll()
+        onSelectPet(petId)
+      }
+    )
   )
 }
 
