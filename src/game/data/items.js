@@ -70,10 +70,12 @@ const ITEMS = {
   // ══════════════════════════════════════════════════════════════
   // 세력 아이템 (FactionSystem이 처리)
   // ══════════════════════════════════════════════════════════════
-  luxis_pendant:   { name: 'Luxis 펜던트',  type: 'consumable', effect: 'faction_luxis',   maxStack: 10,  tradeable: false,
-    factionEffect: { faction: 'luxis', rep: 5 } },
-  noctis_pendant:  { name: 'Noctis 펜던트', type: 'consumable', effect: 'faction_noctis',  maxStack: 10,  tradeable: false,
-    factionEffect: { faction: 'noctis', rep: 5 } },
+  luxis_pendant:   { name: 'Luxis 펜던트',  type: 'consumable', effect: 'faction_luxis',   maxStack: 10,  tradeable: false, shopPrice: 150,
+    factionEffect: { faction: 'luxis', rep: 5 },
+    factionGate: { faction: 'luxis', minRep: 70 } },   // FACTION_SYSTEM 위키 70+ 세력 전용 상점
+  noctis_pendant:  { name: 'Noctis 펜던트', type: 'consumable', effect: 'faction_noctis',  maxStack: 10,  tradeable: false, shopPrice: 150,
+    factionEffect: { faction: 'noctis', rep: 5 },
+    factionGate: { faction: 'noctis', minRep: 70 } },  // FACTION_SYSTEM 위키 70+ 세력 전용 상점
   neutral_crystal: { name: '균형의 크리스탈', type: 'consumable', effect: 'faction_balance', maxStack: 5,  tradeable: false,
     factionEffect: { faction: 'both', rep: 3 } },                       // 양쪽 평판 +3
 
