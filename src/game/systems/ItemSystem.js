@@ -20,6 +20,29 @@ class ItemSystem {
     return true
   }
 
+  // ─── 상점 구매 ─────────────────────────────────────────────────────
+  getShopCatalog() {
+    return Object.entries(ITEMS)
+      .filter(([, item]) => item.shopPrice)
+      .map(([itemId, item]) => ({ itemId, name: item.name, price: item.shopPrice }))
+  }
+
+  buyItem(petId, itemId, quantity = 1) {
+    const item = ITEMS[itemId]
+    if (!item || !item.shopPrice) return { ok: false, error: '상점에서 구매할 수 없는 아이템입니다' }
+    if (quantity < 1) return { ok: false, error: '수량은 1 이상이어야 합니다' }
+
+    const pet = this.Pet.getPet(petId)
+    if (!pet) return { ok: false, error: '펫을 찾을 수 없습니다' }
+
+    const cost = item.shopPrice * quantity
+    if ((pet.coins || 0) < cost) return { ok: false, error: `코인이 부족합니다 (필요: ${cost}, 보유: ${pet.coins || 0})` }
+
+    this.Pet.updatePet(petId, { coins: pet.coins - cost })
+    this.addItem(petId, itemId, quantity)
+    return { ok: true, itemId, quantity, cost, remainingCoins: pet.coins - cost }
+  }
+
   getInventory(petId) {
     const rows = db.query(
       'SELECT * FROM pet_inventory WHERE pet_id = ? AND quantity > 0',
