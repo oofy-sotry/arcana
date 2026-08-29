@@ -2,9 +2,17 @@ const ITEMS = require('../data/items')
 const db = require('../../db/database')
 
 class ItemSystem {
-  constructor({ Pet, save }) {
+  constructor({ Pet, save, factionSystem }) {
     this.Pet  = Pet
     this.save = save
+    this.factionSystem = factionSystem || null
+  }
+
+  // factionGate가 있는 아이템은 해당 세력 평판이 minRep 이상이어야 통과
+  _passesFactionGate(item) {
+    if (!item.factionGate) return true
+    if (!this.factionSystem) return false
+    return this.factionSystem.getRep(item.factionGate.faction) >= item.factionGate.minRep
   }
 
   addItem(petId, itemId, quantity = 1) {
@@ -23,13 +31,14 @@ class ItemSystem {
   // ─── 상점 구매 ─────────────────────────────────────────────────────
   getShopCatalog() {
     return Object.entries(ITEMS)
-      .filter(([, item]) => item.shopPrice)
+      .filter(([, item]) => item.shopPrice && this._passesFactionGate(item))
       .map(([itemId, item]) => ({ itemId, name: item.name, price: item.shopPrice }))
   }
 
   buyItem(petId, itemId, quantity = 1) {
     const item = ITEMS[itemId]
     if (!item || !item.shopPrice) return { ok: false, error: '상점에서 구매할 수 없는 아이템입니다' }
+    if (!this._passesFactionGate(item)) return { ok: false, error: '세력 평판이 부족해 구매할 수 없습니다' }
     if (quantity < 1) return { ok: false, error: '수량은 1 이상이어야 합니다' }
 
     const pet = this.Pet.getPet(petId)
