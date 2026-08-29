@@ -12,6 +12,8 @@ function runMatch(a, b, { broadcast, onEnd, turnDelayMs = 800 }) {
   let hpB = b.pet.hp || 50
   const log = []
   let round = 0
+  let ended = false
+  let timer = null
 
   function attack(attacker, defender, attackerHp, defenderHp) {
     const result = calcDamage({
@@ -36,18 +38,25 @@ function runMatch(a, b, { broadcast, onEnd, turnDelayMs = 800 }) {
     return newDefenderHp
   }
 
-  function finish() {
-    const winner =
-      hpA <= 0 && hpB <= 0 ? 'draw' :
-      hpA <= 0             ? b.userId :
-      hpB <= 0             ? a.userId :
-      'draw' // 라운드 소진 시 무승부
-    const result = { type: 'result', winner, log }
+  function finish(forfeitedBy) {
+    if (ended) return
+    ended = true
+    if (timer) clearTimeout(timer)
+
+    const winner = forfeitedBy
+      ? (forfeitedBy === a.userId ? b.userId : a.userId)
+      : hpA <= 0 && hpB <= 0 ? 'draw'
+      : hpA <= 0             ? b.userId
+      : hpB <= 0             ? a.userId
+      : 'draw' // 라운드 소진 시 무승부
+
+    const result = { type: 'result', winner, log, forfeited: !!forfeitedBy }
     broadcast(result)
     onEnd(result)
   }
 
   function step() {
+    if (ended) return
     if (hpA <= 0 || hpB <= 0 || round >= MAX_ROUNDS) { finish(); return }
     round++
 
@@ -62,10 +71,15 @@ function runMatch(a, b, { broadcast, onEnd, turnDelayMs = 800 }) {
       hpB = attack(a, b, hpA, hpB)
     }
 
-    setTimeout(step, turnDelayMs)
+    timer = setTimeout(step, turnDelayMs)
   }
 
   step()
+
+  return {
+    // 연결이 끊긴 플레이어(userId)의 몰수패 처리 — 진행 중인 매치에만 효과 있음
+    forfeit(userId) { finish(userId) },
+  }
 }
 
 module.exports = { runMatch, MAX_ROUNDS }
