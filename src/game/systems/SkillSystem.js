@@ -49,10 +49,7 @@ class SkillSystem {
 
   // ─── 사용 가능한 액티브/버프 스킬 조회 ───────────────────────────
   getUnlockedActives(pet) {
-    const rows = db.query(
-      "SELECT * FROM pet_skills WHERE pet_id = ? AND skill_id IN (SELECT skill_id FROM pet_skills)",
-      [pet.id]
-    )
+    const rows = db.query('SELECT * FROM pet_skills WHERE pet_id = ?', [pet.id])
     return rows
       .map(r => ({ ...r, data: SKILLS[r.skill_id] }))
       .filter(r => r.data && (r.data.type === 'active' || r.data.type === 'buff'))
