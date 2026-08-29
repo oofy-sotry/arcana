@@ -271,6 +271,8 @@ class StoryPanel {
       .map(([k, v]) => `${k} +${v}`)
       .join(', ')
 
+    const loyaltyBlock = result.loyaltyResolution ? this._renderLoyaltyBlock(result.loyaltyResolution) : ''
+
     const omnirexBlock = result.omnirexTransformed ? `
       <div style="background:#0a0a2a;border:1px solid #ffb300;border-radius:8px;padding:16px;margin-top:16px;text-align:center">
         <div style="font-size:28px;margin-bottom:8px">🌟</div>
@@ -287,6 +289,7 @@ class StoryPanel {
         <p style="color:#aaa;font-size:12px;margin-bottom:20px">${effectDesc}</p>
         <p style="color:#ffd54f;font-size:13px">다음 챕터가 열렸습니다.</p>
       </div>
+      ${loyaltyBlock}
       ${omnirexBlock}
       <button id="story-done"
         style="margin-top:12px;padding:8px 24px;background:#e94560;border:none;color:#fff;border-radius:6px;cursor:pointer;font-size:14px">
@@ -296,5 +299,26 @@ class StoryPanel {
     this._readerEl.querySelector('#story-done').addEventListener('click', () => {
       if (this._onAdvance) this._onAdvance()
     })
+  }
+
+  // 4장 진입 시 충성도 판정 결과 안내 (이탈/설득 필요 펫이 있을 때만 표시)
+  _renderLoyaltyBlock(resolution) {
+    const { persuasionNeeded = [], departed = [] } = resolution
+    if (persuasionNeeded.length === 0 && departed.length === 0) return ''
+
+    const departedList = departed
+      .map(p => `<li>${p.name} (충성도 ${p.loyalty}) — 파티에서 이탈했습니다</li>`)
+      .join('')
+    const persuasionList = persuasionNeeded
+      .map(p => `<li>${p.name} (충성도 ${p.loyalty}) — 설득이 필요합니다</li>`)
+      .join('')
+
+    return `
+      <div style="background:#1a0a0a;border:1px solid #ef5350;border-radius:8px;padding:16px;margin-top:16px">
+        <h4 style="color:#ef5350;margin-bottom:8px">⚠️ 동료들의 동요</h4>
+        <ul style="color:#ddd;font-size:12px;line-height:1.8;padding-left:18px;margin:0">
+          ${departedList}${persuasionList}
+        </ul>
+      </div>`
   }
 }
