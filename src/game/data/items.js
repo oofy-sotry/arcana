@@ -1,14 +1,16 @@
 // type: 'consumable' | 'material' | 'equip_box' | 'key'
 // effect: ItemSystem.useItem switch 처리 키
 // tradeable: Phase 6 교환 가능 여부
+// shopPrice: 상점 코인 구매가 (없으면 상점에서 구매 불가 — GDD 19절 "코인으로 구매 불가" 항목들)
 
 const ITEMS = {
 
   // ══════════════════════════════════════════════════════════════
   // 생존 아이템
   // ══════════════════════════════════════════════════════════════
-  life_charm:    { name: '생명의 부적',   type: 'consumable', effect: 'death_rate_down', maxStack: 10,  tradeable: false },
+  life_charm:    { name: '생명의 부적',   type: 'consumable', effect: 'death_rate_down', maxStack: 10,  tradeable: false, shopPrice: 150 },
   revive_stone:  { name: '부활석',        type: 'consumable', effect: 'revive',          maxStack: 3,   tradeable: false },
+  // revive_stone(소생의 서)은 GDD 19절 "코인 구매 불가 (사냥/탐사/퀘스트만)" — shopPrice 없음
 
   // ══════════════════════════════════════════════════════════════
   // 진화 아이템
@@ -21,44 +23,44 @@ const ITEMS = {
   // ══════════════════════════════════════════════════════════════
   // 컨디션 회복
   // ══════════════════════════════════════════════════════════════
-  pet_food:      { name: '펫 사료',       type: 'consumable', effect: 'hunger_restore',  maxStack: 99,  tradeable: true },
-  pet_soap:      { name: '펫 비누',       type: 'consumable', effect: 'clean_restore',   maxStack: 99,  tradeable: true },
-  happy_toy:     { name: '즐거운 장난감', type: 'consumable', effect: 'happy_restore',   maxStack: 30,  tradeable: true },
-  energy_potion: { name: '에너지 물약',   type: 'consumable', effect: 'energy_restore',  maxStack: 50,  tradeable: true },
+  pet_food:      { name: '펫 사료',       type: 'consumable', effect: 'hunger_restore',  maxStack: 99,  tradeable: true, shopPrice: 20 },
+  pet_soap:      { name: '펫 비누',       type: 'consumable', effect: 'clean_restore',   maxStack: 99,  tradeable: true, shopPrice: 20 },
+  happy_toy:     { name: '즐거운 장난감', type: 'consumable', effect: 'happy_restore',   maxStack: 30,  tradeable: true, shopPrice: 30 },
+  energy_potion: { name: '에너지 물약',   type: 'consumable', effect: 'energy_restore',  maxStack: 50,  tradeable: true, shopPrice: 40 },
 
   // ══════════════════════════════════════════════════════════════
   // 전투 소모품 (전투 중 사용, CombatSystem이 처리)
   // ══════════════════════════════════════════════════════════════
-  hp_potion_s:   { name: 'HP 소형 물약',  type: 'consumable', effect: 'battle_hp_s',    maxStack: 30,  tradeable: true,
+  hp_potion_s:   { name: 'HP 소형 물약',  type: 'consumable', effect: 'battle_hp_s',    maxStack: 30,  tradeable: true, shopPrice: 30,
     battleEffect: { type: 'heal_hp', value: 0.30 } },                   // 전투 중 HP 30% 회복
-  hp_potion_l:   { name: 'HP 대형 물약',  type: 'consumable', effect: 'battle_hp_l',    maxStack: 10,  tradeable: true,
+  hp_potion_l:   { name: 'HP 대형 물약',  type: 'consumable', effect: 'battle_hp_l',    maxStack: 10,  tradeable: true, shopPrice: 90,
     battleEffect: { type: 'heal_hp', value: 0.70 } },                   // 전투 중 HP 70% 회복
-  mp_potion:     { name: 'MP 물약',       type: 'consumable', effect: 'battle_mp',      maxStack: 20,  tradeable: true,
+  mp_potion:     { name: 'MP 물약',       type: 'consumable', effect: 'battle_mp',      maxStack: 20,  tradeable: true, shopPrice: 50,
     battleEffect: { type: 'restore_mp', value: 1.0 } },                 // MP 전량 회복
-  attack_serum:  { name: '공격 세럼',     type: 'consumable', effect: 'battle_atk',     maxStack: 10,  tradeable: true,
+  attack_serum:  { name: '공격 세럼',     type: 'consumable', effect: 'battle_atk',     maxStack: 10,  tradeable: true, shopPrice: 60,
     battleEffect: { type: 'atk_boost', value: 0.30, duration: 3 } },    // 공격력 +30% (3턴)
-  defense_serum: { name: '방어 세럼',     type: 'consumable', effect: 'battle_def',     maxStack: 10,  tradeable: true,
+  defense_serum: { name: '방어 세럼',     type: 'consumable', effect: 'battle_def',     maxStack: 10,  tradeable: true, shopPrice: 60,
     battleEffect: { type: 'def_boost', value: 0.30, duration: 3 } },    // 방어력 +30% (3턴)
-  speed_serum:   { name: '속도 세럼',     type: 'consumable', effect: 'battle_spd',     maxStack: 10,  tradeable: true,
+  speed_serum:   { name: '속도 세럼',     type: 'consumable', effect: 'battle_spd',     maxStack: 10,  tradeable: true, shopPrice: 60,
     battleEffect: { type: 'spd_boost', value: 0.20, duration: 3 } },    // 속도 +20% (3턴)
 
   // ══════════════════════════════════════════════════════════════
   // 장비 강화 재료 (EquipmentSystem이 처리)
   // ══════════════════════════════════════════════════════════════
-  enhance_stone:   { name: '강화석',       type: 'material',   effect: 'none',            maxStack: 99,  tradeable: true,
+  enhance_stone:   { name: '강화석',       type: 'material',   effect: 'none',            maxStack: 99,  tradeable: true, shopPrice: 40,
     enhanceTier: 1 },   // +1~+5 강화에 사용
-  enhance_crystal: { name: '강화 크리스탈', type: 'material',  effect: 'none',            maxStack: 30,  tradeable: true,
+  enhance_crystal: { name: '강화 크리스탈', type: 'material',  effect: 'none',            maxStack: 30,  tradeable: true, shopPrice: 150,
     enhanceTier: 2 },   // +6~+8 강화에 사용
   enhance_jewel:   { name: '강화 보석',    type: 'material',   effect: 'none',            maxStack: 10,  tradeable: false,
-    enhanceTier: 3 },   // +9~+10 강화에 사용 (희귀)
+    enhanceTier: 3 },   // +9~+10 강화에 사용 (희귀, 코인 구매 불가 — 탐사/사냥 전용)
 
   // ══════════════════════════════════════════════════════════════
   // 장비 상자 (사냥 드롭 → 열어서 랜덤 장비 획득)
   // EquipmentSystem.openBox 처리
   // ══════════════════════════════════════════════════════════════
-  equip_box_normal:    { name: '일반 장비 상자',   type: 'equip_box',  effect: 'open_equip_box', maxStack: 99, tradeable: true,
+  equip_box_normal:    { name: '일반 장비 상자',   type: 'equip_box',  effect: 'open_equip_box', maxStack: 99, tradeable: true, shopPrice: 200,
     boxGrade: 'normal' },
-  equip_box_rare:      { name: '희귀 장비 상자',   type: 'equip_box',  effect: 'open_equip_box', maxStack: 30, tradeable: true,
+  equip_box_rare:      { name: '희귀 장비 상자',   type: 'equip_box',  effect: 'open_equip_box', maxStack: 30, tradeable: true, shopPrice: 600,
     boxGrade: 'rare' },
   equip_box_epic:      { name: '에픽 장비 상자',   type: 'equip_box',  effect: 'open_equip_box', maxStack: 10, tradeable: false,
     boxGrade: 'epic' },
