@@ -8,7 +8,8 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "test": "node --test test/"
   },
   "dependencies": {
     "pixi.js": "^8.0.0",
