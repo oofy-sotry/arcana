@@ -469,7 +469,7 @@ class OnlinePanel {
           const myPet = this.allPets.find(p => p.id === petId)
           if (!myPet) { alert('내 펫을 선택하세요'); return }
           const snap = { name: myPet.name, attribute: myPet.attribute, evolution_stage: myPet.evolution_stage, level: myPet.level, hp: myPet.hp, attack: myPet.attack, defense: myPet.defense }
-          const res = await window.arcana.online.breedingRequest({ offerId: Number(btn.dataset.offerId), myPet: snap })
+          const res = await window.arcana.online.breedingRequest({ offerId: Number(btn.dataset.offerId), myPet: snap, myPetId: petId })
           if (res.ok) {
             alert(`교배 성공!\n자식: ${res.child.name} (${res.child.attribute})`)
             cb.refresh()

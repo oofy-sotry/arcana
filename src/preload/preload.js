@@ -64,7 +64,7 @@ contextBridge.exposeInMainWorld('arcana', {
     breedingOffers:  ()                               => ipcRenderer.invoke('online:breeding-offers'),
     breedingPost:    ({ pet, price })                 => ipcRenderer.invoke('online:breeding-post', { pet, price }),
     breedingCancel:  ()                               => ipcRenderer.invoke('online:breeding-cancel'),
-    breedingRequest: ({ offerId, myPet })             => ipcRenderer.invoke('online:breeding-request', { offerId, myPet }),
+    breedingRequest: ({ offerId, myPet, myPetId })     => ipcRenderer.invoke('online:breeding-request', { offerId, myPet, myPetId }),
     battleChallenge: ({ targetUsername, myPet })      => ipcRenderer.invoke('online:battle-challenge', { targetUsername, myPet }),
     battleHistory:   ()                               => ipcRenderer.invoke('online:battle-history'),
     friends:         ()                               => ipcRenderer.invoke('online:friends'),

@@ -213,11 +213,11 @@ class IpcRouter {
       this.onlineSystem.postBreedingOffer(pet, price)
     )
     ipcMain.handle('online:breeding-cancel', () => this.onlineSystem.cancelBreedingOffer())
-    ipcMain.handle('online:breeding-request', async (_e, { offerId, myPet }) => {
+    ipcMain.handle('online:breeding-request', async (_e, { offerId, myPet, myPetId }) => {
       const res = await this.onlineSystem.requestBreeding(offerId, myPet)
       if (res.ok && res.child) {
         const newChild = this.petSystem.createPet(res.child.name, res.child.attribute)
-        const updates  = { parent1_id: myPet.id }
+        const updates  = { parent1_id: myPetId }
         if (res.child.attribute2) updates.attribute2 = res.child.attribute2
         this.petSystem.Pet.updatePet(newChild.id, updates)
       }
