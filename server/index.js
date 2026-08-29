@@ -1,7 +1,10 @@
 const express = require('express')
 const cors    = require('cors')
+const http    = require('http')
+const { WebSocketServer } = require('ws')
 const { PORT } = require('./config')
 const db      = require('./db/database')
+const realtimeSocket = require('./realtime/socket')
 
 const app = express()
 app.use(cors({ origin: false }))
@@ -17,9 +20,13 @@ app.use('/friends',  require('./routes/friends'))
 
 app.get('/health', (_req, res) => res.json({ ok: true }))
 
+const httpServer = http.createServer(app)
+const wss = new WebSocketServer({ server: httpServer })
+realtimeSocket.attach(wss)
+
 db.init().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Arcana server running on http://localhost:${PORT}`)
+  httpServer.listen(PORT, () => {
+    console.log(`Arcana server running on http://localhost:${PORT} (WS 실시간 PvP 같은 포트)`)
   })
 })
 
