@@ -186,7 +186,11 @@ class WorldEngine {
   }
 
   _checkEdgeExit(nx, ny) {
-    // 맵 경계 밖으로 나갔을 때 → 인접 출구 타일 확인
+    // 정상 경로면 출구 타일(x=0/x=W-1, 배열 인덱스 안쪽)에 도착한 순간
+    // _onArrival이 먼저 처리한다. 이 함수는 onExit 콜백이 맵을 전환하기 전에
+    // 플레이어가 같은 방향키를 한 번 더 눌러 경계 밖(nx<0 등)으로 나가려는
+    // 빠른 입력 타이밍을 잡기 위한 보조 경로 — 실제로는 거의 안 걸리지만
+    // 삭제하면 그 순간의 이동 처리가 통째로 빠지므로 유지.
     const clampX = Math.max(0, Math.min(this.map.width - 1, nx))
     const clampY = Math.max(0, Math.min(this.map.height - 1, ny))
     const exit = this.map.exits?.find(e => e.tile_x === clampX && e.tile_y === clampY)
