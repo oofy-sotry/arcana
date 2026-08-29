@@ -160,7 +160,7 @@ class OnlinePanel {
       <div id="rt-ranking" style="margin-bottom:14px"><span style="color:#aaa; font-size:12px">로딩 중...</span></div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-        <span style="color:#f5c518; font-size:13px; font-weight:bold">시즌 랭킹 (로컬)</span>
+        <span style="color:#f5c518; font-size:13px; font-weight:bold">시즌 랭킹 (로컬 · 즉시대전+실시간 합산)</span>
       </div>
       <div id="pvp-season"><span style="color:#aaa; font-size:12px">로딩 중...</span></div>
     `
@@ -260,6 +260,10 @@ class OnlinePanel {
       const color   = outcome === 'win' ? '#4ae84a' : outcome === 'draw' ? '#f5c518' : '#e84a4a'
       setResult(text, color)
       this._loadRealtimeRanking(body.querySelector('#rt-ranking'))
+      // 무승부는 로컬 시즌 랭킹(승/패만 있음)에 반영할 대상이 없어 제외
+      if (outcome === 'win' || outcome === 'lose') {
+        window.arcana.pvp.recordRealtimeResult({ won: outcome === 'win' })
+      }
     })
 
     const start = async () => {
