@@ -87,6 +87,7 @@ class OnlineSystem {
     return api.post('/battle/challenge', { targetUsername, myPet })
   }
   getBattleHistory() { return api.get('/battle/history') }
+  getRealtimeRanking() { return api.get('/battle/ranking') }
 
   // 친구
   getFriends()                 { return api.get('/friends') }

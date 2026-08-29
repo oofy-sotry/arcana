@@ -70,6 +70,7 @@ contextBridge.exposeInMainWorld('arcana', {
     friendsRemove:   ({ friendId })                   => ipcRenderer.invoke('online:friends-remove', { friendId }),
     friendsPets:     ({ username })                   => ipcRenderer.invoke('online:friends-pets', { username }),
     getWsInfo:       ()                                => ipcRenderer.invoke('online:get-ws-info'),
+    realtimeRanking: ()                                => ipcRenderer.invoke('online:realtime-ranking'),
   },
   equipment: {
     getInventory: ({ petId })              => ipcRenderer.invoke('equipment:get-inventory', { petId }),

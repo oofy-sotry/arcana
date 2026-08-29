@@ -226,6 +226,7 @@ class IpcRouter {
     ipcMain.handle('online:friends-remove', (_e, { friendId }) => this.onlineSystem.removeFriend(friendId))
     ipcMain.handle('online:friends-pets', (_e, { username }) => this.onlineSystem.getFriendPets(username))
     ipcMain.handle('online:get-ws-info', () => this.onlineSystem.getWsConnectionInfo())
+    ipcMain.handle('online:realtime-ranking', () => this.onlineSystem.getRealtimeRanking())
 
     // ── Exploration choice ────────────────────────────────────────────
     ipcMain.handle('explore:resolve-choice', (_e, { petId, eventId, choiceIndex }) => {
