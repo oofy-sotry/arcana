@@ -139,12 +139,55 @@ class OnlinePanel {
   }
 
   _renderPvp(body) {
-    body.innerHTML = '<span style="color:#aaa; font-size:12px">로딩 중...</span>'
+    body.innerHTML = `
+      <div style="background:#0d1117; border:1px solid #4a90e2; border-radius:8px; padding:12px; margin-bottom:14px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+          <span style="color:#4a90e2; font-size:13px; font-weight:bold">⚡ 실시간 대전</span>
+          <select id="rt-pet" style="padding:3px 6px; border-radius:4px; background:#333; color:#eee; border:none; font-size:11px">
+            ${this.allPets.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+          </select>
+        </div>
+        <div id="rt-status">
+          <button id="rt-start" style="padding:6px 14px; background:#4a90e2; border:none; color:#fff; border-radius:4px; cursor:pointer; font-size:12px">매칭 시작</button>
+        </div>
+        <div id="rt-log" style="margin-top:8px; max-height:140px; overflow-y:auto; font-size:11px; color:#ccc"></div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+        <span style="color:#f5c518; font-size:13px; font-weight:bold">🏆 실시간 PvP 글로벌 랭킹</span>
+      </div>
+      <div id="rt-ranking" style="margin-bottom:14px"><span style="color:#aaa; font-size:12px">로딩 중...</span></div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+        <span style="color:#f5c518; font-size:13px; font-weight:bold">시즌 랭킹 (로컬)</span>
+      </div>
+      <div id="pvp-season"><span style="color:#aaa; font-size:12px">로딩 중...</span></div>
+    `
+
+    this._bindRealtimePvp(body)
+    this._loadRealtimeRanking(body.querySelector('#rt-ranking'))
+    this._loadSeasonRanking(body.querySelector('#pvp-season'))
+  }
+
+  _loadRealtimeRanking(el) {
+    window.arcana.online.realtimeRanking().then(res => {
+      if (!res.ranking) { el.innerHTML = '<span style="color:#e94560; font-size:12px">오류</span>'; return }
+      el.innerHTML = res.ranking.length
+        ? res.ranking.map((r, i) => `
+            <div style="display:flex; justify-content:space-between; padding:6px 8px;
+              background:${i % 2 ? '#1a1a2e' : '#16213e'}; border-radius:4px; margin-bottom:3px; font-size:12px">
+              <span style="color:${i < 3 ? '#f5c518' : '#eee'}">${i + 1}. ${r.username}</span>
+              <span style="color:#aaa">${r.wins}승 ${r.losses}패 (${r.winRate}%)</span>
+            </div>`).join('')
+        : '<span style="color:#aaa; font-size:12px">데이터 없음</span>'
+    }).catch(() => { el.innerHTML = '<span style="color:#e94560; font-size:12px">네트워크 오류</span>' })
+  }
+
+  _loadSeasonRanking(el) {
     window.arcana.pvp.ranking().then(({ season, ranking }) => {
       const seasonLabel = season
         ? `시즌 ${season.season_num}${season.is_active ? ' (진행 중)' : ' (종료)'}`
         : '시즌 없음'
-
       const rankRows = ranking.length
         ? ranking.map((r, i) => `
             <div style="display:flex; justify-content:space-between; padding:6px 8px;
@@ -153,16 +196,88 @@ class OnlinePanel {
               <span style="color:#aaa">${r.wins}승 ${r.losses}패 (${r.winRate}%)</span>
             </div>`).join('')
         : '<span style="color:#aaa; font-size:12px">데이터 없음</span>'
-
-      body.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-          <span style="color:#f5c518; font-size:13px; font-weight:bold">🏆 ${seasonLabel}</span>
-        </div>
-        <div style="font-size:12px; color:#aaa; margin-bottom:6px">랭킹 TOP 50</div>
+      el.innerHTML = `
+        <div style="font-size:12px; color:#aaa; margin-bottom:6px">${seasonLabel} · TOP 50</div>
         <div>${rankRows}</div>`
     }).catch(() => {
-      body.innerHTML = '<span style="color:#e94560; font-size:12px">데이터 로딩 실패</span>'
+      el.innerHTML = '<span style="color:#e94560; font-size:12px">데이터 로딩 실패</span>'
     })
+  }
+
+  // 실시간 매칭/대전 상태 머신: idle → waiting → battling → result → idle
+  _bindRealtimePvp(body) {
+    const statusEl  = body.querySelector('#rt-status')
+    const logEl     = body.querySelector('#rt-log')
+    const petSelect = body.querySelector('#rt-pet')
+
+    const socket  = new RealtimeSocket()
+    let authed    = false
+    let mySide    = null
+    let oppUsername = ''
+
+    const appendLog = html => {
+      const line = document.createElement('div')
+      line.innerHTML = html
+      logEl.appendChild(line)
+      logEl.scrollTop = logEl.scrollHeight
+    }
+
+    const setIdle = () => {
+      statusEl.innerHTML = `<button id="rt-start" style="padding:6px 14px; background:#4a90e2; border:none; color:#fff; border-radius:4px; cursor:pointer; font-size:12px">매칭 시작</button>`
+      statusEl.querySelector('#rt-start').addEventListener('click', start)
+    }
+    const setWaiting = () => {
+      statusEl.innerHTML = `<span style="color:#aaa; font-size:12px">상대를 찾는 중...</span>
+        <button id="rt-cancel" style="margin-left:8px; padding:3px 8px; background:#555; border:none; color:#eee; border-radius:4px; cursor:pointer; font-size:11px">취소</button>`
+      statusEl.querySelector('#rt-cancel').addEventListener('click', () => { socket.leaveQueue(); setIdle() })
+    }
+    const setBattling = () => {
+      statusEl.innerHTML = `<span style="color:#4ae84a; font-size:12px">⚔️ ${oppUsername}와(과) 대전 중...</span>`
+    }
+    const setResult = (text, color) => {
+      statusEl.innerHTML = `<span style="color:${color}; font-size:13px; font-weight:bold">${text}</span>
+        <button id="rt-again" style="margin-left:8px; padding:3px 10px; background:#4a90e2; border:none; color:#fff; border-radius:4px; cursor:pointer; font-size:11px">다시 매칭</button>`
+      statusEl.querySelector('#rt-again').addEventListener('click', start)
+    }
+
+    socket.on('auth:ok', () => { authed = true; socket.joinQueue(this._selectedRtPet(petSelect)) })
+    socket.on('auth:error', e => { statusEl.innerHTML = `<span style="color:#e94560; font-size:12px">인증 실패: ${e.error}</span>` })
+    socket.on('queue:waiting', () => setWaiting())
+    socket.on('match:found', m => {
+      mySide = m.self
+      oppUsername = m.opponent.username
+      logEl.innerHTML = ''
+      setBattling()
+    })
+    socket.on('turn', t => {
+      const label = t.actor === mySide ? '내 펫' : oppUsername
+      appendLog(`<span style="color:${t.isCrit ? '#ffd54f' : '#ccc'}">${label} → ${t.damage} 데미지${t.isCrit ? ' (크리티컬!)' : ''}</span>`)
+    })
+    socket.on('result', r => {
+      const outcome = r.winner === mySide ? 'win' : r.winner === 'draw' ? 'draw' : 'lose'
+      const text    = (outcome === 'win' ? '승리!' : outcome === 'draw' ? '무승부' : '패배...') + (r.forfeited ? ' (상대 이탈)' : '')
+      const color   = outcome === 'win' ? '#4ae84a' : outcome === 'draw' ? '#f5c518' : '#e84a4a'
+      setResult(text, color)
+      this._loadRealtimeRanking(body.querySelector('#rt-ranking'))
+    })
+
+    const start = async () => {
+      if (authed) { socket.joinQueue(this._selectedRtPet(petSelect)); return }
+      const { token, wsUrl } = await window.arcana.online.getWsInfo()
+      if (!token) { statusEl.innerHTML = '<span style="color:#e94560; font-size:12px">먼저 로그인하세요</span>'; return }
+      socket.connect({ wsUrl, token })
+    }
+
+    statusEl.querySelector('#rt-start').addEventListener('click', start)
+  }
+
+  // rt-pet select에서 고른 펫을 실시간 전투용 스냅샷으로 변환
+  _selectedRtPet(petSelect) {
+    const pet = this.allPets.find(p => p.id === Number(petSelect.value))
+    return {
+      name: pet?.name || '이름없음', attribute: pet?.attribute || 'fire', level: pet?.level || 1,
+      hp: pet?.hp || 50, attack: pet?.attack || 10, defense: pet?.defense || 5, speed: pet?.speed || 10,
+    }
   }
 
   _renderRanking(body) {
