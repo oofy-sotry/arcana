@@ -18,6 +18,9 @@ class StatPanel {
     ]
 
     el.innerHTML = `
+      <img src="../../../assets/sprites/characters/${pet.attribute}_${pet.evolution_stage}.png"
+           style="width:96px; height:96px; object-fit:contain; display:block; margin:0 auto 12px;"
+           onerror="this.style.display='none'" />
       <h3 style="margin-bottom:12px; color:#e94560">${pet.name} 스탯</h3>
       <div style="font-size:12px; color:#aaa; margin-bottom:10px">Lv.${pet.level || 1} · 경험치 ${pet.exp || 0}</div>
       ${stats.map(s => `
