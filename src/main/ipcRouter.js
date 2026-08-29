@@ -86,6 +86,10 @@ class IpcRouter {
       }
       return result
     })
+    ipcMain.handle('item:get-shop', () => this.itemSystem.getShopCatalog())
+    ipcMain.handle('item:buy', (_e, { petId, itemId, quantity }) =>
+      this.itemSystem.buyItem(petId, itemId, quantity)
+    )
 
     ipcMain.on('overlay:toggle-mouse', (_event, ignore) => {
       this.windowManager.toggleMouseEvents(ignore)
