@@ -7,8 +7,10 @@ class PetRenderer {
   }
 
   async addPet(pet, fallbackImagePath) {
-    const spriteId = (pet.species && pet.species !== 'default') ? pet.species.toLowerCase() : pet.attribute
-    const specificPath = `../../../assets/sprites/characters/${spriteId}_${pet.evolution_stage}.png`
+    const spriteId = pet.species === 'OmnirexHidden' ? 'omnirex'
+      : (pet.species && pet.species !== 'default') ? pet.species.toLowerCase() : pet.attribute
+    const spriteSuffix = pet.species === 'OmnirexHidden' ? '_hidden' : ''
+    const specificPath = `../../../assets/sprites/characters/${spriteId}_${pet.evolution_stage}${spriteSuffix}.png`
     let texture
     try {
       texture = await Assets.load(specificPath)
