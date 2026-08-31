@@ -247,9 +247,11 @@ function renderBreedingTab() {
   const container = document.getElementById('tab-breeding')
   container.innerHTML = ''
   container.appendChild(
+    // 교배 직후 즉시 재렌더링하면 방금 보여준 결과 카드가 눈에 보이기도 전에
+    // 사라짐(IPC 왕복 30ms 이내) — allPets만 갱신하고 화면은 그대로 둔다.
+    // 다음에 탭을 다시 열 때 최신 펫 목록으로 그려짐.
     new BreedingPanel(allPets).render(async () => {
       allPets = await window.arcana.pet.getAll()
-      renderBreedingTab()
     })
   )
 }
@@ -258,9 +260,10 @@ function renderGachaTab() {
   const container = document.getElementById('tab-gacha')
   container.innerHTML = ''
   container.appendChild(
+    // 소환 직후 즉시 재렌더링하면 방금 보여준 결과 카드가 눈에 보이기도 전에
+    // 사라짐(IPC 왕복 30ms 이내) — allPets만 갱신하고 화면은 그대로 둔다.
     new GachaPanel(allPets).render(async () => {
       allPets = await window.arcana.pet.getAll()
-      renderGachaTab()
     })
   )
 }
