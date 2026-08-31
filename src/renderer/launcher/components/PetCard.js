@@ -16,8 +16,9 @@ class PetCard {
     const wrap  = document.createElement('div')
     wrap.style.cssText = 'width:40px; height:40px; flex-shrink:0; display:flex; align-items:center; justify-content:center;'
 
+    const spriteId = (this.pet.species && this.pet.species !== 'default') ? this.pet.species.toLowerCase() : this.pet.attribute
     const img = document.createElement('img')
-    img.src   = `${SPRITE_BASE}${this.pet.attribute}_${this.pet.evolution_stage}.png`
+    img.src   = `${SPRITE_BASE}${spriteId}_${this.pet.evolution_stage}.png`
     img.style.cssText = `width:40px; height:40px; object-fit:contain;${isDead ? ' filter:grayscale(1);' : ''}`
     img.onerror = () => {
       wrap.innerHTML = ''
