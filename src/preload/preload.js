@@ -117,4 +117,7 @@ contextBridge.exposeInMainWorld('arcana', {
     endSeason:     ()               => ipcRenderer.invoke('pvp:end-season'),
     recordRealtimeResult: ({ won }) => ipcRenderer.invoke('pvp:record-realtime-result', { won }),
   },
+  collection: {
+    getBaseLine: () => ipcRenderer.invoke('collection:get-base-line'),
+  },
 })
