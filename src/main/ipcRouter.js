@@ -4,7 +4,7 @@ class IpcRouter {
   constructor({ petSystem, levelSystem, evolutionSystem, skillSystem, itemSystem,
                 huntingSystem, explorationSystem,
                 breedingSystem, gachaSystem, partySystem, questSystem, onlineSystem,
-                equipmentSystem, factionSystem, pvpSystem, summonerSystem,
+                equipmentSystem, factionSystem, pvpSystem, summonerSystem, collectionSystem,
                 windowManager }) {
     this.petSystem         = petSystem
     this.levelSystem       = levelSystem
@@ -22,6 +22,7 @@ class IpcRouter {
     this.factionSystem     = factionSystem
     this.pvpSystem         = pvpSystem
     this.summonerSystem    = summonerSystem
+    this.collectionSystem  = collectionSystem
     this.windowManager     = windowManager
   }
 
@@ -354,6 +355,8 @@ class IpcRouter {
       }
       return result
     })
+
+    ipcMain.handle('collection:get-base-line', () => this.collectionSystem.getBaseLineEntries())
   }
 
   // 4장 진입 시 파티 펫 충성도 판정: 70+ 유지, 30~70 설득 필요, 30 미만 이탈
