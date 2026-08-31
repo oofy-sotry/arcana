@@ -67,9 +67,11 @@ class GachaPanel {
 
         const iconWrap = document.createElement('div')
         iconWrap.style.cssText = 'width:40px; height:40px; flex-shrink:0; display:flex; align-items:center; justify-content:center;'
-        const spriteId = (pet.species && pet.species !== 'default') ? pet.species.toLowerCase() : pet.attribute
+        const spriteId = pet.species === 'OmnirexHidden' ? 'omnirex'
+          : (pet.species && pet.species !== 'default') ? pet.species.toLowerCase() : pet.attribute
+        const spriteSuffix = pet.species === 'OmnirexHidden' ? '_hidden' : ''
         const img = document.createElement('img')
-        img.src   = `${SPRITE_BASE_G}${spriteId}_${stage}.png`
+        img.src   = `${SPRITE_BASE_G}${spriteId}_${stage}${spriteSuffix}.png`
         img.style.cssText = 'width:40px; height:40px; object-fit:contain;'
         img.onerror = () => {
           iconWrap.innerHTML = ''
