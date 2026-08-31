@@ -98,6 +98,7 @@ function setupTabs() {
       if (tab === 'equipment') renderEquipmentTab()
       if (tab === 'faction')   renderFactionTab()
       if (tab === 'story')     renderStoryTab()
+      if (tab === 'collection') renderCollectionTab()
     })
   })
 }
@@ -379,6 +380,15 @@ async function renderStoryTab() {
       renderStoryTab()
     })
   )
+}
+
+async function renderCollectionTab() {
+  const container = document.getElementById('tab-collection')
+  container.innerHTML = '<span style="color:#aaa;font-size:13px">로딩 중...</span>'
+
+  const entries = await window.arcana.collection.getBaseLine()
+  container.innerHTML = ''
+  container.appendChild(new CollectionPanel(entries).render())
 }
 
 document.addEventListener('DOMContentLoaded', init)
