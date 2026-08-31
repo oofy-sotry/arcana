@@ -17,9 +17,11 @@ class StatPanel {
       { label: '속도', value: pet.speed   || 10  },
     ]
 
-    const spriteId = (pet.species && pet.species !== 'default') ? pet.species.toLowerCase() : pet.attribute
+    const spriteId = pet.species === 'OmnirexHidden' ? 'omnirex'
+      : (pet.species && pet.species !== 'default') ? pet.species.toLowerCase() : pet.attribute
+    const spriteSuffix = pet.species === 'OmnirexHidden' ? '_hidden' : ''
     el.innerHTML = `
-      <img src="../../../assets/sprites/characters/${spriteId}_${pet.evolution_stage}.png"
+      <img src="../../../assets/sprites/characters/${spriteId}_${pet.evolution_stage}${spriteSuffix}.png"
            style="width:96px; height:96px; object-fit:contain; display:block; margin:0 auto 12px;"
            onerror="this.style.display='none'" />
       <h3 style="margin-bottom:12px; color:#e94560">${pet.name} 스탯</h3>
