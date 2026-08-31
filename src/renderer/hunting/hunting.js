@@ -51,8 +51,10 @@ async function spawnPetSprite() {
 
   let tex
   try {
-    const spriteId = (currentPet.species && currentPet.species !== 'default') ? currentPet.species.toLowerCase() : currentPet.attribute
-    tex = await PIXI.Assets.load(`${PET_SPRITE_BASE}${spriteId}_${currentPet.evolution_stage}.png`)
+    const spriteId = currentPet.species === 'OmnirexHidden' ? 'omnirex'
+      : (currentPet.species && currentPet.species !== 'default') ? currentPet.species.toLowerCase() : currentPet.attribute
+    const spriteSuffix = currentPet.species === 'OmnirexHidden' ? '_hidden' : ''
+    tex = await PIXI.Assets.load(`${PET_SPRITE_BASE}${spriteId}_${currentPet.evolution_stage}${spriteSuffix}.png`)
   } catch {
     const g = new PIXI.Graphics()
     g.circle(0, 0, 16).fill(0xe94560)
