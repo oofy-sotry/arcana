@@ -7,7 +7,8 @@ class PetRenderer {
   }
 
   async addPet(pet, fallbackImagePath) {
-    const specificPath = `../../../assets/sprites/characters/${pet.attribute}_${pet.evolution_stage}.png`
+    const spriteId = (pet.species && pet.species !== 'default') ? pet.species.toLowerCase() : pet.attribute
+    const specificPath = `../../../assets/sprites/characters/${spriteId}_${pet.evolution_stage}.png`
     let texture
     try {
       texture = await Assets.load(specificPath)
