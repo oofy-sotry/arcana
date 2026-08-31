@@ -1,4 +1,4 @@
-import { Application, Assets, Sprite } from '../../node_modules/pixi.js/dist/pixi.min.mjs'
+import { Application, Assets, Sprite } from '../../../node_modules/pixi.js/dist/pixi.min.mjs'
 
 class PetRenderer {
   constructor(stage) {
@@ -65,7 +65,7 @@ async function initApp() {
   const pets     = await window.arcana.pet.getAll()
   const renderer = new PetRenderer(app.stage)
   for (const pet of pets) {
-    await renderer.addPet(pet, '../assets/pet_default.png')
+    await renderer.addPet(pet, '../../assets/pet_default.png')
   }
   renderer.moveRandom(app.ticker)
 }
