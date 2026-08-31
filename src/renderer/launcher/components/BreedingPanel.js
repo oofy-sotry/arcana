@@ -140,9 +140,11 @@ class BreedingPanel {
         </div>
       `
       const iconWrap = resultBox.querySelector('#breed-child-icon')
-      const spriteId = (child.species && child.species !== 'default') ? child.species.toLowerCase() : child.attribute
+      const spriteId = child.species === 'OmnirexHidden' ? 'omnirex'
+        : (child.species && child.species !== 'default') ? child.species.toLowerCase() : child.attribute
+      const spriteSuffix = child.species === 'OmnirexHidden' ? '_hidden' : ''
       const img = document.createElement('img')
-      img.src   = `${SPRITE_BASE_B}${spriteId}_${child.evolution_stage}.png`
+      img.src   = `${SPRITE_BASE_B}${spriteId}_${child.evolution_stage}${spriteSuffix}.png`
       img.style.cssText = 'width:40px;height:40px;object-fit:contain'
       img.onerror = () => {
         iconWrap.innerHTML = ''
