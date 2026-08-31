@@ -1,5 +1,5 @@
-const ATTR_EMOJI = { fire:'🔥', water:'💧', wind:'🌪️', earth:'🌍', thunder:'⚡', ice:'❄️', poison:'☠️', dragon:'🐉', light:'✨', dark:'🌑' }
-const STAGE_NAMES = ['유년기', '성장기', '완전체', '궁극체', '전설체']
+const ATTR_EMOJI_O = { fire:'🔥', water:'💧', wind:'🌪️', earth:'🌍', thunder:'⚡', ice:'❄️', poison:'☠️', dragon:'🐉', light:'✨', dark:'🌑' }
+const STAGE_NAMES_O = ['유년기', '성장기', '완전체', '궁극체', '전설체']
 const CAT_LABELS  = { level: '최고 레벨', stage: '최고 진화단계', collection: '보유 마릿수' }
 
 class OnlinePanel {
@@ -420,7 +420,7 @@ class OnlinePanel {
       const rows = res.ranking.map((u, i) => `
         <div style="display:flex; justify-content:space-between; padding:6px 8px; background:${i % 2 ? '#1a1a2e' : '#16213e'}; border-radius:4px; margin-bottom:3px; font-size:12px">
           <span style="color:${i < 3 ? '#f5c518' : '#eee'}">${i + 1}. ${u.username}</span>
-          <span style="color:#aaa">Lv.${u.max_level} · ${STAGE_NAMES[u.max_stage] || '유년기'} · ${u.total_pets}마리</span>
+          <span style="color:#aaa">Lv.${u.max_level} · ${STAGE_NAMES_O[u.max_stage] || '유년기'} · ${u.total_pets}마리</span>
         </div>`).join('')
       body.querySelector('#rank-list').innerHTML = rows || '<span style="color:#aaa; font-size:12px">데이터 없음</span>'
     })
@@ -461,7 +461,7 @@ class OnlinePanel {
       body.querySelector('#br-offers').innerHTML = res.offers.map(o => `
         <div style="background:#1a1a2e; border-radius:6px; padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center">
           <div>
-            <span style="font-size:12px; color:#eee">${o.pet?.name} ${ATTR_EMOJI[o.pet?.attribute] || ''}</span>
+            <span style="font-size:12px; color:#eee">${o.pet?.name} ${ATTR_EMOJI_O[o.pet?.attribute] || ''}</span>
             <span style="font-size:11px; color:#aaa; margin-left:8px">by ${o.username} · ${o.price}코인</span>
           </div>
           <button data-offer-id="${o.id}" style="padding:3px 10px; border-radius:4px; border:none; cursor:pointer; background:#4a90e2; color:#fff; font-size:11px">교배 신청</button>
