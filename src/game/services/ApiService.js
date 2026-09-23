@@ -1,19 +1,23 @@
 const http  = require('http')
 const https = require('https')
 
-const BASE_URL = process.env.ARCANA_SERVER_URL || 'http://localhost:4000'
+const DEFAULT_BASE_URL = process.env.ARCANA_SERVER_URL || 'http://localhost:4000'
 
 class ApiService {
   constructor() {
-    this._token = null
+    this._token   = null
+    this._baseUrl = DEFAULT_BASE_URL
   }
 
   setToken(token) { this._token = token }
   getToken()      { return this._token  }
 
+  setBaseUrl(url) { this._baseUrl = url || DEFAULT_BASE_URL }
+  getBaseUrl()     { return this._baseUrl }
+
   _request(method, path, body = null) {
     return new Promise((resolve, reject) => {
-      const url  = new URL(path, BASE_URL)
+      const url  = new URL(path, this._baseUrl)
       const lib  = url.protocol === 'https:' ? https : http
       const data = body ? JSON.stringify(body) : null
 
@@ -59,4 +63,3 @@ class ApiService {
 }
 
 module.exports = new ApiService()
-module.exports.BASE_URL = BASE_URL
