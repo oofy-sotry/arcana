@@ -199,6 +199,8 @@ class IpcRouter {
       username: this.onlineSystem.getUsername(),
     }))
     ipcMain.handle('online:server-ping', () => this.onlineSystem.isServerReachable())
+    ipcMain.handle('online:get-server-url', () => this.onlineSystem.getServerUrl())
+    ipcMain.handle('online:set-server-url', (_e, { url }) => this.onlineSystem.setServerUrl(url))
     ipcMain.handle('online:register', (_e, { username, email, password }) =>
       this.onlineSystem.register(username, email, password)
     )
