@@ -3,10 +3,11 @@ const STAGE_NAMES_O = ['유년기', '성장기', '완전체', '궁극체', '전�
 const CAT_LABELS  = { level: '최고 레벨', stage: '최고 진화단계', collection: '보유 마릿수' }
 
 class OnlinePanel {
-  constructor(status, serverOnline, allPets) {
+  constructor(status, serverOnline, allPets, serverUrl) {
     this.status       = status        // { loggedIn, username }
     this.serverOnline = serverOnline
     this.allPets      = allPets.filter(p => p.is_alive === 1)
+    this.serverUrl    = serverUrl
     this._section     = 'ranking'
   }
 
@@ -17,16 +18,47 @@ class OnlinePanel {
     return el
   }
 
+  _serverUrlBox() {
+    return `<div id="ol-server-box" style="margin-bottom:10px; padding:8px 10px; background:#12121f; border:1px solid #333; border-radius:6px; font-size:11px; color:#888">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px">
+        <span>서버: <span style="color:#aaa">${this.serverUrl || ''}</span></span>
+        <button id="ol-server-edit" style="padding:2px 8px; border-radius:4px; border:none; cursor:pointer; background:#333; color:#ccc; font-size:10px">변경</button>
+      </div>
+      <div id="ol-server-edit-body" style="display:none; margin-top:8px">
+        <input id="ol-server-input" value="${this.serverUrl || ''}" placeholder="http://192.168.x.x:4000"
+          style="width:100%; padding:6px; margin-bottom:6px; background:#16213e; border:1px solid #0f3460; color:#eee; border-radius:4px; font-size:11px; box-sizing:border-box" />
+        <button id="ol-server-save" style="padding:4px 12px; background:#4a90e2; border:none; color:#fff; border-radius:4px; cursor:pointer; font-size:11px">저장 후 재연결</button>
+      </div>
+    </div>`
+  }
+
+  _bindServerUrlBox(el, cb) {
+    const box = el.querySelector('#ol-server-box')
+    if (!box) return
+    box.querySelector('#ol-server-edit').addEventListener('click', () => {
+      const body = box.querySelector('#ol-server-edit-body')
+      body.style.display = body.style.display === 'none' ? 'block' : 'none'
+    })
+    box.querySelector('#ol-server-save').addEventListener('click', async () => {
+      const url = box.querySelector('#ol-server-input').value.trim()
+      if (!url) return
+      await window.arcana.online.setServerUrl({ url })
+      cb.refresh()
+    })
+  }
+
   _fill(el, cb) {
     const { loggedIn, username } = this.status
 
     let html = `<h3 style="margin-bottom:8px; color:#e94560">온라인</h3>`
+    html += this._serverUrlBox()
 
     if (!this.serverOnline) {
       html += `<div style="background:#2a1a1e; border:1px solid #e94560; border-radius:6px; padding:12px; color:#e94560; font-size:13px; margin-bottom:12px">
-        서버에 연결할 수 없습니다. <code>node server/index.js</code>를 실행하거나 네트워크를 확인하세요.
+        서버에 연결할 수 없습니다. 위 서버 주소가 맞는지 확인하거나, <code>node server/index.js</code>가 실행 중인지 확인하세요.
       </div>`
       el.innerHTML = html
+      this._bindServerUrlBox(el, cb)
       return
     }
 
@@ -55,6 +87,7 @@ class OnlinePanel {
     }
 
     el.innerHTML = html
+    this._bindServerUrlBox(el, cb)
 
     if (!loggedIn) {
       this._bindAuthForm(el, cb)
