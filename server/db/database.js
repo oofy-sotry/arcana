@@ -1,25 +1,29 @@
 const path = require('path')
 const fs   = require('fs')
 
-const DB_PATH = path.join(__dirname, '../../data/arcana-server.db')
+const DEFAULT_DB_PATH = path.join(__dirname, '../../data/arcana-server.db')
 
-let db  = null
-let SQL = null
+let db     = null
+let SQL    = null
+let dbPath = DEFAULT_DB_PATH
 
-async function init() {
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true })
+// dbPath에 ':memory:'를 넘기면 파일 I/O 없이 순수 인메모리로 동작한다(테스트 격리용).
+async function init(overridePath) {
+  dbPath = overridePath || DEFAULT_DB_PATH
   const initSqlJs = require('sql.js')
   SQL = await initSqlJs()
-  if (fs.existsSync(DB_PATH)) {
-    db = new SQL.Database(fs.readFileSync(DB_PATH))
-  } else {
+  if (dbPath === ':memory:') {
     db = new SQL.Database()
+  } else {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true })
+    db = fs.existsSync(dbPath) ? new SQL.Database(fs.readFileSync(dbPath)) : new SQL.Database()
   }
   runMigrations()
 }
 
 function save() {
-  fs.writeFileSync(DB_PATH, Buffer.from(db.export()))
+  if (dbPath === ':memory:') return
+  fs.writeFileSync(dbPath, Buffer.from(db.export()))
 }
 
 function query(sql, params = []) {
