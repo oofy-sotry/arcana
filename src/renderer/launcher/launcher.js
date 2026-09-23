@@ -309,15 +309,16 @@ async function renderOnlineTab() {
   const container = document.getElementById('tab-online')
   container.innerHTML = '<span style="color:#aaa; font-size:13px">로딩 중...</span>'
 
-  const [status, serverOnline, freshPets] = await Promise.all([
+  const [status, serverOnline, freshPets, serverUrl] = await Promise.all([
     window.arcana.online.status(),
     window.arcana.online.serverPing(),
     window.arcana.pet.getAll(),
+    window.arcana.online.getServerUrl(),
   ])
   allPets = freshPets
   container.innerHTML = ''
 
-  const panel = new OnlinePanel(status, serverOnline, allPets)
+  const panel = new OnlinePanel(status, serverOnline, allPets, serverUrl)
   container.appendChild(panel.render({
     refresh: renderOnlineTab,
     logout:  async () => {
