@@ -135,7 +135,7 @@ class IpcRouter {
       if (!result.error) this.questSystem?.recordActivity('explore', 1)
       return result
     })
-    ipcMain.handle('hunting:open', () => this.windowManager.createHuntingWindow())
+    ipcMain.handle('hunting:open', () => { this.windowManager.createHuntingWindow() })
     ipcMain.handle('hunting:start-auto', (_e, { petId, zoneId }) => {
       const pets = this.petSystem.getAll()
       const pet  = pets.find(p => p.id === petId)
