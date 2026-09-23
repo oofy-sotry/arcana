@@ -56,6 +56,8 @@ contextBridge.exposeInMainWorld('arcana', {
   online: {
     status:          ()                               => ipcRenderer.invoke('online:status'),
     serverPing:      ()                               => ipcRenderer.invoke('online:server-ping'),
+    getServerUrl:    ()                               => ipcRenderer.invoke('online:get-server-url'),
+    setServerUrl:    ({ url })                        => ipcRenderer.invoke('online:set-server-url', { url }),
     register:        ({ username, email, password })  => ipcRenderer.invoke('online:register', { username, email, password }),
     login:           ({ email, password })            => ipcRenderer.invoke('online:login', { email, password }),
     logout:          ()                               => ipcRenderer.invoke('online:logout'),
