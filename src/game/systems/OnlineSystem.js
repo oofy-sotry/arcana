@@ -8,6 +8,19 @@ class OnlineSystem {
     const db = require('../../db/database')
     const tokenRow = db.query("SELECT value FROM world_state WHERE key = 'auth_token'")[0]
     if (tokenRow?.value) api.setToken(tokenRow.value)
+
+    const urlRow = db.query("SELECT value FROM world_state WHERE key = 'server_url'")[0]
+    if (urlRow?.value) api.setBaseUrl(urlRow.value)
+  }
+
+  getServerUrl() { return api.getBaseUrl() }
+
+  setServerUrl(url) {
+    const db = require('../../db/database')
+    api.setBaseUrl(url)
+    db.run("INSERT OR REPLACE INTO world_state (key, value) VALUES ('server_url', ?)", [url])
+    this.save()
+    return { ok: true, url: api.getBaseUrl() }
   }
 
   isLoggedIn() { return !!api.getToken() }
@@ -101,7 +114,7 @@ class OnlineSystem {
   getWsConnectionInfo() {
     return {
       token: api.getToken(),
-      wsUrl: api.BASE_URL.replace(/^http/, 'ws'),
+      wsUrl: api.getBaseUrl().replace(/^http/, 'ws'),
     }
   }
 }
