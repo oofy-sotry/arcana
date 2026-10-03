@@ -2,11 +2,13 @@ const { app } = require('electron')
 const GameWorld     = require('./gameWorld')
 const WindowManager = require('./windowManager')
 const IpcRouter     = require('./ipcRouter')
+const logger        = require('./logger')
 
 const gameWorld     = new GameWorld()
 const windowManager = new WindowManager()
 
 app.whenReady().then(async () => {
+  logger.install() // 창 생성·IPC 등록 전에 설치해야 전부 수집됨
   await gameWorld.init()
   gameWorld.startTick()
 
