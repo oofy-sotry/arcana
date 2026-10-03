@@ -14,6 +14,9 @@ async function initScene() {
   const W    = wrap.clientWidth
   const H    = wrap.clientHeight
 
+  // PIXI 기본값은 blob 워커로 이미지 디코딩 검사를 하는데, 워커엔 이 페이지의 메타 CSP가
+  // 적용되지 않아 default-src 'self'로 막혀 매번 CSP 에러가 남 — 메인 스레드 디코딩으로 고정
+  PIXI.Assets.setPreferences({ preferWorkers: false })
   app = new PIXI.Application()
   await app.init({
     width:            W,
