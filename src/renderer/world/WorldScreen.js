@@ -188,7 +188,16 @@ class WorldScreen {
     if (dialog) dialog.style.display = 'none'
   }
 
-  _handleWildEncounter(config) {
+  async _handleWildEncounter(config) {
+    // 사냥은 같은 창을 사냥 페이지로 전환하므로, 복귀 시 이 자리로 돌아오도록 현재 위치를 먼저 저장
+    if (this.engine) {
+      await window.arcana.summoner.saveMapState({
+        summonerId: this.summoner.id,
+        mapId: this.engine.map.id,
+        tileX: this.engine.playerX,
+        tileY: this.engine.playerY,
+      })
+    }
     window.arcana.hunting.open()
   }
 
