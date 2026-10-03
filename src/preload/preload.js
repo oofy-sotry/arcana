@@ -23,7 +23,7 @@ contextBridge.exposeInMainWorld('arcana', {
     toggleMouse: (ignore)          => ipcRenderer.send('overlay:toggle-mouse', ignore),
   },
   hunting: {
-    getZones:     ()                           => ipcRenderer.invoke('hunting:get-zones'),
+    getZones:     ({ petId } = {})             => ipcRenderer.invoke('hunting:get-zones', { petId }),
     startAuto:    ({ petId, zoneId })          => ipcRenderer.invoke('hunting:start-auto', { petId, zoneId }),
     stopAuto:     ({ petId })                  => ipcRenderer.invoke('hunting:stop-auto', { petId }),
     manualBattle: ({ petId, zoneId })          => ipcRenderer.invoke('hunting:manual-battle', { petId, zoneId }),
