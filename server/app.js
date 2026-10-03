@@ -4,6 +4,7 @@ const cors    = require('cors')
 const app = express()
 app.use(cors({ origin: false }))
 app.use(express.json())
+app.use(require('./middleware/requestLogger'))
 
 // 라우터 등록
 app.use('/auth',     require('./routes/auth'))
