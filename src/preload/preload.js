@@ -26,9 +26,9 @@ contextBridge.exposeInMainWorld('arcana', {
     getZones:     ({ petId } = {})             => ipcRenderer.invoke('hunting:get-zones', { petId }),
     startAuto:    ({ petId, zoneId })          => ipcRenderer.invoke('hunting:start-auto', { petId, zoneId }),
     stopAuto:     ({ petId })                  => ipcRenderer.invoke('hunting:stop-auto', { petId }),
-    manualBattle: ({ petId, zoneId })          => ipcRenderer.invoke('hunting:manual-battle', { petId, zoneId }),
+    manualBattle: ({ petId, zoneId, monsterId }) => ipcRenderer.invoke('hunting:manual-battle', { petId, zoneId, monsterId }),
     explore:      ({ petId, mode })            => ipcRenderer.invoke('hunting:explore', { petId, mode }),
-    open:         ()                           => ipcRenderer.invoke('hunting:open'),
+    open:         ({ encounterTiers } = {})    => ipcRenderer.invoke('hunting:open', { encounterTiers }),
     close:        ()                           => ipcRenderer.invoke('hunting:close'),
     zoneMonsters: ({ zoneId })                 => ipcRenderer.invoke('hunting:zone-monsters', { zoneId }),
     applyRealtimeReward: ({ petId, exp, coins, drops }) =>
