@@ -6,6 +6,7 @@ let mode          = 'manual' // 'auto' | 'manual'
 let energy        = 100
 
 const SPEED = 2.5
+const NO_PET_MSG = '⚠ 사냥할 펫이 없습니다 — 마을의 미르린에게 무료 소환을 받은 뒤 다시 오세요'
 const keys  = {} // 현재 누르고 있는 키 추적
 
 async function initScene() {
@@ -113,6 +114,8 @@ async function init() {
     updateEnergyDisplay()
     await spawnPetSprite()
     window._combatUI.setPetHp(currentPet.hp || 100, currentPet.hp || 100)
+  } else {
+    addLog(NO_PET_MSG)
   }
 
   document.getElementById('btn-back').addEventListener('click', () => window.arcana.hunting.close())
@@ -150,7 +153,8 @@ function onTick() {
 }
 
 async function onManualAttack() {
-  if (!currentPet || mode !== 'manual') return
+  if (!currentPet) { addLog(NO_PET_MSG); return }
+  if (mode !== 'manual') return
   const result = await window.arcana.hunting.manualBattle({ petId: currentPet.id, zoneId: currentZoneId })
   if (result?.error) { addLog(`⚠ ${result.error}`); return }
 
@@ -225,7 +229,7 @@ function updateEnergyDisplay(overrideEnergy) {
 }
 
 async function startAutoMode() {
-  if (!currentPet) return
+  if (!currentPet) { addLog(NO_PET_MSG); return }
   setMode('auto')
   addLog('🤖 자동 사냥 시작...')
   const result = await window.arcana.hunting.startAuto({ petId: currentPet.id, zoneId: currentZoneId })
@@ -239,7 +243,7 @@ async function startAutoMode() {
 }
 
 async function onExplore() {
-  if (!currentPet) return
+  if (!currentPet) { addLog(NO_PET_MSG); return }
   const result = await window.arcana.hunting.explore({ petId: currentPet.id, mode })
   if (result?.error) { addLog(`⚠ ${result.error}`); return }
   if (result.type === 'item')  addLog(`💎 아이템 발견: ${result.itemId}`)
