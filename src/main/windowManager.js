@@ -5,7 +5,6 @@ class WindowManager {
   constructor() {
     this.overlayWindow  = null
     this.launcherWindow = null
-    this.huntingWindow  = null
     this.tray           = null
   }
 
@@ -64,30 +63,16 @@ class WindowManager {
     return this.launcherWindow
   }
 
-  createHuntingWindow() {
-    if (this.huntingWindow && !this.huntingWindow.isDestroyed()) {
-      this.huntingWindow.focus()
-      return this.huntingWindow
-    }
+  // 사냥터는 새 창 대신 요청한 창(메인 런처)의 화면을 사냥 페이지로 전환
+  showHuntingIn(win) {
+    if (!win || win.isDestroyed()) return
+    win.loadFile(path.join(__dirname, '../renderer/hunting/index.html'))
+  }
 
-    this.huntingWindow = new BrowserWindow({
-      width:  1024,
-      height: 768,
-      title:  'Arcana — 사냥터',
-      webPreferences: {
-        preload:          path.join(__dirname, '../preload/preload.js'),
-        contextIsolation: true,
-        nodeIntegration:  false,
-      },
-    })
-
-    this.huntingWindow.loadFile(
-      path.join(__dirname, '../renderer/hunting/index.html')
-    )
-
-    this.huntingWindow.on('closed', () => { this.huntingWindow = null })
-
-    return this.huntingWindow
+  // 사냥 페이지 → 런처 복귀 (런처 init이 저장된 맵 위치로 월드 화면을 다시 띄움)
+  showLauncherIn(win) {
+    if (!win || win.isDestroyed()) return
+    win.loadFile(path.join(__dirname, '../renderer/launcher/index.html'))
   }
 
   createTray(onQuit) {
