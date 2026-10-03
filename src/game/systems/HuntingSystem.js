@@ -1,4 +1,5 @@
 const { ZONES, MONSTERS, getMonster } = require('../data/monsters')
+const { getMultiplier } = require('../data/attributes')
 
 const AUTO_ENERGY_COST   = 30
 const MANUAL_ENERGY_COST = 15
@@ -31,11 +32,28 @@ class HuntingSystem {
   // ─── 접근 가능한 구역 목록 ─────────────────────────────────────────
   // petLevel 기준 ±10 레벨 구간을 추천으로 표시, 전체 목록은 항상 반환
   getZones(pet) {
-    return ZONES.map(z => ({
-      ...z,
-      accessible: this._canAccess(z),
-      recommended: pet ? (pet.level >= z.minLevel - 5 && pet.level <= z.maxLevel + 5) : true,
-    }))
+    return ZONES.map(z => {
+      const edge = pet ? this._estimateEdge(pet, z) : null
+      return {
+        ...z,
+        accessible: this._canAccess(z),
+        edge,
+        recommended: pet
+          ? (pet.level >= z.minLevel - 5 && pet.level <= z.maxLevel + 5) && edge >= 1
+          : true,
+      }
+    })
+  }
+
+  // 일반 몬스터 상대 승산 추정 — (몬스터가 펫을 쓰러뜨리는 턴 수) / (펫이 몬스터를 쓰러뜨리는 턴 수).
+  // 1 이상이면 대체로 이김. calcDamage와 같은 식(공격−방어 × 상성)을 크리티컬 없이 적용.
+  _estimateEdge(pet, zone) {
+    const edges = zone.monsterIds.map(id => getMonster(id)).filter(Boolean).map(m => {
+      const petDmg = Math.max(1, Math.floor(Math.max(1, pet.attack - m.defense) * getMultiplier(pet.attribute, m.attribute)))
+      const monDmg = Math.max(1, Math.floor(Math.max(1, m.attack - pet.defense) * getMultiplier(m.attribute, pet.attribute)))
+      return Math.ceil(pet.hp / monDmg) / Math.ceil(m.hp / petDmg)
+    })
+    return edges.length ? Math.min(...edges) : 0
   }
 
   _canAccess(zone) {
