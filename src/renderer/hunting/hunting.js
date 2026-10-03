@@ -85,22 +85,27 @@ async function loadZoneMonsters(zoneId) {
 async function init() {
   await initScene()
 
-  const zones = await window.arcana.hunting.getZones()
+  const pets  = await window.arcana.pet.getAll()
+  const zones = await window.arcana.hunting.getZones({ petId: pets[0]?.id })
   const sel   = document.getElementById('zone-select')
   zones.forEach(z => {
     const opt       = document.createElement('option')
     opt.value       = z.id
-    opt.textContent = z.name
+    // ★ 추천(레벨 적정 + 승산 있음) / (불리) 승산이 크게 낮음 — edge는 펫이 있을 때만 계산됨
+    const tag = z.recommended && z.edge != null ? '★ ' : ''
+    const warn = z.edge != null && z.edge < 0.8 ? ' (불리)' : ''
+    opt.textContent = `${tag}${z.name}${warn}`
     sel.appendChild(opt)
   })
-  if (zones.length > 0) currentZoneId = zones[0].id
+  // 기본 구역: 추천 구역 중 승산이 가장 높은 곳, 없으면 목록 첫 구역
+  const best = zones.filter(z => z.recommended && z.edge != null).sort((a, b) => b.edge - a.edge)[0]
+  if (zones.length > 0) currentZoneId = (best || zones[0]).id
   sel.value = currentZoneId
   sel.addEventListener('change', () => {
     currentZoneId = sel.value
     loadZoneMonsters(currentZoneId)
   })
 
-  const pets = await window.arcana.pet.getAll()
   window._combatUI = new CombatUI()
 
   if (pets.length > 0) {
