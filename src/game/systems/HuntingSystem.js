@@ -155,11 +155,16 @@ class HuntingSystem {
   }
 
   // ─── 수동 사냥 (1회 전투) ──────────────────────────────────────────
-  processManualBattle(pet, zoneId) {
+  // monsterId를 주면 화면에서 부딪힌 그 몬스터와 싸움(구역 소속 검증), 없으면 기존처럼 무작위
+  processManualBattle(pet, zoneId, monsterId = null) {
     const db   = require('../../db/database')
     const zone = ZONES.find(z => z.id === zoneId)
     if (!zone) return { error: '존재하지 않는 구역입니다' }
     if (!this._canAccess(zone)) return { error: '접근 불가 구역입니다' }
+
+    if (monsterId && monsterId !== zone.bossId && !zone.monsterIds.includes(monsterId)) {
+      return { error: '이 구역의 몬스터가 아닙니다' }
+    }
 
     const energy = pet.conditions?.energy ?? 100
     if (energy < MANUAL_ENERGY_COST) return { error: '에너지 부족 (수동 사냥: -15 필요)' }
@@ -171,9 +176,15 @@ class HuntingSystem {
       return this._runHiddenStage(pet, zone, newEnergy)
     }
 
-    // 보스 조우 판정
-    const isBoss  = Math.random() < BOSS_CHANCE_MANUAL
-    const monster = isBoss ? this._spawnBoss(zone) : this._spawnRegular(zone)
+    // 지정 몬스터 또는 보스 조우 판정
+    let monster, isBoss
+    if (monsterId) {
+      monster = getMonster(monsterId)
+      isBoss  = !!monster?.isBoss
+    } else {
+      isBoss  = Math.random() < BOSS_CHANCE_MANUAL
+      monster = isBoss ? this._spawnBoss(zone) : this._spawnRegular(zone)
+    }
     if (!monster) return { error: '몬스터를 찾을 수 없습니다' }
 
     const synergyMult = this._getSynergyMult(pet)
