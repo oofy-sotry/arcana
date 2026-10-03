@@ -13,6 +13,7 @@ app.use('/ranking',  require('./routes/ranking'))
 app.use('/breeding', require('./routes/breeding'))
 app.use('/battle',   require('./routes/battle'))
 app.use('/friends',  require('./routes/friends'))
+app.use('/client-log', require('./routes/clientLog'))
 
 app.get('/health', (_req, res) => res.json({ ok: true }))
 
