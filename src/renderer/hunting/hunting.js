@@ -60,10 +60,12 @@ async function spawnPetSprite() {
     const spriteSuffix = currentPet.species === 'OmnirexHidden' ? '_hidden' : ''
     tex = await PIXI.Assets.load(`${PET_SPRITE_BASE}${spriteId}_${currentPet.evolution_stage}${spriteSuffix}.png`)
   } catch {
-    const g = new PIXI.Graphics()
-    g.circle(0, 0, 16).fill(0xe94560)
-    tex = app.renderer.generateTexture(g)
-    g.destroy()
+    // 이미지가 없는 종·단계 → 종+속성+단계 시드 도트 스프라이트
+    tex = PIXI.Texture.from(PixelSprite.toCanvas({
+      seed: `${currentPet.species}_${currentPet.attribute}_${currentPet.evolution_stage}`,
+      attribute: currentPet.attribute, kind: 'pet',
+    }))
+    tex.source.scaleMode = 'nearest'
   }
   petSprite = new PIXI.Sprite(tex)
   petSprite.anchor.set(0.5)
