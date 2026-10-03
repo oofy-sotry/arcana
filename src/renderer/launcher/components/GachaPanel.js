@@ -1,4 +1,3 @@
-const ATTR_EMOJI_G  = { fire: '🔥', water: '💧', wind: '🌪️', earth: '🌍', thunder: '⚡', ice: '❄️', poison: '☠️', dragon: '🐉' }
 const STAGE_NAMES_G = ['유년기', '성장기', '완전체', '궁극체', '전설체']
 const STAGE_COLOR_G = ['#888', '#4ecdc4', '#45b7d1', '#f5a623', '#e94560']
 
@@ -75,10 +74,9 @@ class GachaPanel {
         img.style.cssText = 'width:40px; height:40px; object-fit:contain;'
         img.onerror = () => {
           iconWrap.innerHTML = ''
-          const span = document.createElement('span')
-          span.style.cssText = 'font-size:28px'
-          span.textContent = ATTR_EMOJI_G[pet.attribute] || '❓'
-          iconWrap.appendChild(span)
+          iconWrap.appendChild(PixelSprite.element({
+            seed: `${pet.species}_${pet.attribute}_${stage}`, attribute: pet.attribute, kind: 'pet',
+          }, 40))
         }
         iconWrap.appendChild(img)
 
