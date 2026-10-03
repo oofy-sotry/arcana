@@ -1,8 +1,3 @@
-const ATTR_COLORS = {
-  fire: 0xe74c3c, water: 0x3498db, wind: 0x2ecc71, earth: 0xd35400,
-  thunder: 0xf1c40f, ice: 0xaed6f1, poison: 0x8e44ad, dragon: 0xff6b35,
-}
-
 // index.html 기준 상대경로 — src/renderer/hunting/ → 프로젝트 루트까지 3단계
 const MONSTER_SPRITE_BASE = '../../../assets/sprites/monsters/'
 
@@ -20,21 +15,22 @@ class MonsterRenderer {
     const margin = 40
     const x      = margin + Math.random() * (this.W - margin * 2)
     const y      = margin + Math.random() * (this.H - margin * 2)
-    const color  = ATTR_COLORS[monsterData.attribute] || 0xaaaaaa
 
     let tex
     try {
       tex = await PIXI.Assets.load(`${MONSTER_SPRITE_BASE}${monsterData.id}.png`)
     } catch {
-      const g = new PIXI.Graphics()
-      g.rect(-16, -16, 32, 32).fill(color)
-      tex = this.renderer.generateTexture(g)
-      g.destroy()
+      // 아직 그려진 이미지가 없는 몬스터 → id 시드 도트 스프라이트 (같은 몬스터는 항상 같은 모양)
+      tex = PIXI.Texture.from(PixelSprite.toCanvas({
+        seed: monsterData.id, attribute: monsterData.attribute, kind: 'monster', isBoss: monsterData.isBoss,
+      }))
+      tex.source.scaleMode = 'nearest'
     }
+    const size   = monsterData.isBoss ? 44 : 32
     const sprite = new PIXI.Sprite(tex)
     sprite.anchor.set(0.5)
-    sprite.width  = 32
-    sprite.height = 32
+    sprite.width  = size
+    sprite.height = size
     sprite.x = x
     sprite.y = y
 
