@@ -110,6 +110,7 @@ async function init() {
     window._combatUI.setPetHp(currentPet.hp || 100, currentPet.hp || 100)
   }
 
+  document.getElementById('btn-back').addEventListener('click', () => window.arcana.hunting.close())
   document.getElementById('btn-mode-auto').addEventListener('click', startAutoMode)
   document.getElementById('btn-mode-manual').addEventListener('click', () => setMode('manual'))
   document.getElementById('btn-explore').addEventListener('click', onExplore)
