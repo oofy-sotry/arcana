@@ -76,6 +76,16 @@ class HuntingSystem {
     return getMonster(zone.hiddenMonsterId)
   }
 
+  // ─── 월드 풀밭 야생 조우: 맵 wildConfig.tiers에 맞는 구역 하나 → 그 구역 몬스터 한 마리 ──
+  // 보스는 자동 사냥과 같은 10% 확률. 세력 평판으로 막힌 구역은 제외
+  rollWildEncounter(tiers = [1]) {
+    const zones = ZONES.filter(z => tiers.includes(z.tier) && this._canAccess(z))
+    if (!zones.length) return null
+    const zone    = zones[Math.floor(Math.random() * zones.length)]
+    const monster = Math.random() < BOSS_CHANCE_AUTO ? this._spawnBoss(zone) : this._spawnRegular(zone)
+    return monster ? { zoneId: zone.id, monsterId: monster.id } : null
+  }
+
   // ─── 렌더러용: 구역 몬스터 목록 (id·name·attribute·tier) ──────────
   // tier → 리스폰 딜레이(ms): 1-2=2s, 3-4=3s, 5-6=5s, 7+=8s
   getZoneMonsters(zoneId) {
