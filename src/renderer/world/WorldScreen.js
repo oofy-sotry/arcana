@@ -198,7 +198,7 @@ class WorldScreen {
         tileY: this.engine.playerY,
       })
     }
-    window.arcana.hunting.open()
+    window.arcana.hunting.open({ encounterTiers: config?.tiers })
   }
 
   async _handleExit(exit) {
