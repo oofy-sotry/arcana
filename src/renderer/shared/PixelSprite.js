@@ -87,12 +87,12 @@
     const out = Array.from({ length: H + 2 }, () => Array(W + 2).fill(null))
     const outline = shade(base, -0.65)
     for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
+      for (let x = 0; x < HALF; x++) {
         if (!body[y][x]) continue
-        // 위는 밝게, 아래는 어둡게 + 시드 얼룩
+        // 위는 밝게, 아래는 어둡게 + 시드 얼룩 (얼룩도 좌우 대칭)
         const t = y / (H - 1)
         const speck = rand() < 0.15 ? -0.12 : 0
-        out[y + 1][x + 1] = shade(base, 0.25 - t * 0.5 + speck)
+        out[y + 1][x + 1] = out[y + 1][W - x] = shade(base, 0.25 - t * 0.5 + speck)
       }
     }
     // 외곽선: 몸에 맞닿은 빈칸
