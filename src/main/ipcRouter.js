@@ -119,11 +119,11 @@ class IpcRouter {
       }
       return { ok: true }
     })
-    ipcMain.handle('hunting:manual-battle', (_e, { petId, zoneId }) => {
+    ipcMain.handle('hunting:manual-battle', (_e, { petId, zoneId, monsterId }) => {
       const pets = this.petSystem.getAll()
       const pet  = pets.find(p => p.id === petId)
       if (!pet) return { error: 'not_found' }
-      return this.huntingSystem.processManualBattle(pet, zoneId)
+      return this.huntingSystem.processManualBattle(pet, zoneId, monsterId)
     })
     ipcMain.handle('hunting:explore', (_e, { petId, mode }) => {
       const pets = this.petSystem.getAll()
@@ -135,7 +135,12 @@ class IpcRouter {
       if (!result.error) this.questSystem?.recordActivity('explore', 1)
       return result
     })
-    ipcMain.handle('hunting:open',  e => { this.windowManager.showHuntingIn(BrowserWindow.fromWebContents(e.sender)) })
+    // encounterTiers가 오면(월드 풀밭 조우) 몬스터를 정해 조우 모드로, 아니면 일반 사냥터로
+    ipcMain.handle('hunting:open', (e, { encounterTiers } = {}) => {
+      const enc   = encounterTiers ? this.huntingSystem.rollWildEncounter(encounterTiers) : null
+      const query = enc ? { zone: enc.zoneId, monster: enc.monsterId } : {}
+      this.windowManager.showHuntingIn(BrowserWindow.fromWebContents(e.sender), query)
+    })
     ipcMain.handle('hunting:close', e => { this.windowManager.showLauncherIn(BrowserWindow.fromWebContents(e.sender)) })
     ipcMain.handle('hunting:start-auto', (_e, { petId, zoneId }) => {
       const pets = this.petSystem.getAll()
