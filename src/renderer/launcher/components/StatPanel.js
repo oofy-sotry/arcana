@@ -22,8 +22,7 @@ class StatPanel {
     const spriteSuffix = pet.species === 'OmnirexHidden' ? '_hidden' : ''
     el.innerHTML = `
       <img src="../../../assets/sprites/characters/${spriteId}_${pet.evolution_stage}${spriteSuffix}.png"
-           style="width:96px; height:96px; object-fit:contain; display:block; margin:0 auto 12px;"
-           onerror="this.style.display='none'" />
+           id="stat-sprite" style="width:96px; height:96px; object-fit:contain; display:block; margin:0 auto 12px;" />
       <h3 style="margin-bottom:12px; color:#e94560">${pet.name} 스탯</h3>
       <div style="font-size:12px; color:#aaa; margin-bottom:10px">Lv.${pet.level || 1} · 경험치 ${pet.exp || 0}</div>
       ${stats.map(s => `
@@ -36,6 +35,17 @@ class StatPanel {
       <button id="btn-evolve" style="margin-top:14px; width:100%; padding:8px; background:#0f3460; border:1px solid #e94560; color:#e94560; border-radius:6px; cursor:pointer; font-size:13px">
         진화 시도
       </button>`
+
+    // 런처 CSP(script-src 'self')가 인라인 onerror를 막아 깨진 이미지가 보였음 — JS로 붙여 도트로 교체
+    const img = el.querySelector('#stat-sprite')
+    img.onerror = () => {
+      const dot = PixelSprite.element({
+        seed: `${pet.species}_${pet.attribute}_${pet.evolution_stage}`, attribute: pet.attribute, kind: 'pet',
+      }, 96)
+      dot.style.display = 'block'
+      dot.style.margin  = '0 auto 12px'
+      img.replaceWith(dot)
+    }
 
     el.querySelector('#btn-evolve').addEventListener('click', () => this.onEvolve?.())
     return el
