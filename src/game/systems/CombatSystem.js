@@ -102,6 +102,7 @@ class CombatSystem {
       pet: effectivePet,
       monster: { ...monster, currentHp: monster.hp },
       petHp: startHp,
+      petMaxHp: startHp,
       mode,
       synergyMult,
       passives,
@@ -248,7 +249,8 @@ class CombatSystem {
     // 패배의 영구 사망(is_alive=0)은 저레벨 속성 불리 구역에서 첫 사냥에 펫을 잃게 만들었음
 
     this._battles.delete(petId)
-    return { result, drops, log }
+    // 최대 HP는 렌더러가 턴 로그를 재생하며 HP 바를 깎는 연출에 사용
+    return { result, drops, log, petMaxHp: state.petMaxHp, monsterMaxHp: monster.hp }
   }
 
   // ─── 자동 전투 시뮬레이션 ─────────────────────────────────────────
