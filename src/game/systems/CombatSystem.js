@@ -210,7 +210,7 @@ class CombatSystem {
     const db = require('../../db/database')
     const state = this._battles.get(petId)
     if (!state) return null
-    const { pet, monster, mode, log } = state
+    const { pet, monster, log } = state
     const result = this.checkBattleEnd(petId)
     const drops = []
 
@@ -242,29 +242,10 @@ class CombatSystem {
       }
       this.save()
 
-    } else if (result === 'lost') {
-      if (mode === 'auto') {
-        const shieldKey = `death_shield_${petId}`
-        const reviveKey = `auto_revive_${petId}`
-        const shield    = db.query('SELECT value FROM world_state WHERE key = ?', [shieldKey])[0]
-        const revive    = db.query('SELECT value FROM world_state WHERE key = ?', [reviveKey])[0]
-
-        if (shield) {
-          db.run('DELETE FROM world_state WHERE key = ?', [shieldKey])
-          this.Pet.updatePet(petId, { hp: 1 })
-        } else if (revive) {
-          db.run('DELETE FROM world_state WHERE key = ?', [reviveKey])
-          const deadPet  = this.Pet.getPet(petId)
-          const reviveHp = Math.max(1, Math.ceil((deadPet?.hp || 100) * 0.5))
-          this.Pet.updatePet(petId, { hp: reviveHp })
-        } else {
-          this.Pet.updatePet(petId, { is_alive: 0 })
-        }
-      } else {
-        this.Pet.updatePet(petId, { hp: 1 })
-      }
-      this.save()
     }
+    // 패배 시 펫 상태는 건드리지 않는다 — pets.hp는 현재 HP가 아니라 최대 HP 스탯(전투마다
+    // startBattle이 pet.hp로 새로 시작)이라 hp:1로 덮으면 스탯이 영구 손상되고, 자동 사냥
+    // 패배의 영구 사망(is_alive=0)은 저레벨 속성 불리 구역에서 첫 사냥에 펫을 잃게 만들었음
 
     this._battles.delete(petId)
     return { result, drops, log }
