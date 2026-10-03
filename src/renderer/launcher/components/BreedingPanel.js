@@ -148,10 +148,9 @@ class BreedingPanel {
       img.style.cssText = 'width:40px;height:40px;object-fit:contain'
       img.onerror = () => {
         iconWrap.innerHTML = ''
-        const span = document.createElement('span')
-        span.style.cssText = 'font-size:28px'
-        span.textContent = ATTR_EMOJI_B[child.attribute] || ''
-        iconWrap.appendChild(span)
+        iconWrap.appendChild(PixelSprite.element({
+          seed: `${child.species}_${child.attribute}_${child.evolution_stage}`, attribute: child.attribute, kind: 'pet',
+        }, 40))
       }
       iconWrap.appendChild(img)
       if (onBreedDone) onBreedDone()
