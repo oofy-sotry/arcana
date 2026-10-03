@@ -316,13 +316,10 @@ class WorldEngine {
     const py = npc.tile_y * TILE_SIZE
     const S = TILE_SIZE
 
-    // 몸통
-    ctx.fillStyle = npc.color || '#ffd54f'
-    ctx.fillRect(px + S*0.3, py + S*0.35, S*0.4, S*0.4)
-
-    // 머리
-    ctx.fillStyle = '#f5c99a'
-    ctx.fillRect(px + S*0.3, py + S*0.1, S*0.4, S*0.3)
+    // 도트 스프라이트 (NPC id 시드 + NPC 고유색) — 네모 2개 대신
+    const sprite = PixelSprite.toCanvas({ seed: npc.id, kind: 'pet', color: npc.color || '#ffd54f' })
+    ctx.imageSmoothingEnabled = false
+    ctx.drawImage(sprite, px + S*0.1, py + S*0.1, S*0.8, S*0.8)
 
     // 이름
     ctx.fillStyle = '#ffd54f'
