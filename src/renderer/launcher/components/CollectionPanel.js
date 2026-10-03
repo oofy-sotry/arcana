@@ -21,10 +21,10 @@ class CollectionPanel {
       img.style.cssText = 'width:48px; height:48px; object-fit:contain'
       img.onerror = () => {
         iconWrap.innerHTML = ''
-        const span = document.createElement('span')
-        span.style.cssText = 'font-size:28px'
-        span.textContent = ATTR_EMOJI_C[entry.attribute] || '❓'
-        iconWrap.appendChild(span)
+        // 시드는 기본종 펫(species 'default')과 같게 — 도감과 펫 목록에서 같은 모양
+        iconWrap.appendChild(PixelSprite.element({
+          seed: `default_${entry.attribute}_${entry.stage}`, attribute: entry.attribute, kind: 'pet',
+        }, 48))
       }
       iconWrap.appendChild(img)
     } else {
