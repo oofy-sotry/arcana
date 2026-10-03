@@ -1,5 +1,4 @@
 const STAGE_NAMES = ['유년기', '성장기', '완전체', '궁극체', '전설체']
-const ATTR_EMOJI  = { fire: '🔥', water: '💧', wind: '🌪️', earth: '🌍', thunder: '⚡', ice: '❄️', poison: '☠️', dragon: '🐉', omni: '🌟' }
 
 // index.html 기준 상대경로 — src/renderer/launcher/ → 프로젝트 루트까지 3단계
 const SPRITE_BASE = '../../../assets/sprites/characters/'
@@ -10,9 +9,8 @@ class PetCard {
     this.onSelect = onSelect
   }
 
-  // 캐릭터 아트가 있으면 이미지, 없으면(아직 그려지지 않은 종·단계) 이모지로 폴백
+  // 캐릭터 아트가 있으면 이미지, 없으면(아직 그려지지 않은 종·단계) 도트 스프라이트로 폴백
   _createIcon(isDead) {
-    const emoji = ATTR_EMOJI[this.pet.attribute] || '❓'
     const wrap  = document.createElement('div')
     wrap.style.cssText = 'width:40px; height:40px; flex-shrink:0; display:flex; align-items:center; justify-content:center;'
 
@@ -24,10 +22,12 @@ class PetCard {
     img.style.cssText = `width:40px; height:40px; object-fit:contain;${isDead ? ' filter:grayscale(1);' : ''}`
     img.onerror = () => {
       wrap.innerHTML = ''
-      const span = document.createElement('span')
-      span.style.cssText = `font-size:32px;${isDead ? ' filter:grayscale(1);' : ''}`
-      span.textContent = emoji
-      wrap.appendChild(span)
+      const dot = PixelSprite.element({
+        seed: `${this.pet.species}_${this.pet.attribute}_${this.pet.evolution_stage}`,
+        attribute: this.pet.attribute, kind: 'pet',
+      }, 40)
+      if (isDead) dot.style.filter = 'grayscale(1)'
+      wrap.appendChild(dot)
     }
     wrap.appendChild(img)
     return wrap
