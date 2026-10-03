@@ -1,4 +1,4 @@
-const { ipcMain } = require('electron')
+const { ipcMain, BrowserWindow } = require('electron')
 
 class IpcRouter {
   constructor({ petSystem, levelSystem, evolutionSystem, skillSystem, itemSystem,
@@ -135,7 +135,8 @@ class IpcRouter {
       if (!result.error) this.questSystem?.recordActivity('explore', 1)
       return result
     })
-    ipcMain.handle('hunting:open', () => { this.windowManager.createHuntingWindow() })
+    ipcMain.handle('hunting:open',  e => { this.windowManager.showHuntingIn(BrowserWindow.fromWebContents(e.sender)) })
+    ipcMain.handle('hunting:close', e => { this.windowManager.showLauncherIn(BrowserWindow.fromWebContents(e.sender)) })
     ipcMain.handle('hunting:start-auto', (_e, { petId, zoneId }) => {
       const pets = this.petSystem.getAll()
       const pet  = pets.find(p => p.id === petId)
