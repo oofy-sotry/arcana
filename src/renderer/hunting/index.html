@@ -19,6 +19,7 @@
     #btn-mode-auto   { background: #e94560; color: #fff; }
     #btn-mode-manual { background: #0f3460; color: #eee; }
     #energy-display  { margin-left: auto; font-size: 13px; color: #aaa; }
+    #encounter-banner { display: none; font-size: 14px; font-weight: bold; color: #ffd166; }
 
     #canvas-wrap { flex: 1; overflow: hidden; position: relative; }
     #canvas-wrap canvas { display: block; }
@@ -80,7 +81,8 @@
 <body>
   <div id="topbar">
     <button id="btn-back" style="background:#333; color:#eee;">← 마을로</button>
-    <label for="zone-select">구역:</label>
+    <span id="encounter-banner"></span>
+    <label id="zone-label" for="zone-select">구역:</label>
     <select id="zone-select"></select>
     <button id="btn-mode-auto">자동 사냥</button>
     <button id="btn-mode-manual">수동 사냥</button>
