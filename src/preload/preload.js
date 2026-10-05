@@ -32,7 +32,7 @@ contextBridge.exposeInMainWorld('arcana', {
     stopAuto:     ({ petId })                  => ipcRenderer.invoke('hunting:stop-auto', { petId }),
     manualBattle: ({ petId, zoneId, monsterId }) => ipcRenderer.invoke('hunting:manual-battle', { petId, zoneId, monsterId }),
     explore:      ({ petId, mode })            => ipcRenderer.invoke('hunting:explore', { petId, mode }),
-    open:         ({ encounterTiers } = {})    => ipcRenderer.invoke('hunting:open', { encounterTiers }),
+    open:         ({ encounterTiers, gymLeaderId, gymTier } = {}) => ipcRenderer.invoke('hunting:open', { encounterTiers, gymLeaderId, gymTier }),
     close:        ()                           => ipcRenderer.invoke('hunting:close'),
     zoneMonsters: ({ zoneId })                 => ipcRenderer.invoke('hunting:zone-monsters', { zoneId }),
     applyRealtimeReward: ({ petId, exp, coins, drops }) =>
@@ -115,8 +115,12 @@ contextBridge.exposeInMainWorld('arcana', {
     getMapState:      ({ summonerId })                => ipcRenderer.invoke('summoner:get-map-state', { summonerId }),
     saveMapState:     ({ summonerId, mapId, tileX, tileY }) => ipcRenderer.invoke('summoner:save-map-state', { summonerId, mapId, tileX, tileY }),
   },
+  gym: {
+    getView:   ({ gymId }) => ipcRenderer.invoke('gym:get-view', { gymId }),
+    getBadges: ()          => ipcRenderer.invoke('gym:get-badges'),
+  },
   battle: {
-    start: ({ zoneId, monsterId }) => ipcRenderer.invoke('battle:start', { zoneId, monsterId }),
+    start: ({ zoneId, monsterId, gymLeaderId, tier }) => ipcRenderer.invoke('battle:start', { zoneId, monsterId, gymLeaderId, tier }),
     act:   action                => ipcRenderer.invoke('battle:act', action),
   },
   center: {
