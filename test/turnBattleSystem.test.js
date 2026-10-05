@@ -30,6 +30,10 @@ function makeSystem(petList, opts = {}) {
   }
   const sys = new TurnBattleSystem({
     Pet, save: () => {},
+    gymSystem: {
+      canChallenge: (leaderId, tier) => (opts.gymLocked ? { ok: false, error: '1단계 배지를 먼저 받아야 합니다' } : { ok: true }),
+      awardBadge: (leaderId, tier) => { calls.badge = { leaderId, tier }; return { badgeId: `${leaderId}_t${tier}`, name: '불꽃 배지 1단계', isNew: true } },
+    },
     combatSystem: {
       buildCombatant: pet => ({ effectivePet: { ...pet }, maxHp: pet.hp, passives: [], dotPerTurn: 0 }),
       grantVictory: () => { calls.victory++; return { drops: [], coins: 10 } },
@@ -163,4 +167,30 @@ test('HP·MP — 저장된 값이 없으면 가득 찬 상태로 시작', () => 
   const r = sys.start({ zoneId: zone.id, monsterId: zone.monsterIds[0] })
   assert.equal(r.state.party[0].hp, 120)
   assert.equal(r.state.party[0].mp, 30)
+})
+
+test('관장전 — 상대가 쓰러지면 다음 몬스터, 마지막까지 이기면 배지·상금', () => {
+  const { sys, pets, calls } = makeSystem([{ attack: 5000, speed: 99 }])
+  const r0 = sys.start({ gymLeaderId: 'gym1_fire', tier: 1 })
+  assert.equal(r0.state.trainer.remaining, 3)
+  assert.equal(r0.events[0].type, 'challenge')
+  const r1 = sys.act({ type: 'skill', moveId: 'basic' })
+  assert.ok(r1.events.some(e => e.type === 'send'))
+  assert.equal(r1.state.trainer.remaining, 2)
+  sys.act({ type: 'skill', moveId: 'basic' })
+  const r3 = sys.act({ type: 'skill', moveId: 'basic' })
+  assert.equal(r3.outcome.result, 'won')
+  assert.deepEqual(calls.badge, { leaderId: 'gym1_fire', tier: 1 })
+  assert.ok(r3.outcome.prize > 0)
+  assert.equal(calls.victory, 3) // 쓰러뜨린 몬스터마다 보상
+  assert.equal(pets[0].coins, r3.outcome.prize)
+})
+
+test('관장전 — 도망·포획 불가, 앞 단계 배지 없으면 시작 불가', () => {
+  assert.match(makeSystem([{}], { gymLocked: true }).sys.start({ gymLeaderId: 'gym1_fire', tier: 2 }).error, /배지/)
+  const { sys, calls } = makeSystem([{}])
+  sys.start({ gymLeaderId: 'gym1_fire', tier: 1 })
+  assert.match(sys.act({ type: 'run' }).error, /도망칠 수 없다/)
+  assert.match(sys.act({ type: 'item', itemId: 'capture_orb' }).error, /잡을 수 없다/)
+  assert.deepEqual(calls.consumed, []) // 구슬은 소모 안 됨
 })
