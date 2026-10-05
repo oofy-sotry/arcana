@@ -73,8 +73,8 @@ class CombatSystem {
     return passives
   }
 
-  // ─── 전투 초기화 ───────────────────────────────────────────────────
-  startBattle(pet, monster, mode = 'auto', synergyMult = 1.0) {
+  // ─── 전투용 스탯 (장비·소환사 스탯·패시브 반영) — 자동 전투와 턴제 전투가 같이 씀 ─────
+  buildCombatant(pet) {
     const equip    = this._getEquipmentStats(pet.id)
     const passives = this._getPassiveEffects(pet)
 
@@ -88,16 +88,23 @@ class CombatSystem {
       defense: pet.defense + equip.defense,
       speed:   pet.speed   + equip.speed + speedBonus,
     }
-    const startHp = pet.hp + equip.hp
+    const maxHp = pet.hp + equip.hp
 
     // 소환사 스탯: debuff_bonus — 투자 포인트당 패시브 감소/독/반격 효과 +1%
     const debuffBonus = this.summonerSystem?.getActiveStat('debuff_bonus') || 0
     const debuffMult   = 1 + debuffBonus * 0.01
 
     // 패시브 도트(독성 신체 등) 상태: { value, duration }
-    const monsterDot = passives
+    const dotPerTurn = passives
       .filter(p => p.type === 'dot' && p.duration >= 99)
       .reduce((sum, p) => sum + p.value, 0) * debuffMult
+
+    return { effectivePet, maxHp, passives, debuffMult, dotPerTurn }
+  }
+
+  // ─── 전투 초기화 ───────────────────────────────────────────────────
+  startBattle(pet, monster, mode = 'auto', synergyMult = 1.0) {
+    const { effectivePet, maxHp: startHp, passives, debuffMult, dotPerTurn: monsterDot } = this.buildCombatant(pet)
 
     const state = {
       pet: effectivePet,
