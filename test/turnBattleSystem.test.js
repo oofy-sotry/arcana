@@ -147,3 +147,20 @@ test('확률 — 포획은 HP가 적을수록·tier가 낮을수록, 전멸 도�
   assert.equal(TurnBattleSystem.wipeEscapeChance(1), 0.9)
   assert.equal(TurnBattleSystem.wipeEscapeChance(9), 0.2)
 })
+
+test('HP·MP — 이전 전투에서 남은 값으로 시작하고, 끝나면 저장', () => {
+  const { sys, pets } = makeSystem([{ attack: 500, speed: 99, cur_hp: 40, cur_mp: 7 }])
+  const r = sys.start({ zoneId: zone.id, monsterId: zone.monsterIds[0] })
+  assert.equal(r.state.party[0].hp, 40)
+  assert.equal(r.state.party[0].mp, 7)
+  sys.act({ type: 'skill', moveId: 'basic' })
+  assert.equal(pets[0].cur_hp, 40)
+  assert.equal(pets[0].cur_mp, 7)
+})
+
+test('HP·MP — 저장된 값이 없으면 가득 찬 상태로 시작', () => {
+  const { sys } = makeSystem([{ hp: 120, mp: 30 }])
+  const r = sys.start({ zoneId: zone.id, monsterId: zone.monsterIds[0] })
+  assert.equal(r.state.party[0].hp, 120)
+  assert.equal(r.state.party[0].mp, 30)
+})
