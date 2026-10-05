@@ -58,6 +58,12 @@ class HuntingSystem {
     return edges.length ? Math.min(...edges) : 0
   }
 
+  // 턴제 전투 진입용 — 존재하고 들어갈 수 있는 구역이면 그 구역, 아니면 null
+  canEnterZone(zoneId) {
+    const zone = ZONES.find(z => z.id === zoneId)
+    return zone && this._canAccess(zone) ? zone : null
+  }
+
   _canAccess(zone) {
     if (!zone.unlock) return true
     if (!this.factionSystem) return true
