@@ -5,7 +5,7 @@ class IpcRouter {
                 huntingSystem, explorationSystem,
                 breedingSystem, gachaSystem, partySystem, questSystem, onlineSystem,
                 equipmentSystem, factionSystem, pvpSystem, summonerSystem, collectionSystem,
-                windowManager }) {
+                faintSystem, windowManager }) {
     this.petSystem         = petSystem
     this.levelSystem       = levelSystem
     this.evolutionSystem   = evolutionSystem
@@ -23,6 +23,7 @@ class IpcRouter {
     this.pvpSystem         = pvpSystem
     this.summonerSystem    = summonerSystem
     this.collectionSystem  = collectionSystem
+    this.faintSystem       = faintSystem
     this.windowManager     = windowManager
   }
 
@@ -315,6 +316,13 @@ class IpcRouter {
     ipcMain.handle('summoner:save-map-state', (_e, { summonerId, mapId, tileX, tileY }) =>
       this.summonerSystem.saveMapState(summonerId, mapId, tileX, tileY)
     )
+
+    // ── 회복소 ────────────────────────────────────────────────────────
+    // 살아 있는 펫 전부 치료 — 기절 상태 해제, 기절 횟수 -1은 펫마다 하루 1번
+    ipcMain.handle('center:heal', () => {
+      const pets = this.petSystem.getAll()
+      return pets.map(p => ({ id: p.id, name: p.name, ...this.faintSystem.treat(p) }))
+    })
 
     // ── World Map ─────────────────────────────────────────────────────
     ipcMain.handle('world:get-map', (_e, { mapId }) => {
