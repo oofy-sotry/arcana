@@ -5,7 +5,7 @@ class IpcRouter {
                 huntingSystem, explorationSystem,
                 breedingSystem, gachaSystem, partySystem, questSystem, onlineSystem,
                 equipmentSystem, factionSystem, pvpSystem, summonerSystem, collectionSystem,
-                faintSystem, windowManager }) {
+                faintSystem, turnBattleSystem, windowManager }) {
     this.petSystem         = petSystem
     this.levelSystem       = levelSystem
     this.evolutionSystem   = evolutionSystem
@@ -24,6 +24,7 @@ class IpcRouter {
     this.summonerSystem    = summonerSystem
     this.collectionSystem  = collectionSystem
     this.faintSystem       = faintSystem
+    this.turnBattleSystem  = turnBattleSystem
     this.windowManager     = windowManager
   }
 
@@ -318,6 +319,10 @@ class IpcRouter {
     ipcMain.handle('summoner:save-map-state', (_e, { summonerId, mapId, tileX, tileY }) =>
       this.summonerSystem.saveMapState(summonerId, mapId, tileX, tileY)
     )
+
+    // ── 턴제 전투 ──────────────────────────────────────────────────────
+    ipcMain.handle('battle:start', (_e, { zoneId, monsterId }) => this.turnBattleSystem.start({ zoneId, monsterId }))
+    ipcMain.handle('battle:act',   (_e, action) => this.turnBattleSystem.act(action))
 
     // ── 회복소 ────────────────────────────────────────────────────────
     // 살아 있는 펫 전부 치료 — 기절 상태 해제, 기절 횟수 -1은 펫마다 하루 1번
