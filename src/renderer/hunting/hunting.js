@@ -148,7 +148,7 @@ async function init() {
   else if (currentZoneId) await loadZoneMonsters(currentZoneId)
 }
 
-// 조우 모드 화면 — 구역 선택·자동 사냥·탐사를 숨기고 그 몬스터 1마리만 펫 앞에 스폰(리스폰 없음)
+// 조우 모드 화면 — 구역 선택·자동 사냥·탐사를 숨기고 그 몬스터 1마리만 펫 앞에 스폰(리스폰 없음) 후 바로 전투
 async function setupEncounter() {
   for (const id of ['zone-label', 'zone-select', 'btn-mode-auto', 'btn-mode-manual', 'btn-explore']) {
     document.getElementById(id).style.display = 'none'
@@ -166,8 +166,9 @@ async function setupEncounter() {
   }
   banner.textContent = `야생의 ${monster.name}이(가) 나타났다!`
   window._monsterRenderer.clearAll()
-  await window._monsterRenderer.spawnMonster(monster, { x: app.screen.width / 2 + 64, y: app.screen.height / 2 })
-  if (!currentPet) document.getElementById('btn-attack').style.display = 'none'
+  const sprite = await window._monsterRenderer.spawnMonster(monster, { x: app.screen.width / 2 + 64, y: app.screen.height / 2 })
+  if (!currentPet) { document.getElementById('btn-attack').style.display = 'none'; return }
+  engage(monster, sprite) // 골드버전처럼 만나자마자 바로 전투
 }
 
 // 조우 전투가 끝나면 결과를 잠깐 보여주고 자동 복귀(도망은 즉시), 에러면 복귀 버튼(도망/마을로)만 남김
