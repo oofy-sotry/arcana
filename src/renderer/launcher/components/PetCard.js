@@ -64,6 +64,7 @@ class PetCard {
         </div>
         <div style="font-size:12px; color:#aaa">Lv.${pet.level || 1} · ${stage}${pet.faint_count > 0 ? ` · <span style="color:#f39c12">기절 ${pet.faint_count}/3</span>` : ''}</div>
         <div style="margin-top:6px; display:flex; gap:8px; font-size:11px; color:#888">
+          <span style="color:${(pet.cur_hp ?? pet.hp) < pet.hp ? '#f39c12' : '#2ecc71'}">HP ${pet.cur_hp ?? pet.hp}/${pet.hp}</span>
           <span>배고픔 ${Math.round(cond.hunger ?? 100)}</span>
           <span>행복 ${Math.round(cond.happiness ?? 100)}</span>
           <span>청결 ${Math.round(cond.cleanliness ?? 100)}</span>
