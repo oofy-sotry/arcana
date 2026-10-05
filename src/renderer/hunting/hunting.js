@@ -6,6 +6,12 @@ let mode          = 'manual' // 'auto' | 'manual'
 let energy        = 100
 let inBattle      = false // 턴 연출 중 — 이동·충돌·버튼 잠금
 
+// 체육관 관장 대화로 열렸으면 ?gym=&tier= — 관장전을 바로 시작하고 끝나면 복귀
+const gymBattle = (() => {
+  const q = new URLSearchParams(location.search)
+  return q.get('gym') ? { gymLeaderId: q.get('gym'), tier: Number(q.get('tier')) } : null
+})()
+
 // 월드 풀밭 야생 조우로 열렸으면 ?zone=&monster= — 그 1마리와 싸우고 자동 복귀
 const encounter = (() => {
   const q = new URLSearchParams(location.search)
@@ -143,8 +149,9 @@ async function init() {
   setupKeyboard()
   app.ticker.add(onTick)
 
-  // 초기 구역 몬스터 스폰 (조우 모드는 그 1마리만)
-  if (encounter) await setupEncounter()
+  // 초기 구역 몬스터 스폰 (조우 모드는 그 1마리만, 관장전은 바로 전투)
+  if (gymBattle) await runGymBattle()
+  else if (encounter) await setupEncounter()
   else if (currentZoneId) await loadZoneMonsters(currentZoneId)
 }
 
@@ -169,6 +176,21 @@ async function setupEncounter() {
   const sprite = await window._monsterRenderer.spawnMonster(monster, { x: app.screen.width / 2 + 64, y: app.screen.height / 2 })
   if (!currentPet) { document.getElementById('btn-attack').style.display = 'none'; return }
   engage(monster, sprite) // 골드버전처럼 만나자마자 바로 전투
+}
+
+// 관장전 — 필드 조작을 숨기고 바로 전투, 끝나면 체육관(전멸이면 회복소)으로
+async function runGymBattle() {
+  for (const id of ['zone-label', 'zone-select', 'btn-mode-auto', 'btn-mode-manual', 'btn-explore', 'btn-attack']) {
+    document.getElementById(id).style.display = 'none'
+  }
+  const banner = document.getElementById('encounter-banner')
+  banner.style.display = 'inline'
+  banner.textContent   = '🏟 관장전'
+  setBattleLock(true)
+  const res = await window._battleScreen.run(gymBattle)
+  setBattleLock(false)
+  if (res.error) { addLog(`⚠ ${res.error}`); return } // 복귀는 도망/마을로 버튼
+  returnToWorld()
 }
 
 // 조우 전투가 끝나면 결과를 잠깐 보여주고 자동 복귀(도망은 즉시), 에러면 복귀 버튼(도망/마을로)만 남김
