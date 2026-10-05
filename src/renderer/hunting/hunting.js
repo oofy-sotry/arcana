@@ -268,7 +268,7 @@ async function fightMonster(monster, sprite) {
     const { outcome } = res
     const label = { won: '승리!', lost: '전멸…', ran: '도망쳤다', captured: '포획 성공!' }[outcome.result]
     addLog(`⚔ ${monster.name}: ${label}`)
-    if (outcome.drops?.length) addLog(`  드롭: ${outcome.drops.map(d => d.itemId).join(', ')}`)
+    if (outcome.drops?.length) addLog(`  드롭: ${outcome.drops.map(d => d.name ?? d.itemId).join(', ')}`)
     if (outcome.result === 'won' || outcome.result === 'captured') {
       window._monsterRenderer.removeMonster(sprite, { respawn: !encounter })
     }
@@ -343,7 +343,7 @@ function showHiddenStageOverlay(result) {
   }
 
   if (result.drops?.length) {
-    addLog(`[히든] 드롭: ${result.drops.map(d => d.itemId).join(', ')}`)
+    addLog(`[히든] 드롭: ${result.drops.map(d => d.name ?? d.itemId).join(', ')}`)
   }
   addLog(`[히든] 에너지: ${Math.round(result.finalEnergy)}`)
 
