@@ -122,6 +122,7 @@ async function init() {
   })
 
   window._combatUI = new CombatUI()
+  window._battleScreen = new BattleScreen(document.getElementById('battle-overlay'))
 
   if (pets.length > 0) {
     currentPet = pets[0]
@@ -169,17 +170,13 @@ async function setupEncounter() {
   if (!currentPet) document.getElementById('btn-attack').style.display = 'none'
 }
 
-// 조우 전투가 끝나면 결과를 잠깐 보여주고 자동 복귀, 에러면 복귀 버튼(도망/마을로)만 남김
+// 조우 전투가 끝나면 결과를 잠깐 보여주고 자동 복귀(도망은 즉시), 에러면 복귀 버튼(도망/마을로)만 남김
 function finishEncounter(result) {
   if (result.error) {
     document.getElementById('btn-attack').style.display = 'none'
     return
   }
-  if (result.hiddenStage) {
-    const overlay = document.getElementById('hidden-stage-overlay')
-    document.getElementById('hs-close').onclick = () => { overlay.classList.remove('show'); returnToWorld() }
-    return
-  }
+  if (result.result === 'ran') { returnToWorld(); return }
   setBattleLock(true) // 복귀 대기 중 추가 행동 막기
   addLog('잠시 후 원래 자리로 돌아갑니다...')
   setTimeout(returnToWorld, 1500)
@@ -218,10 +215,12 @@ async function onManualAttack() {
   await engage(target.data, target.sprite)
 }
 
-// 전투 후 조우 모드면 복귀 처리
+// 전투 후 처리 — 전멸이면 회복소로(서버가 위치를 옮겨 둠), 조우 모드면 복귀
 async function engage(monster, sprite) {
   const result = await fightMonster(monster, sprite)
-  if (encounter && result) finishEncounter(result)
+  if (!result) return
+  if (result.result === 'lost') { returnToWorld(); return }
+  if (encounter) finishEncounter(result)
 }
 
 function nearestMonster() {
@@ -235,41 +234,34 @@ function nearestMonster() {
   return best
 }
 
-// 화면의 그 몬스터와 전투 → 턴 재생 → 이기면 제거(리스폰), 지면 펫을 중앙으로
+// 화면의 그 몬스터와 턴제 전투 → 이기거나 잡으면 그 몬스터 제거
 async function fightMonster(monster, sprite) {
   if (inBattle || !currentPet) return null
   setBattleLock(true)
   try {
-    const result = await window.arcana.hunting.manualBattle({
-      petId: currentPet.id, zoneId: currentZoneId, monsterId: monster.id,
-    })
-    if (result?.error) { addLog(`⚠ ${result.error}`); return result }
+    const res = await window._battleScreen.run({ zoneId: currentZoneId, monsterId: monster.id })
+    if (res.error) { addLog(`⚠ ${res.error}`); return res }
 
-    if (result.hiddenStage) {
-      showHiddenStageOverlay(result)
-      updateEnergyDisplay(result.finalEnergy)
-      return result
+    const { outcome } = res
+    const label = { won: '승리!', lost: '전멸…', ran: '도망쳤다', captured: '포획 성공!' }[outcome.result]
+    addLog(`⚔ ${monster.name}: ${label}`)
+    if (outcome.drops?.length) addLog(`  드롭: ${outcome.drops.map(d => d.itemId).join(', ')}`)
+    if (outcome.result === 'won' || outcome.result === 'captured') {
+      window._monsterRenderer.removeMonster(sprite, { respawn: !encounter })
     }
-
-    addLog(`⚔ ${monster.name}와(과) 전투 시작!`)
-    await window._combatUI.playBattle(result, { onTurn: entry => playTurnEffect(entry, sprite) })
-
-    const outcome = result.result === 'won' ? '승리!' : result.result === 'lost' ? '패배...' : '승부가 나지 않았다'
-    addLog(`⚔ ${monster.name}: ${outcome} | 잔여 에너지 ${Math.round(result.finalEnergy)}`)
-    if (result.drops?.length) addLog(`  드롭: ${result.drops.map(d => d.itemId).join(', ')}`)
-    if (result.faint) addLog(faintMessage(result.faint))
-    updateEnergyDisplay(result.finalEnergy)
-
-    if (result.result === 'won')  window._monsterRenderer.removeMonster(sprite, { respawn: !encounter })
-    if (result.result === 'lost' && petSprite) {
-      petSprite.x = app.screen.width  / 2
-      petSprite.y = app.screen.height / 2
-    }
-    return result
+    await refreshPet()
+    return outcome
   } finally {
     knockBack(sprite)
     setBattleLock(false)
   }
+}
+
+// 전투 뒤 에너지 등 최신 펫 정보로 갱신
+async function refreshPet() {
+  const pets = await window.arcana.pet.getAll()
+  currentPet = pets.find(p => p.id === currentPet?.id) || pets[0] || null
+  updateEnergyDisplay()
 }
 
 // 몬스터가 아직 살아 있으면 펫을 떼어놓음 — 겹친 채로 끝나 곧바로 다시 충돌 전투가 나는 것 방지
@@ -283,18 +275,6 @@ function knockBack(monsterSprite) {
   const uy = dist > 0 ? dy / dist : 0
   petSprite.x = Math.max(16, Math.min(app.screen.width  - 16, monsterSprite.x + ux * 48))
   petSprite.y = Math.max(16, Math.min(app.screen.height - 16, monsterSprite.y + uy * 48))
-}
-
-// 한 턴 연출 — 맞은 쪽 번쩍임 + 데미지 숫자
-function playTurnEffect(entry, monsterSprite) {
-  const r = window._monsterRenderer
-  if (!r) return
-  const target = entry.actor === 'pet' ? monsterSprite : petSprite
-  if (!target || target.destroyed) return
-  if (entry.dodged) { r.floatText(target.x, target.y - 24, 'MISS', 0x7fdbff); return }
-  r.flash(target)
-  const color = entry.actor === 'pet' ? (entry.isCrit ? 0xffd166 : 0xffffff) : 0xff6b6b
-  r.floatText(target.x, target.y - 24, `-${entry.damage}${entry.isCrit ? '!' : ''}`, color)
 }
 
 // 패배 후 기절/죽음 안내 (FaintSystem.recordLoss 결과)
