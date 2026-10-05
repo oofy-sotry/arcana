@@ -77,6 +77,28 @@
       background: #e94560; border: none; color: #fff; border-radius: 6px;
       cursor: pointer; font-size: 14px;
     }
+    /* 턴제 전투 화면 (battleScreen.js) */
+    #battle-overlay { display: none; position: fixed; inset: 0; z-index: 9000; background: #0d1326; flex-direction: column; }
+    #battle-overlay.show { display: flex; }
+    .bt-field { flex: 1; position: relative; background: linear-gradient(#1b2a4a, #22385e 60%, #2c4a3a 60%, #24402f); }
+    .bt-box { position: absolute; background: rgba(10,14,30,0.9); border: 2px solid #3a4a70; border-radius: 8px; padding: 8px 12px; min-width: 220px; }
+    .bt-enemy-box { top: 18px; left: 18px; }
+    .bt-pet-box { bottom: 18px; right: 18px; }
+    .bt-name { font-size: 14px; font-weight: bold; margin-bottom: 6px; }
+    .bt-hp-wrap { background: #0a0a1a; border-radius: 4px; height: 10px; overflow: hidden; }
+    .bt-hp { height: 100%; width: 100%; background: #2ecc71; transition: width 0.3s, background 0.3s; }
+    .bt-nums { font-size: 11px; color: #aaa; margin-top: 5px; }
+    .bt-sprite { position: absolute; width: 128px; height: 128px; display: flex; align-items: center; justify-content: center; }
+    .bt-enemy-sprite { top: 40px; right: 18%; }
+    .bt-pet-sprite { bottom: 30px; left: 16%; }
+    .bt-px { width: 128px; height: 128px; image-rendering: pixelated; object-fit: contain; }
+    .bt-hit { animation: bt-hit 0.35s; }
+    @keyframes bt-hit { 0%,100% { transform: translateX(0); filter: none; } 25% { transform: translateX(-6px); filter: brightness(2) sepia(1) hue-rotate(-50deg); } 75% { transform: translateX(6px); } }
+    .bt-bottom { flex-shrink: 0; display: flex; gap: 10px; padding: 12px; background: #16213e; border-top: 2px solid #3a4a70; min-height: 120px; }
+    .bt-message { flex: 1; font-size: 15px; line-height: 1.6; color: #eee; padding: 6px 10px; background: #0a0f22; border-radius: 6px; }
+    .bt-menu { width: 300px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-content: start; }
+    .bt-menu button { padding: 8px; border: 1px solid #3a4a70; background: #0f3460; color: #eee; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .bt-menu button:hover:not(:disabled) { background: #e94560; }
   </style>
 </head>
 <body>
@@ -85,8 +107,9 @@
     <span id="encounter-banner"></span>
     <label id="zone-label" for="zone-select">구역:</label>
     <select id="zone-select"></select>
-    <button id="btn-mode-auto">자동 사냥</button>
-    <button id="btn-mode-manual">수동 사냥</button>
+    <!-- 자동 사냥은 턴제 전투 안의 "자동" 버튼으로 바뀜 -->
+    <button id="btn-mode-auto" style="display:none">자동 사냥</button>
+    <button id="btn-mode-manual" style="display:none">수동 사냥</button>
     <span id="energy-display">에너지: --/100</span>
   </div>
 
@@ -109,6 +132,9 @@
     <div id="combat-log"></div>
   </div>
 
+  <!-- 턴제 전투 화면 -->
+  <div id="battle-overlay"></div>
+
   <!-- 히든 스테이지 연출 오버레이 -->
   <div id="hidden-stage-overlay">
     <div id="hs-title">??? HIDDEN STAGE</div>
@@ -122,6 +148,7 @@
   <script src="../shared/PixelSprite.js"></script>
   <script src="monsterRenderer.js"></script>
   <script src="combatUI.js"></script>
+  <script src="battleScreen.js"></script>
   <script src="hunting.js"></script>
 </body>
 </html>
