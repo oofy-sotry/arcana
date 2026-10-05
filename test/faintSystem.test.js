@@ -52,13 +52,13 @@ test('recordLoss — 생명의 부적은 이번 기절을 횟수에 안 넣고 �
   assert.equal(flags.has('death_shield_1'), false)
 })
 
-test('recordLoss — 부활석은 죽을 상황에서 기절 횟수 0으로 살려냄', () => {
-  const { fs, pet } = makeSystem({ faint_count: 3 })
-  flags.set('auto_revive_1', '1')
-  const r = fs.recordLoss(pet)
-  assert.equal(r.revived, true)
+test('revive — 부활석은 죽은 펫을 기절 횟수 0, HP·MP 가득 찬 상태로 되살림', () => {
+  const { fs, pet } = makeSystem({ is_alive: 0, faint_count: 3, cur_hp: 0, cur_mp: 2 })
+  assert.deepEqual(fs.revive(1), { ok: true, name: undefined })
   assert.equal(pet.is_alive, 1)
   assert.equal(pet.faint_count, 0)
+  assert.equal(pet.cur_hp, null)
+  assert.equal(fs.revive(1).ok, false) // 살아 있으면 거부
 })
 
 test('applyDailyDecay — 하루당 -1, 0 미만 불가, 같은 날은 그대로', () => {
