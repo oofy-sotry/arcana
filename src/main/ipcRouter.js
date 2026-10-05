@@ -5,7 +5,7 @@ class IpcRouter {
                 huntingSystem, explorationSystem,
                 breedingSystem, gachaSystem, partySystem, questSystem, onlineSystem,
                 equipmentSystem, factionSystem, pvpSystem, summonerSystem, collectionSystem,
-                faintSystem, turnBattleSystem, windowManager }) {
+                faintSystem, turnBattleSystem, gymSystem, windowManager }) {
     this.petSystem         = petSystem
     this.levelSystem       = levelSystem
     this.evolutionSystem   = evolutionSystem
@@ -25,6 +25,7 @@ class IpcRouter {
     this.collectionSystem  = collectionSystem
     this.faintSystem       = faintSystem
     this.turnBattleSystem  = turnBattleSystem
+    this.gymSystem         = gymSystem
     this.windowManager     = windowManager
   }
 
@@ -139,10 +140,11 @@ class IpcRouter {
       if (!result.error) this.questSystem?.recordActivity('explore', 1)
       return result
     })
-    // encounterTiers가 오면(월드 풀밭 조우) 몬스터를 정해 조우 모드로, 아니면 일반 사냥터로
-    ipcMain.handle('hunting:open', (e, { encounterTiers } = {}) => {
+    // encounterTiers가 오면(월드 풀밭 조우) 몬스터를 정해 조우 모드로, gymLeaderId면 관장전, 아니면 일반 사냥터로
+    ipcMain.handle('hunting:open', (e, { encounterTiers, gymLeaderId, gymTier } = {}) => {
       const enc   = encounterTiers ? this.huntingSystem.rollWildEncounter(encounterTiers) : null
-      const query = enc ? { zone: enc.zoneId, monster: enc.monsterId } : {}
+      const query = gymLeaderId ? { gym: gymLeaderId, tier: String(gymTier) }
+        : enc ? { zone: enc.zoneId, monster: enc.monsterId } : {}
       this.windowManager.showHuntingIn(BrowserWindow.fromWebContents(e.sender), query)
     })
     ipcMain.handle('hunting:close', e => { this.windowManager.showLauncherIn(BrowserWindow.fromWebContents(e.sender)) })
@@ -330,8 +332,12 @@ class IpcRouter {
       return this.faintSystem.revive(targetId)
     })
 
+    // ── 체육관 ────────────────────────────────────────────────────────
+    ipcMain.handle('gym:get-view', (_e, { gymId }) => this.gymSystem.getGymView(gymId))
+    ipcMain.handle('gym:get-badges', () => this.gymSystem.getBadges())
+
     // ── 턴제 전투 ──────────────────────────────────────────────────────
-    ipcMain.handle('battle:start', (_e, { zoneId, monsterId }) => this.turnBattleSystem.start({ zoneId, monsterId }))
+    ipcMain.handle('battle:start', (_e, { zoneId, monsterId, gymLeaderId, tier }) => this.turnBattleSystem.start({ zoneId, monsterId, gymLeaderId, tier }))
     ipcMain.handle('battle:act',   (_e, action) => this.turnBattleSystem.act(action))
 
     // ── 회복소 ────────────────────────────────────────────────────────
