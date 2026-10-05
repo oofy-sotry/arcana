@@ -214,44 +214,49 @@ class CombatSystem {
     return 'ongoing'
   }
 
+  // ─── 승리 보상 (경험치·코인·드롭) — 자동 전투와 턴제 전투가 같이 씀 ─────────────
+  grantVictory(pet, monster, { dropRateBonus = 0, huntLogId = null } = {}) {
+    const db    = require('../../db/database')
+    const petId = pet.id
+    const drops = []
+    this.levelSystem.addExperience(pet, monster.exp)
+    const coinAmt = monster.coins.min + Math.floor(Math.random() * (monster.coins.max - monster.coins.min + 1))
+    this.Pet.updatePet(petId, { coins: (pet.coins || 0) + coinAmt })
+
+    const table = getDropTable(monster.id)
+    for (const entry of table) {
+      const roll      = Math.random()
+      const effective = Math.min(entry.rate + dropRateBonus, 1.0)
+      if (roll < effective) {
+        this.itemSystem.addItem(petId, entry.itemId, entry.quantity)
+        drops.push({ itemId: entry.itemId, quantity: entry.quantity })
+      }
+    }
+
+    const now = Date.now()
+    db.run(
+      `INSERT INTO drop_log (pet_id, hunt_log_id, coins, dropped_at) VALUES (?,?,?,?)`,
+      [petId, huntLogId, coinAmt, now]
+    )
+    for (const d of drops) {
+      db.run(
+        `INSERT INTO drop_log (pet_id, hunt_log_id, item_id, quantity, dropped_at) VALUES (?,?,?,?,?)`,
+        [petId, huntLogId, d.itemId, d.quantity, now]
+      )
+    }
+    this.save()
+    return { drops, coins: coinAmt }
+  }
+
   // ─── 전투 결산 ─────────────────────────────────────────────────────
   endBattle(petId, { dropRateBonus = 0, huntLogId = null } = {}) {
-    const db = require('../../db/database')
     const state = this._battles.get(petId)
     if (!state) return null
     const { pet, monster, log } = state
     const result = this.checkBattleEnd(petId)
     const drops = []
 
-    if (result === 'won') {
-      this.levelSystem.addExperience(pet, monster.exp)
-      const coinAmt = monster.coins.min + Math.floor(Math.random() * (monster.coins.max - monster.coins.min + 1))
-      this.Pet.updatePet(petId, { coins: (pet.coins || 0) + coinAmt })
-
-      const table = getDropTable(monster.id)
-      for (const entry of table) {
-        const roll      = Math.random()
-        const effective = Math.min(entry.rate + dropRateBonus, 1.0)
-        if (roll < effective) {
-          this.itemSystem.addItem(petId, entry.itemId, entry.quantity)
-          drops.push({ itemId: entry.itemId, quantity: entry.quantity })
-        }
-      }
-
-      const now = Date.now()
-      db.run(
-        `INSERT INTO drop_log (pet_id, hunt_log_id, coins, dropped_at) VALUES (?,?,?,?)`,
-        [petId, huntLogId, coinAmt, now]
-      )
-      for (const d of drops) {
-        db.run(
-          `INSERT INTO drop_log (pet_id, hunt_log_id, item_id, quantity, dropped_at) VALUES (?,?,?,?,?)`,
-          [petId, huntLogId, d.itemId, d.quantity, now]
-        )
-      }
-      this.save()
-
-    }
+    if (result === 'won') drops.push(...this.grantVictory(pet, monster, { dropRateBonus, huntLogId }).drops)
     // 패배 시 pets.hp는 건드리지 않는다 — 현재 HP가 아니라 최대 HP 스탯(전투마다 startBattle이
     // pet.hp로 새로 시작)이라 덮으면 스탯이 영구 손상됨. 대신 기절 처리(3번 넘으면 죽음)
     const faint = result === 'lost' ? this.faintSystem?.recordLoss(petId) ?? null : null
