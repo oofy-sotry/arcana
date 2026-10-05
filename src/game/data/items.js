@@ -43,6 +43,8 @@ const ITEMS = {
     battleEffect: { type: 'def_boost', value: 0.30, duration: 3 } },    // 방어력 +30% (3턴)
   speed_serum:   { name: '속도 세럼',     type: 'consumable', effect: 'battle_spd',     maxStack: 10,  tradeable: true, shopPrice: 60,
     battleEffect: { type: 'spd_boost', value: 0.20, duration: 3 } },    // 속도 +20% (3턴)
+  capture_orb:   { name: '포획 구슬',     type: 'consumable', effect: 'battle_capture', maxStack: 99, tradeable: true, shopPrice: 50,
+    battleEffect: { type: 'capture', value: 1.0 } },                    // 야생 몬스터 포획 (턴제 전투 가방에서 사용)
 
   // ══════════════════════════════════════════════════════════════
   // 장비 강화 재료 (EquipmentSystem이 처리)
