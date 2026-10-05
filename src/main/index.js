@@ -32,6 +32,7 @@ app.whenReady().then(async () => {
     pvpSystem:         gameWorld.pvpSystem,
     summonerSystem:    gameWorld.summonerSystem,
     collectionSystem:  gameWorld.collectionSystem,
+    faintSystem:       gameWorld.faintSystem,
     windowManager,
   })
   ipcRouter.register()
