@@ -12,10 +12,11 @@ class BattleScreen {
   }
 
   // 전투 하나를 끝까지 진행 — { outcome } 또는 { error }로 끝남
-  run({ zoneId, monsterId }) {
+  // params: 야생 { zoneId, monsterId } / 관장전 { gymLeaderId, tier }
+  run(params) {
     return new Promise(async resolve => {
       this._resolve = resolve
-      const res = await window.arcana.battle.start({ zoneId, monsterId })
+      const res = await window.arcana.battle.start(params)
       if (res?.error) { resolve({ error: res.error }); return }
       this._build()
       this.root.classList.add('show')
@@ -55,7 +56,8 @@ class BattleScreen {
     const m   = state.monster
     const pet = state.party[state.active]
     this.shown = { mon: m.hp, pet: pet.hp }
-    this.$('bt-mon-name').textContent = `${m.isBoss ? '👑 ' : ''}${m.name}  T${m.tier}`
+    const left = state.trainer ? `  ${'●'.repeat(state.trainer.remaining)}` : ''
+    this.$('bt-mon-name').textContent = `${m.isBoss ? '👑 ' : ''}${m.name}  T${m.tier}${left}`
     this.$('bt-pet-name').textContent = `${pet.name}  Lv.${pet.level}`
     if (prevMon !== m.id) this._sprite('bt-mon-sprite', { seed: m.id, attribute: m.attribute, kind: 'monster', isBoss: m.isBoss })
     if (prevPet !== pet.id) this._petSprite(pet)
@@ -98,6 +100,16 @@ class BattleScreen {
     box.appendChild(img)
   }
 
+  // 관장이 다음 몬스터를 내보냄 — 이벤트 재생 중엔 state가 아직 이전 몬스터라 이벤트 정보로 상대 칸을 바꿈
+  _showNext(e) {
+    if (this.state.monster.id === e.id && this.shown.mon > 0) return // 첫 몬스터는 이미 표시됨
+    this.state.monster = { ...this.state.monster, id: e.id, name: e.name, attribute: e.attribute, tier: e.tier, isBoss: e.isBoss, maxHp: e.maxHp }
+    this.shown.mon = e.maxHp
+    this.$('bt-mon-name').textContent = `${e.isBoss ? '👑 ' : ''}${e.name}  T${e.tier}`
+    this._sprite('bt-mon-sprite', { seed: e.id, attribute: e.attribute, kind: 'monster', isBoss: e.isBoss })
+    this._bars()
+  }
+
   _say(text) {
     this.$('bt-message').textContent = text
     return new Promise(r => setTimeout(r, this.auto ? AUTO_DELAY_BT : MSG_DELAY_BT))
@@ -116,6 +128,9 @@ class BattleScreen {
     for (const e of events) {
       switch (e.type) {
         case 'appear':  await this._say(`야생의 ${e.name}이(가) 나타났다!`); break
+        case 'challenge': await this._say(`${e.trainer}이(가) 승부를 걸어왔다!`); break
+        case 'send':    await this._say(`${e.trainer}은(는) ${e.name}을(를) 내보냈다!`); this._showNext(e); break
+        case 'defeat':  await this._say(`${e.name}을(를) 쓰러뜨렸다! ${e.winner}은(는) ${e.exp} 경험치를 얻었다!`); break
         case 'switch':  await this._say(`가랏, ${e.name}!`); break
         case 'attack':
           if (e.dodged) { await this._say(`${pet().name}은(는) 공격을 피했다!`); break }
@@ -154,6 +169,10 @@ class BattleScreen {
     if (outcome.result === 'won') {
       await this._say(`${outcome.winner}은(는) ${outcome.exp} 경험치와 ${outcome.coins} 코인을 얻었다!`)
       if (outcome.drops?.length) await this._say(`${outcome.drops.map(d => d.itemId).join(', ')}을(를) 주웠다!`)
+    }
+    if (outcome.badge) {
+      await this._say(`관장을 이겼다! 상금 ${outcome.prize} 코인을 받았다!`)
+      await this._say(outcome.badge.isNew ? `🏅 ${outcome.badge.name}을(를) 받았다!` : `${outcome.badge.name}은(는) 이미 가지고 있다.`)
     }
     if (outcome.result === 'captured') await this._say(`${outcome.captured.name}이(가) 동료가 되었다!`)
     if (outcome.result === 'lost') {
