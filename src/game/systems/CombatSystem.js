@@ -3,13 +3,14 @@ const { getDropTable } = require('../data/monsters')
 const SKILLS           = require('../data/skills')
 
 class CombatSystem {
-  constructor({ Pet, save, levelSystem, itemSystem, equipmentSystem, summonerSystem }) {
+  constructor({ Pet, save, levelSystem, itemSystem, equipmentSystem, summonerSystem, faintSystem }) {
     this.Pet             = Pet
     this.save            = save
     this.levelSystem     = levelSystem
     this.itemSystem      = itemSystem
     this.equipmentSystem = equipmentSystem || null
     this.summonerSystem  = summonerSystem || null
+    this.faintSystem     = faintSystem || null
     this._battles        = new Map()
   }
 
@@ -244,13 +245,13 @@ class CombatSystem {
       this.save()
 
     }
-    // 패배 시 펫 상태는 건드리지 않는다 — pets.hp는 현재 HP가 아니라 최대 HP 스탯(전투마다
-    // startBattle이 pet.hp로 새로 시작)이라 hp:1로 덮으면 스탯이 영구 손상되고, 자동 사냥
-    // 패배의 영구 사망(is_alive=0)은 저레벨 속성 불리 구역에서 첫 사냥에 펫을 잃게 만들었음
+    // 패배 시 pets.hp는 건드리지 않는다 — 현재 HP가 아니라 최대 HP 스탯(전투마다 startBattle이
+    // pet.hp로 새로 시작)이라 덮으면 스탯이 영구 손상됨. 대신 기절 처리(3번 넘으면 죽음)
+    const faint = result === 'lost' ? this.faintSystem?.recordLoss(petId) ?? null : null
 
     this._battles.delete(petId)
     // 최대 HP는 렌더러가 턴 로그를 재생하며 HP 바를 깎는 연출에 사용
-    return { result, drops, log, petMaxHp: state.petMaxHp, monsterMaxHp: monster.hp }
+    return { result, drops, log, faint, petMaxHp: state.petMaxHp, monsterMaxHp: monster.hp }
   }
 
   // ─── 자동 전투 시뮬레이션 ─────────────────────────────────────────
