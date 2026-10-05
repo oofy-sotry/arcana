@@ -36,6 +36,7 @@ class WorldScreen {
         <div>
           <span style="color:#e94560; font-weight:bold; font-size:13px">⚡ ${this.summoner.name}</span>
           <span style="color:#555; font-size:11px; margin-left:6px">Lv.${this.summoner.level ?? 1}</span>
+          <span id="hud-badges" style="color:#ffd54f; font-size:11px; margin-left:8px"></span>
         </div>
         <button id="btn-menu" style="padding:4px 12px; background:#16213e; border:1px solid #0f3460;
           color:#aaa; border-radius:4px; cursor:pointer; font-size:11px">☰ 메뉴</button>
@@ -110,6 +111,11 @@ class WorldScreen {
       })
     })
     el.querySelector('#btn-close-dialog').addEventListener('click', () => this._closeDialog())
+
+    // 배지 개수 (체육관)
+    window.arcana.gym.getBadges().then(badges => {
+      if (badges.length) el.querySelector('#hud-badges').textContent = `🏅 ${badges.length}`
+    })
 
     // 엔진은 DOM이 붙은 뒤 초기화
     setTimeout(() => this._initEngine(el), 0)
