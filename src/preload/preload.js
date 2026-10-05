@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('arcana', {
     use:          ({ petId, itemId }) => ipcRenderer.invoke('item:use', { petId, itemId }),
     getShop:      ()                => ipcRenderer.invoke('item:get-shop'),
     buy:          ({ petId, itemId, quantity }) => ipcRenderer.invoke('item:buy', { petId, itemId, quantity }),
+    getSellList:  ({ petId })      => ipcRenderer.invoke('item:get-sell-list', { petId }),
+    sell:         ({ petId, itemId, quantity }) => ipcRenderer.invoke('item:sell', { petId, itemId, quantity }),
   },
   overlay: {
     toggleMouse: (ignore)          => ipcRenderer.send('overlay:toggle-mouse', ignore),
