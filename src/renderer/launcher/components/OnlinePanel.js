@@ -266,7 +266,7 @@ class OnlinePanel {
       statusEl.querySelector('#rt-cancel').addEventListener('click', () => { socket.leaveQueue(); setIdle() })
     }
     const setBattling = () => {
-      statusEl.innerHTML = `<span style="color:#4ae84a; font-size:12px">⚔️ ${oppUsername}와(과) 대전 중...</span>`
+      statusEl.innerHTML = `<span style="color:#4ae84a; font-size:12px">⚔️ ${Josa.attach(oppUsername, '와')} 대전 중...</span>`
     }
     const setResult = (text, color) => {
       statusEl.innerHTML = `<span style="color:${color}; font-size:13px; font-weight:bold">${text}</span>
