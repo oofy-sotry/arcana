@@ -160,8 +160,7 @@ class BattleScreen {
       await this._say('눈앞이 캄캄해졌다…')
       for (const w of outcome.wipe) {
         if (w.escaped)          await this._say(`${w.name}은(는) 무사히 도망쳤다!`)
-        else if (w.faint?.died) await this._say(`💀 ${w.name}은(는) 다시 일어나지 못했다…`)
-        else if (w.faint?.revived)  await this._say(`✨ 부활석의 힘으로 ${w.name}이(가) 버텨냈다!`)
+        else if (w.faint?.died) await this._say(`💀 ${w.name}은(는) 다시 일어나지 못했다… (부활석으로 되살릴 수 있다)`)
         else if (w.faint?.shielded) await this._say(`🛡 생명의 부적이 ${w.name}을(를) 지켜줬다!`)
         else                    await this._say(`😵 ${w.name}은(는) 기절했다… (기절 ${w.faint?.faintCount}/3)`)
       }
