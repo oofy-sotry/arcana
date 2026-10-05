@@ -168,6 +168,20 @@ class WorldScreen {
       })
     }
 
+    if (npc.service === 'heal') {
+      const btn = document.createElement('button')
+      btn.style.cssText = `padding:8px 18px; background:#f48fb1; border:none;
+        color:#1a1a2e; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold;`
+      btn.textContent = '🏥 치료받기'
+      btn.addEventListener('click', async () => {
+        btn.disabled = true
+        const results = await window.arcana.center.heal()
+        this._el.querySelector('#npc-text').textContent = this._healSummary(results)
+        actions.innerHTML = ''
+      })
+      actions.appendChild(btn)
+    }
+
     if (npc.isPvpNpc) {
       const btn = document.createElement('button')
       btn.style.cssText = `padding:8px 18px; background:#0f3460; border:1px solid #e94560;
@@ -181,6 +195,20 @@ class WorldScreen {
     }
 
     dialog.style.display = 'block'
+  }
+
+  // 회복소 치료 결과 안내 — 기절에서 깬 펫, 오늘 줄어든 기절 횟수
+  _healSummary(results) {
+    if (!results?.length) return '치료할 에레멘탈이 없네요.'
+    const notes = results.flatMap(r => {
+      const parts = []
+      if (r.revived) parts.push(`${r.name} 기절에서 회복`)
+      if (r.reduced) parts.push(`${r.name} 기절 횟수 ${r.faintCount}/3`)
+      return parts
+    })
+    const tail = results.some(r => !r.reduced && r.faintCount > 0)
+      ? ' (기절 횟수는 펫마다 하루 1번만 줄어요)' : ''
+    return `모두 건강해졌어요! ${notes.join(' · ')}${tail}`.trim()
   }
 
   _closeDialog() {
