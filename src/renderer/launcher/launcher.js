@@ -181,8 +181,10 @@ async function onSelectPet(petId) {
   )
   document.getElementById('tab-items').appendChild(
     new ItemPanel(pet, inventory, shopCatalog).render(
-      async itemId => {
-        await window.arcana.item.use({ petId, itemId })
+      async (itemId, targetId) => {
+        // 부활석은 대상(죽은 펫)을 골라 되살림, 나머지는 이 펫에게 사용
+        if (targetId) await window.arcana.item.revive({ petId, targetId })
+        else await window.arcana.item.use({ petId, itemId })
         allPets = await window.arcana.pet.getAll()
         onSelectPet(petId)
       },
