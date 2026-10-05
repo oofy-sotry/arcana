@@ -168,7 +168,7 @@ class BattleScreen {
   async _end(outcome) {
     if (outcome.result === 'won') {
       await this._say(`${outcome.winner}은(는) ${outcome.exp} 경험치와 ${outcome.coins} 코인을 얻었다!`)
-      if (outcome.drops?.length) await this._say(`${outcome.drops.map(d => d.itemId).join(', ')}을(를) 주웠다!`)
+      if (outcome.drops?.length) await this._say(`${outcome.drops.map(d => d.name ?? d.itemId).join(', ')}을(를) 주웠다!`)
     }
     if (outcome.badge) {
       await this._say(`관장을 이겼다! 상금 ${outcome.prize} 코인을 받았다!`)
