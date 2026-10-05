@@ -102,7 +102,7 @@ class ItemSystem {
         break
 
       case 'death_rate_down': {
-        // 다음 사망 1회를 HP 1 생존으로 전환 — CombatSystem에서 소비
+        // 생명의 부적: 다음 패배 1번을 기절 횟수에 안 넣고 죽음도 막음 — FaintSystem.recordLoss에서 소비
         db.run(
           "INSERT OR REPLACE INTO world_state (key, value) VALUES (?, '1')",
           [`death_shield_${pet.id}`]
@@ -111,7 +111,7 @@ class ItemSystem {
       }
 
       case 'revive': {
-        // 사망 후 HP 50%로 자동 부활 — CombatSystem에서 소비
+        // 부활석: 죽을 상황에서 1번 버티고 기절 횟수 0으로 살아남음 — FaintSystem.recordLoss에서 소비
         db.run(
           "INSERT OR REPLACE INTO world_state (key, value) VALUES (?, '1')",
           [`auto_revive_${pet.id}`]
