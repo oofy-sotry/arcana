@@ -60,6 +60,8 @@ const NPCS = [
 const EXITS = [
   // 건물 입구 — 좌상: 회복소
   { tile_x: 4,  tile_y: 5,  targetMap: 'center1', targetX: 5, targetY: 6, dir: 'north' },
+  // 우상: 상점
+  { tile_x: 14, tile_y: 5,  targetMap: 'mart1',   targetX: 5, targetY: 6, dir: 'north' },
   { tile_x: 19, tile_y: 7,  targetMap: 'forest1', targetX: 1,  targetY: 7,  dir: 'east'  },
   { tile_x: 8,  tile_y: 14, targetMap: 'arena',   targetX: 8,  targetY: 1,  dir: 'south' },
   { tile_x: 9,  tile_y: 14, targetMap: 'arena',   targetX: 9,  targetY: 1,  dir: 'south' },
