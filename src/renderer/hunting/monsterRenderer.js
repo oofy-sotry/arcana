@@ -11,10 +11,11 @@ class MonsterRenderer {
     this._collisionCooldown = false
   }
 
-  async spawnMonster(monsterData) {
+  // pos를 주면 그 위치에 스폰 (조우 모드에서 펫 앞에 배치), 없으면 무작위
+  async spawnMonster(monsterData, pos = null) {
     const margin = 40
-    const x      = margin + Math.random() * (this.W - margin * 2)
-    const y      = margin + Math.random() * (this.H - margin * 2)
+    const x      = pos?.x ?? margin + Math.random() * (this.W - margin * 2)
+    const y      = pos?.y ?? margin + Math.random() * (this.H - margin * 2)
 
     let tex
     try {
@@ -39,17 +40,51 @@ class MonsterRenderer {
     return sprite
   }
 
-  removeMonster(sprite) {
+  // respawn: false면 리스폰 없이 제거만 (조우 모드)
+  removeMonster(sprite, { respawn = true } = {}) {
     const idx = this.monsters.findIndex(m => m.sprite === sprite)
     if (idx === -1) return
     const respawnMs = this.monsters[idx].data.respawnMs || 2000
     this.stage.removeChild(sprite)
     sprite.destroy()
     this.monsters.splice(idx, 1)
+    if (!respawn) return
     // 티어 기반 딜레이 후 리스폰 (tier1-2=2s, tier3-4=3s, tier5-6=5s, tier7=8s)
     setTimeout(() => {
       if (this.monsters.length < 3) this._spawnRandom()
     }, respawnMs)
+  }
+
+  // 피격 연출 — 잠깐 빨갛게 틴트
+  flash(sprite, ms = 150) {
+    if (!sprite || sprite.destroyed) return
+    sprite.tint = 0xff5555
+    setTimeout(() => { if (!sprite.destroyed) sprite.tint = 0xffffff }, ms)
+  }
+
+  // 데미지 숫자 — 위로 떠오르며 사라짐
+  floatText(x, y, text, color = 0xffffff) {
+    const label = new PIXI.Text({
+      text,
+      style: { fontSize: 16, fontWeight: 'bold', fill: color, stroke: { color: 0x000000, width: 3 } },
+    })
+    label.anchor.set(0.5)
+    label.x = x
+    label.y = y
+    this.stage.addChild(label)
+
+    const duration = 700
+    const start    = performance.now()
+    const step = (now) => {
+      if (label.destroyed) return
+      const t = Math.min(1, (now - start) / duration)
+      label.y     = y - 30 * t
+      label.alpha = 1 - t
+      if (t < 1) return requestAnimationFrame(step)
+      this.stage.removeChild(label)
+      label.destroy()
+    }
+    requestAnimationFrame(step)
   }
 
   clearAll() {
@@ -66,7 +101,7 @@ class MonsterRenderer {
     this.spawnMonster(list[Math.floor(Math.random() * list.length)])
   }
 
-  // AABB 충돌 감지 — 충돌 시 onCollide 콜백 호출 (1초 쿨다운)
+  // AABB 충돌 감지 — 충돌 시 onCollide(data, sprite) 콜백 호출 (1초 쿨다운)
   checkCollision(petSprite, onCollide) {
     if (this._collisionCooldown) return
     for (const m of this.monsters) {
@@ -75,7 +110,7 @@ class MonsterRenderer {
       if (dx < 32 && dy < 32) {
         this._collisionCooldown = true
         setTimeout(() => { this._collisionCooldown = false }, 1000)
-        onCollide(m.data)
+        onCollide(m.data, m.sprite)
         return
       }
     }
