@@ -10,6 +10,7 @@ const BOSS_CHANCE_MANUAL = 0.30   // 수동 사냥 보스 조우 확률
 const HIDDEN_STAGE_CHANCE = 0.00001 // 수동 사냥 히든 스테이지 진입 확률 (0.001%)
 const HIDDEN_STAGE_BATTLES = 4    // 히든 스테이지 내 연속 전투 수
 const WILD_TIER_WEIGHTS  = [0.6, 0.3, 0.1] // 야생 조우: 맵 tier 낮은 순 60% / 30% / 10%
+const FAINTED_ERROR      = '기절한 펫은 싸울 수 없습니다 — 회복소에서 치료하세요'
 
 class HuntingSystem {
   constructor({ Pet, save, combatSystem, questSystem, partySystem, factionSystem }) {
@@ -117,6 +118,7 @@ class HuntingSystem {
     const zone  = ZONES.find(z => z.id === zoneId)
     if (!zone) return { error: '존재하지 않는 구역입니다' }
     if (!this._canAccess(zone)) return { error: '접근 불가 구역입니다 (세력 평판 조건 미충족)' }
+    if (Number(pet.is_fainted) === 1) return { error: FAINTED_ERROR }
 
     const energy = pet.conditions?.energy ?? 100
     if (energy < AUTO_ENERGY_COST) return { error: '에너지 부족 (자동 사냥: -30 필요)' }
@@ -181,6 +183,7 @@ class HuntingSystem {
     const zone = ZONES.find(z => z.id === zoneId)
     if (!zone) return { error: '존재하지 않는 구역입니다' }
     if (!this._canAccess(zone)) return { error: '접근 불가 구역입니다' }
+    if (Number(pet.is_fainted) === 1) return { error: FAINTED_ERROR }
 
     if (monsterId && monsterId !== zone.bossId && !zone.monsterIds.includes(monsterId)) {
       return { error: '이 구역의 몬스터가 아닙니다' }
