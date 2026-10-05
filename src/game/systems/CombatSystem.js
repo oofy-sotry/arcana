@@ -3,7 +3,7 @@ const { getDropTable } = require('../data/monsters')
 const SKILLS           = require('../data/skills')
 
 class CombatSystem {
-  constructor({ Pet, save, levelSystem, itemSystem, equipmentSystem, summonerSystem, faintSystem }) {
+  constructor({ Pet, save, levelSystem, itemSystem, equipmentSystem, summonerSystem, faintSystem, gymSystem }) {
     this.Pet             = Pet
     this.save            = save
     this.levelSystem     = levelSystem
@@ -11,6 +11,7 @@ class CombatSystem {
     this.equipmentSystem = equipmentSystem || null
     this.summonerSystem  = summonerSystem || null
     this.faintSystem     = faintSystem || null
+    this.gymSystem       = gymSystem || null
     this._battles        = new Map()
   }
 
@@ -81,11 +82,14 @@ class CombatSystem {
     // 소환사 스탯: speed_bonus — 투자 포인트당 유효 속도 +1
     const speedBonus = this.summonerSystem?.getActiveStat('speed_bonus') || 0
 
+    // 체육관 배지: 그 속성 배지 단계마다 공격·방어 +2%
+    const badge = this.gymSystem?.getBadgeBonus(pet.attribute) ?? 1
+
     // 장비 적용 후 유효 스탯 (HP는 전투용 별도 추적)
     const effectivePet = {
       ...pet,
-      attack:  pet.attack  + equip.attack,
-      defense: pet.defense + equip.defense,
+      attack:  Math.round((pet.attack  + equip.attack)  * badge),
+      defense: Math.round((pet.defense + equip.defense) * badge),
       speed:   pet.speed   + equip.speed + speedBonus,
     }
     const maxHp = pet.hp + equip.hp
