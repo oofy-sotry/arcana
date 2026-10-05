@@ -60,3 +60,16 @@ test('rollWildEncounter — 맞는 구역이 없으면 null', () => {
   const { hs } = makeSystem()
   assert.equal(hs.rollWildEncounter([999]), null)
 })
+
+test('rollWildEncounter — 낮은 tier일수록 자주 나옴 (60/30/10)', () => {
+  const { hs } = makeSystem()
+  const count = { 1: 0, 2: 0, 3: 0 }
+  const N = 5000
+  for (let i = 0; i < N; i++) {
+    const e = hs.rollWildEncounter([3, 1, 2]) // 순서가 섞여 와도 낮은 tier 기준
+    count[ZONES.find(z => z.id === e.zoneId).tier]++
+  }
+  assert.ok(Math.abs(count[1] / N - 0.6) < 0.05)
+  assert.ok(Math.abs(count[2] / N - 0.3) < 0.05)
+  assert.ok(Math.abs(count[3] / N - 0.1) < 0.05)
+})
