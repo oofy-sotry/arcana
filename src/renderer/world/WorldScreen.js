@@ -182,6 +182,10 @@ class WorldScreen {
       actions.appendChild(btn)
     }
 
+    if (npc.service === 'shop') {
+      new ShopDialog(actions, { onClose: () => this._closeDialog() }).open()
+    }
+
     if (npc.isPvpNpc) {
       const btn = document.createElement('button')
       btn.style.cssText = `padding:8px 18px; background:#0f3460; border:1px solid #e94560;
