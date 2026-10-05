@@ -62,6 +62,7 @@ function runMigrations() {
     require('./migrations/012_equipment_seed'),
     require('./migrations/013_party_departure_log'),
     require('./migrations/014_repair_combat_losses'),
+    require('./migrations/015_faint'),
   ]
 
   const [{ values: [[currentVersion]] }] = db.exec('PRAGMA user_version')
