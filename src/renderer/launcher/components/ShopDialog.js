@@ -61,7 +61,7 @@ class ShopDialog {
     this._list(catalog, '사기', async row => {
       const res = await window.arcana.item.buy({ petId: this.pet.id, itemId: row.itemId, quantity: 1 })
       if (res.ok) this.pet.coins = res.remainingCoins
-      this.message = res.ok ? `${row.name}을(를) 샀습니다. 고맙습니다!` : `⚠ ${res.error}`
+      this.message = res.ok ? `${Josa.attach(row.name, '을')} 샀습니다. 고맙습니다!` : `⚠ ${res.error}`
       this._renderBuy()
     })
   }
@@ -71,7 +71,7 @@ class ShopDialog {
     this._list(rows, '팔기', async row => {
       const res = await window.arcana.item.sell({ petId: this.pet.id, itemId: row.itemId, quantity: 1 })
       if (res.ok) this.pet.coins = res.remainingCoins
-      this.message = res.ok ? `${row.name}을(를) ${res.earned} 코인에 팔았습니다.` : `⚠ ${res.error}`
+      this.message = res.ok ? `${Josa.attach(row.name, '을')} ${res.earned} 코인에 팔았습니다.` : `⚠ ${res.error}`
       this._renderSell()
     })
   }
