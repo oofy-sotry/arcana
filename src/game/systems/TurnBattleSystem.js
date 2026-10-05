@@ -83,9 +83,12 @@ class TurnBattleSystem {
       mpCost: this.skillSystem.getSkillMpCost(r.skill_id, r.skill_level), effect: r.data.effect,
     }))
     const maxMp = pet.mp || 100
+    // 이전 전투에서 남은 HP·MP로 시작 (NULL = 가득 참, 장비가 바뀌어 최대치가 줄었으면 최대치로)
+    const hp = Math.min(maxHp, pet.cur_hp ?? maxHp)
+    const mp = Math.min(maxMp, pet.cur_mp ?? maxMp)
     return {
       id: pet.id, name: pet.name, attribute: pet.attribute, stage: pet.evolution_stage, level: pet.level,
-      species: pet.species, base: effectivePet, maxHp, hp: maxHp, maxMp, mp: maxMp,
+      species: pet.species, base: effectivePet, maxHp, hp, maxMp, mp,
       passives, dotPerTurn, buffs: [], ko: false, moves: [BASIC_MOVE, ...skills],
     }
   }
@@ -324,12 +327,16 @@ class TurnBattleSystem {
       const chance = wipeEscapeChance(s.monster.tier)
       outcome.wipe = s.party.map(c => {
         const escaped = Math.random() < chance
+        // 도망친 펫은 HP 1로 버팀, 실패한 펫은 HP 0으로 기절 처리
+        this.Pet.updatePet(c.id, { cur_hp: escaped ? 1 : 0, cur_mp: Math.round(c.mp) })
         return { name: c.name, escaped, faint: escaped ? null : this.faintSystem.recordLoss(c.id) }
       })
       outcome.healPoint = this._sendToNearestCenter()
     } else {
-      // 이기거나 도망치거나 잡았으면 쓰러진 펫만 기절 상태(횟수는 안 셈 — 진 게 아니므로)
-      s.party.filter(c => c.ko).forEach(c => this.Pet.updatePet(c.id, { is_fainted: 1 }))
+      // 남은 HP·MP를 다음 전투로 이어감. 쓰러진 펫은 기절 상태만(횟수는 안 셈 — 진 게 아니므로)
+      s.party.forEach(c => this.Pet.updatePet(c.id, {
+        cur_hp: Math.max(0, Math.round(c.hp)), cur_mp: Math.round(c.mp), ...(c.ko ? { is_fainted: 1 } : {}),
+      }))
     }
     this.save()
     events.push({ type: 'end', result })
