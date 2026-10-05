@@ -94,6 +94,15 @@ class ItemSystem {
     }))
   }
 
+  // 전투 중 사용 — 효과는 턴제 전투가 처리하고 여기서는 1개 소모만. 없으면 false
+  consumeItem(petId, itemId) {
+    const row = db.query('SELECT quantity FROM pet_inventory WHERE pet_id = ? AND item_id = ?', [petId, itemId])[0]
+    if (!row || row.quantity < 1) return false
+    db.run('UPDATE pet_inventory SET quantity = quantity - 1 WHERE pet_id = ? AND item_id = ?', [petId, itemId])
+    this.save()
+    return true
+  }
+
   useItem(pet, itemId) {
     const inv = db.query(
       'SELECT * FROM pet_inventory WHERE pet_id = ? AND item_id = ?',
