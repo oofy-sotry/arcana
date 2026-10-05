@@ -64,6 +64,8 @@ const EXITS = [
   { tile_x: 14, tile_y: 5,  targetMap: 'mart1',   targetX: 5, targetY: 6, dir: 'north' },
   // 좌하: 체육관
   { tile_x: 4,  tile_y: 9,  targetMap: 'gym1',    targetX: 7, targetY: 9, dir: 'south' },
+  // 우하: 육성소
+  { tile_x: 14, tile_y: 9,  targetMap: 'nursery1', targetX: 5, targetY: 6, dir: 'south' },
   { tile_x: 19, tile_y: 7,  targetMap: 'forest1', targetX: 1,  targetY: 7,  dir: 'east'  },
   { tile_x: 8,  tile_y: 14, targetMap: 'arena',   targetX: 8,  targetY: 1,  dir: 'south' },
   { tile_x: 9,  tile_y: 14, targetMap: 'arena',   targetX: 9,  targetY: 1,  dir: 'south' },
