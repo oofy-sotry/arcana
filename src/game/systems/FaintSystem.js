@@ -55,11 +55,11 @@ class FaintSystem {
     return { ok: true, name: pet.name }
   }
 
-  // 회복소 치료 — 기절 상태는 언제든 풀고, 기절 횟수 -1은 펫마다 하루 1번
+  // 회복소 치료 — 기절 상태를 풀고 HP·MP를 가득 채움(언제든), 기절 횟수 -1은 펫마다 하루 1번
   treat(pet, today = toDayKey()) {
     const count     = pet.faint_count || 0
     const canReduce = count > 0 && pet.last_treated_day !== today
-    const fields    = { is_fainted: 0 }
+    const fields    = { is_fainted: 0, cur_hp: null, cur_mp: null }
     if (canReduce) {
       fields.faint_count      = count - 1
       fields.last_treated_day = today
