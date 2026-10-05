@@ -111,6 +111,9 @@ contextBridge.exposeInMainWorld('arcana', {
     getMapState:      ({ summonerId })                => ipcRenderer.invoke('summoner:get-map-state', { summonerId }),
     saveMapState:     ({ summonerId, mapId, tileX, tileY }) => ipcRenderer.invoke('summoner:save-map-state', { summonerId, mapId, tileX, tileY }),
   },
+  center: {
+    heal: () => ipcRenderer.invoke('center:heal'),
+  },
   world: {
     getMap: ({ mapId }) => ipcRenderer.invoke('world:get-map', { mapId }),
   },
