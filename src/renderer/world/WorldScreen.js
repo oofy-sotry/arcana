@@ -3,7 +3,6 @@ const MENU_ITEMS = [
   { id: 'stats',     icon: '📊', label: '스탯' },
   { id: 'skills',    icon: '✨', label: '스킬' },
   { id: 'items',     icon: '🎒', label: '아이템' },
-  { id: 'breeding',  icon: '🧬', label: '교배' },
   { id: 'gacha',     icon: '🎰', label: '가챠' },
   { id: 'party',     icon: '👥', label: '파티' },
   { id: 'quest',     icon: '📋', label: '퀘스트' },
