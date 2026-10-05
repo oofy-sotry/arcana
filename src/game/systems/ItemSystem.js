@@ -52,6 +52,30 @@ class ItemSystem {
     return { ok: true, itemId, quantity, cost, remainingCoins: pet.coins - cost }
   }
 
+  // ─── 상점 판매 ─────────────────────────────────────────────────────
+  // 원작처럼 구매가의 절반. 상점가가 없는 아이템(부활석 등)은 팔 수 없음
+  getSellPrice(itemId) {
+    const item = ITEMS[itemId]
+    return item?.shopPrice ? Math.floor(item.shopPrice / 2) : 0
+  }
+
+  sellItem(petId, itemId, quantity = 1) {
+    const price = this.getSellPrice(itemId)
+    if (!price) return { ok: false, error: '팔 수 없는 아이템입니다' }
+    if (quantity < 1) return { ok: false, error: '수량은 1 이상이어야 합니다' }
+
+    const row = db.query('SELECT quantity FROM pet_inventory WHERE pet_id = ? AND item_id = ?', [petId, itemId])[0]
+    if (!row || row.quantity < quantity) return { ok: false, error: '가진 수량이 부족합니다' }
+    const pet = this.Pet.getPet(petId)
+    if (!pet) return { ok: false, error: '펫을 찾을 수 없습니다' }
+
+    const earned = price * quantity
+    db.run('UPDATE pet_inventory SET quantity = quantity - ? WHERE pet_id = ? AND item_id = ?', [quantity, petId, itemId])
+    this.Pet.updatePet(petId, { coins: (pet.coins || 0) + earned })
+    this.save()
+    return { ok: true, itemId, quantity, earned, remainingCoins: (pet.coins || 0) + earned }
+  }
+
   getInventory(petId) {
     const rows = db.query(
       'SELECT * FROM pet_inventory WHERE pet_id = ? AND quantity > 0',
