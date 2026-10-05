@@ -9,6 +9,7 @@ const BOSS_CHANCE_AUTO   = 0.10   // 자동 사냥 보스 조우 확률
 const BOSS_CHANCE_MANUAL = 0.30   // 수동 사냥 보스 조우 확률
 const HIDDEN_STAGE_CHANCE = 0.00001 // 수동 사냥 히든 스테이지 진입 확률 (0.001%)
 const HIDDEN_STAGE_BATTLES = 4    // 히든 스테이지 내 연속 전투 수
+const WILD_TIER_WEIGHTS  = [0.6, 0.3, 0.1] // 야생 조우: 맵 tier 낮은 순 60% / 30% / 10%
 
 class HuntingSystem {
   constructor({ Pet, save, combatSystem, questSystem, partySystem, factionSystem }) {
@@ -77,11 +78,20 @@ class HuntingSystem {
   }
 
   // ─── 월드 풀밭 야생 조우: 맵 wildConfig.tiers에 맞는 구역 하나 → 그 구역 몬스터 한 마리 ──
+  // tier는 낮은 순으로 WILD_TIER_WEIGHTS 확률(60/30/10). 갈 수 있는 구역이 없는 tier는 빼고 나머지로 다시 나눔
   // 보스는 자동 사냥과 같은 10% 확률. 세력 평판으로 막힌 구역은 제외
   rollWildEncounter(tiers = [1]) {
-    const zones = ZONES.filter(z => tiers.includes(z.tier) && this._canAccess(z))
-    if (!zones.length) return null
-    const zone    = zones[Math.floor(Math.random() * zones.length)]
+    const candidates = [...tiers].sort((a, b) => a - b)
+      .map((tier, i) => ({
+        zones:  ZONES.filter(z => z.tier === tier && this._canAccess(z)),
+        weight: WILD_TIER_WEIGHTS[i] ?? 0,
+      }))
+      .filter(c => c.zones.length && c.weight > 0)
+    if (!candidates.length) return null
+
+    let roll   = Math.random() * candidates.reduce((sum, c) => sum + c.weight, 0)
+    const pick = candidates.find(c => (roll -= c.weight) < 0) || candidates.at(-1)
+    const zone = pick.zones[Math.floor(Math.random() * pick.zones.length)]
     const monster = Math.random() < BOSS_CHANCE_AUTO ? this._spawnBoss(zone) : this._spawnRegular(zone)
     return monster ? { zoneId: zone.id, monsterId: monster.id } : null
   }
