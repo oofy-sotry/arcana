@@ -6,6 +6,12 @@ let mode          = 'manual' // 'auto' | 'manual'
 let energy        = 100
 let inBattle      = false // 턴 연출 중 — 이동·충돌·버튼 잠금
 
+// 월드 풀밭 야생 조우로 열렸으면 ?zone=&monster= — 그 1마리와 싸우고 자동 복귀
+const encounter = (() => {
+  const q = new URLSearchParams(location.search)
+  return q.get('zone') && q.get('monster') ? { zoneId: q.get('zone'), monsterId: q.get('monster') } : null
+})()
+
 const SPEED = 2.5
 const ATTACK_RANGE = 80 // 공격(Space)으로 싸울 수 있는 몬스터까지의 거리(px)
 const NO_PET_MSG = '⚠ 사냥할 펫이 없습니다 — 마을의 미르린에게 무료 소환을 받은 뒤 다시 오세요'
@@ -108,6 +114,7 @@ async function init() {
   // 기본 구역: 추천 구역 중 승산이 가장 높은 곳, 없으면 목록 첫 구역
   const best = zones.filter(z => z.recommended && z.edge != null).sort((a, b) => b.edge - a.edge)[0]
   if (zones.length > 0) currentZoneId = (best || zones[0]).id
+  if (encounter) currentZoneId = encounter.zoneId
   sel.value = currentZoneId
   sel.addEventListener('change', () => {
     currentZoneId = sel.value
@@ -135,8 +142,51 @@ async function init() {
   setupKeyboard()
   app.ticker.add(onTick)
 
-  // 초기 구역 몬스터 스폰
-  if (currentZoneId) await loadZoneMonsters(currentZoneId)
+  // 초기 구역 몬스터 스폰 (조우 모드는 그 1마리만)
+  if (encounter) await setupEncounter()
+  else if (currentZoneId) await loadZoneMonsters(currentZoneId)
+}
+
+// 조우 모드 화면 — 구역 선택·자동 사냥·탐사를 숨기고 그 몬스터 1마리만 펫 앞에 스폰(리스폰 없음)
+async function setupEncounter() {
+  for (const id of ['zone-label', 'zone-select', 'btn-mode-auto', 'btn-mode-manual', 'btn-explore']) {
+    document.getElementById(id).style.display = 'none'
+  }
+  window._currentZoneMonsters = []
+
+  const banner   = document.getElementById('encounter-banner')
+  banner.style.display = 'inline'
+  const monsters = await window.arcana.hunting.zoneMonsters({ zoneId: encounter.zoneId })
+  const monster  = monsters.find(m => m.id === encounter.monsterId)
+  if (!monster) {
+    banner.textContent = '몬스터를 찾을 수 없습니다'
+    document.getElementById('btn-attack').style.display = 'none'
+    return
+  }
+  banner.textContent = `야생의 ${monster.name}이(가) 나타났다!`
+  window._monsterRenderer.clearAll()
+  await window._monsterRenderer.spawnMonster(monster, { x: app.screen.width / 2 + 64, y: app.screen.height / 2 })
+  if (!currentPet) document.getElementById('btn-attack').style.display = 'none'
+}
+
+// 조우 전투가 끝나면 결과를 잠깐 보여주고 자동 복귀, 에러면 복귀 버튼(도망/마을로)만 남김
+function finishEncounter(result) {
+  if (result.error) {
+    document.getElementById('btn-attack').style.display = 'none'
+    return
+  }
+  if (result.hiddenStage) {
+    const overlay = document.getElementById('hidden-stage-overlay')
+    document.getElementById('hs-close').onclick = () => { overlay.classList.remove('show'); returnToWorld() }
+    return
+  }
+  setBattleLock(true) // 복귀 대기 중 추가 행동 막기
+  addLog('잠시 후 원래 자리로 돌아갑니다...')
+  setTimeout(returnToWorld, 1500)
+}
+
+function returnToWorld() {
+  window.arcana.hunting.close()
 }
 
 function setupKeyboard() {
@@ -165,7 +215,13 @@ async function onManualAttack() {
   if (mode !== 'manual' || inBattle) return
   const target = nearestMonster()
   if (!target) { addLog('몬스터에게 가까이 가세요'); return }
-  await fightMonster(target.data, target.sprite)
+  await engage(target.data, target.sprite)
+}
+
+// 전투 후 조우 모드면 복귀 처리
+async function engage(monster, sprite) {
+  const result = await fightMonster(monster, sprite)
+  if (encounter && result) finishEncounter(result)
 }
 
 function nearestMonster() {
@@ -203,7 +259,7 @@ async function fightMonster(monster, sprite) {
     if (result.drops?.length) addLog(`  드롭: ${result.drops.map(d => d.itemId).join(', ')}`)
     updateEnergyDisplay(result.finalEnergy)
 
-    if (result.result === 'won')  window._monsterRenderer.removeMonster(sprite)
+    if (result.result === 'won')  window._monsterRenderer.removeMonster(sprite, { respawn: !encounter })
     if (result.result === 'lost' && petSprite) {
       petSprite.x = app.screen.width  / 2
       petSprite.y = app.screen.height / 2
@@ -284,14 +340,16 @@ function showHiddenStageOverlay(result) {
 }
 
 async function onFlee() {
+  if (inBattle) return
   addLog('🏃 도망쳤다!')
+  if (encounter) returnToWorld()
 }
 
 // 부딪힌 그 몬스터와 바로 전투
 function onCollide(monster, sprite) {
   if (inBattle || !currentPet) return
   addLog(`👾 ${monster.name} 출현!`)
-  fightMonster(monster, sprite)
+  engage(monster, sprite)
 }
 
 function setMode(m) {
