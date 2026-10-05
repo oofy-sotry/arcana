@@ -127,13 +127,13 @@ class BattleScreen {
     const pet = () => this.state.party[this.state.active]
     for (const e of events) {
       switch (e.type) {
-        case 'appear':  await this._say(`야생의 ${e.name}이(가) 나타났다!`); break
-        case 'challenge': await this._say(`${e.trainer}이(가) 승부를 걸어왔다!`); break
-        case 'send':    await this._say(`${e.trainer}은(는) ${e.name}을(를) 내보냈다!`); this._showNext(e); break
-        case 'defeat':  await this._say(`${e.name}을(를) 쓰러뜨렸다! ${e.winner}은(는) ${e.exp} 경험치를 얻었다!`); break
+        case 'appear':  await this._say(`야생의 ${Josa.attach(e.name, '이')} 나타났다!`); break
+        case 'challenge': await this._say(`${Josa.attach(e.trainer, '이')} 승부를 걸어왔다!`); break
+        case 'send':    await this._say(`${Josa.attach(e.trainer, '은')} ${Josa.attach(e.name, '을')} 내보냈다!`); this._showNext(e); break
+        case 'defeat':  await this._say(`${Josa.attach(e.name, '을')} 쓰러뜨렸다! ${Josa.attach(e.winner, '은')} ${e.exp} 경험치를 얻었다!`); break
         case 'switch':  await this._say(`가랏, ${e.name}!`); break
         case 'attack':
-          if (e.dodged) { await this._say(`${pet().name}은(는) 공격을 피했다!`); break }
+          if (e.dodged) { await this._say(`${Josa.attach(pet().name, '은')} 공격을 피했다!`); break }
           await this._say(e.actor === 'pet' ? `${e.name}의 ${e.move}!` : `${e.name}의 공격!`)
           if (e.actor === 'pet') { this.shown.mon -= e.damage; this._shake('bt-mon-sprite') }
           else                   { this.shown.pet -= e.damage; this._shake('bt-pet-sprite') }
@@ -143,13 +143,13 @@ class BattleScreen {
           if (e.attrMult < 1) await this._say('효과가 별로인 듯하다…')
           break
         case 'counter': this.shown.mon -= e.damage; this._bars(); await this._say(`${e.name}의 반격!`); break
-        case 'dot':     this.shown.mon -= e.damage; this._bars(); await this._say(`${e.name}은(는) 지속 피해를 입었다!`); break
-        case 'stunned': await this._say(`${e.name}은(는) 움직일 수 없다!`); break
+        case 'dot':     this.shown.mon -= e.damage; this._bars(); await this._say(`${Josa.attach(e.name, '은')} 지속 피해를 입었다!`); break
+        case 'stunned': await this._say(`${Josa.attach(e.name, '은')} 움직일 수 없다!`); break
         case 'buff':    await this._say(`${e.name}의 ${e.move}!`); break
-        case 'item':    await this._say(`${e.item}을(를) 사용했다!`); break
+        case 'item':    await this._say(`${Josa.attach(e.item, '을')} 사용했다!`); break
         case 'run':     await this._say(e.ok ? '무사히 도망쳤다!' : '도망칠 수 없었다!'); break
-        case 'capture': await this._say('포획 구슬을 던졌다!'); await this._say(e.ok ? `좋았어! ${e.name}을(를) 잡았다!` : '아깝다! 빠져나왔다!'); break
-        case 'ko':      await this._say(`${e.name}은(는) 쓰러졌다!`); break
+        case 'capture': await this._say('포획 구슬을 던졌다!'); await this._say(e.ok ? `좋았어! ${Josa.attach(e.name, '을')} 잡았다!` : '아깝다! 빠져나왔다!'); break
+        case 'ko':      await this._say(`${Josa.attach(e.name, '은')} 쓰러졌다!`); break
       }
     }
   }
@@ -167,21 +167,21 @@ class BattleScreen {
 
   async _end(outcome) {
     if (outcome.result === 'won') {
-      await this._say(`${outcome.winner}은(는) ${outcome.exp} 경험치와 ${outcome.coins} 코인을 얻었다!`)
-      if (outcome.drops?.length) await this._say(`${outcome.drops.map(d => d.name ?? d.itemId).join(', ')}을(를) 주웠다!`)
+      await this._say(`${Josa.attach(outcome.winner, '은')} ${outcome.exp} 경험치와 ${outcome.coins} 코인을 얻었다!`)
+      if (outcome.drops?.length) await this._say(`${Josa.attach(outcome.drops.map(d => d.name ?? d.itemId).join(', '), '을')} 주웠다!`)
     }
     if (outcome.badge) {
       await this._say(`관장을 이겼다! 상금 ${outcome.prize} 코인을 받았다!`)
-      await this._say(outcome.badge.isNew ? `🏅 ${outcome.badge.name}을(를) 받았다!` : `${outcome.badge.name}은(는) 이미 가지고 있다.`)
+      await this._say(outcome.badge.isNew ? `🏅 ${Josa.attach(outcome.badge.name, '을')} 받았다!` : `${Josa.attach(outcome.badge.name, '은')} 이미 가지고 있다.`)
     }
-    if (outcome.result === 'captured') await this._say(`${outcome.captured.name}이(가) 동료가 되었다!`)
+    if (outcome.result === 'captured') await this._say(`${Josa.attach(outcome.captured.name, '이')} 동료가 되었다!`)
     if (outcome.result === 'lost') {
       await this._say('눈앞이 캄캄해졌다…')
       for (const w of outcome.wipe) {
-        if (w.escaped)          await this._say(`${w.name}은(는) 무사히 도망쳤다!`)
-        else if (w.faint?.died) await this._say(`💀 ${w.name}은(는) 다시 일어나지 못했다… (부활석으로 되살릴 수 있다)`)
-        else if (w.faint?.shielded) await this._say(`🛡 생명의 부적이 ${w.name}을(를) 지켜줬다!`)
-        else                    await this._say(`😵 ${w.name}은(는) 기절했다… (기절 ${w.faint?.faintCount}/3)`)
+        if (w.escaped)          await this._say(`${Josa.attach(w.name, '은')} 무사히 도망쳤다!`)
+        else if (w.faint?.died) await this._say(`💀 ${Josa.attach(w.name, '은')} 다시 일어나지 못했다… (부활석으로 되살릴 수 있다)`)
+        else if (w.faint?.shielded) await this._say(`🛡 생명의 부적이 ${Josa.attach(w.name, '을')} 지켜줬다!`)
+        else                    await this._say(`😵 ${Josa.attach(w.name, '은')} 기절했다… (기절 ${w.faint?.faintCount}/3)`)
       }
       await this._say('가까운 회복소로 서둘러 돌아갔다…')
     }
@@ -199,7 +199,7 @@ class BattleScreen {
       return
     }
     if (this.auto) { this._act({ type: 'auto' }); this._autoButton(); return }
-    this.$('bt-message').textContent = `${st.party[st.active].name}은(는) 무엇을 할까?`
+    this.$('bt-message').textContent = `${Josa.attach(st.party[st.active].name, '은')} 무엇을 할까?`
     this._buttons([
       ['싸우다', () => this._moveMenu()],
       ['가방',   () => this._bagMenu()],
