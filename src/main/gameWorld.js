@@ -24,6 +24,7 @@ const FaintSystem        = require('../game/systems/FaintSystem')
 const TurnBattleSystem   = require('../game/systems/TurnBattleSystem')
 const GymSystem          = require('../game/systems/GymSystem')
 const { TICK_INTERVAL_SECONDS, getElapsedSeconds, secondsToAge } = require('../game/utils/time')
+const Josa = require('../renderer/shared/Josa')
 
 class GameWorld {
   constructor() {
@@ -182,12 +183,12 @@ class GameWorld {
     for (const pet of pets) {
       const cond = pet.conditions || {}
       const checks = [
-        { type: 'hunger',      active: cond.hunger      < 30, title: `${pet.name}이(가) 배고파요!` },
-        { type: 'happiness',   active: cond.happiness   < 30, title: `${pet.name}이(가) 슬퍼해요!` },
-        { type: 'cleanliness', active: cond.cleanliness < 30, title: `${pet.name}을(를) 씻겨주세요!` },
+        { type: 'hunger',      active: cond.hunger      < 30, title: `${Josa.attach(pet.name, '이')} 배고파요!` },
+        { type: 'happiness',   active: cond.happiness   < 30, title: `${Josa.attach(pet.name, '이')} 슬퍼해요!` },
+        { type: 'cleanliness', active: cond.cleanliness < 30, title: `${Josa.attach(pet.name, '을')} 씻겨주세요!` },
         { type: 'energy_full', active: (cond.energy ?? 0) >= 100, title: '에너지가 완충됐어요!' },
-        { type: 'age',         active: secondsToAge(pet.age_seconds) >= 70, title: `${pet.name}이(가) 노령이에요. 잘 돌봐주세요` },
-        { type: 'evolve_hidden', active: this.evolutionSystem.checkHiddenConditions(pet), title: `${pet.name}이(가) 진화할 준비가 됐어요!` },
+        { type: 'age',         active: secondsToAge(pet.age_seconds) >= 70, title: `${Josa.attach(pet.name, '이')} 노령이에요. 잘 돌봐주세요` },
+        { type: 'evolve_hidden', active: this.evolutionSystem.checkHiddenConditions(pet), title: `${Josa.attach(pet.name, '이')} 진화할 준비가 됐어요!` },
       ]
 
       for (const c of checks) {
