@@ -1,6 +1,7 @@
 const { calcDamage }   = require('../utils/formula')
 const { getDropTable } = require('../data/monsters')
 const SKILLS           = require('../data/skills')
+const ITEMS            = require('../data/items')
 
 class CombatSystem {
   constructor({ Pet, save, levelSystem, itemSystem, equipmentSystem, summonerSystem, faintSystem, gymSystem }) {
@@ -233,7 +234,7 @@ class CombatSystem {
       const effective = Math.min(entry.rate + dropRateBonus, 1.0)
       if (roll < effective) {
         this.itemSystem.addItem(petId, entry.itemId, entry.quantity)
-        drops.push({ itemId: entry.itemId, quantity: entry.quantity })
+        drops.push({ itemId: entry.itemId, name: ITEMS[entry.itemId]?.name ?? entry.itemId, quantity: entry.quantity })
       }
     }
 
