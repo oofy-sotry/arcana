@@ -80,6 +80,7 @@ test('treat — 기절 상태는 항상 풀고, 횟수 감소는 하루 1번', (
   let r = fs.treat({ ...pet }, '2026-10-05')
   assert.deepEqual(r, { revived: true, reduced: true, faintCount: 1 })
   assert.equal(pet.is_fainted, 0)
+  assert.equal(pet.cur_hp, null) // HP 가득 참
 
   pet.is_fainted = 1
   r = fs.treat({ ...pet }, '2026-10-05')
