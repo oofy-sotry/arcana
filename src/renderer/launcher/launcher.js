@@ -94,7 +94,6 @@ function setupTabs() {
       btn.classList.add('active')
       document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active')
       const tab = btn.dataset.tab
-      if (tab === 'breeding')  renderBreedingTab()
       if (tab === 'gacha')     renderGachaTab()
       if (tab === 'party')     renderPartyTab()
       if (tab === 'quest')     renderQuestTab()
@@ -248,19 +247,6 @@ async function onEvolve(petId) {
 }
 
 // ── Tab renderers ──────────────────────────────────────
-
-function renderBreedingTab() {
-  const container = document.getElementById('tab-breeding')
-  container.innerHTML = ''
-  container.appendChild(
-    // 교배 직후 즉시 재렌더링하면 방금 보여준 결과 카드가 눈에 보이기도 전에
-    // 사라짐(IPC 왕복 30ms 이내) — allPets만 갱신하고 화면은 그대로 둔다.
-    // 다음에 탭을 다시 열 때 최신 펫 목록으로 그려짐.
-    new BreedingPanel(allPets).render(async () => {
-      allPets = await window.arcana.pet.getAll()
-    })
-  )
-}
 
 function renderGachaTab() {
   const container = document.getElementById('tab-gacha')
