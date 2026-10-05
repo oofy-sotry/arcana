@@ -61,9 +61,33 @@ class ItemPanel {
         <button data-item="${inv.item_id}" style="padding:4px 12px; background:#e94560; border:none; color:#fff; border-radius:4px; cursor:pointer; font-size:12px">
           사용
         </button>`
-      row.querySelector('button').addEventListener('click', () => this._onUse(inv.item_id))
+      row.querySelector('button').addEventListener('click', () => {
+        if (inv.item_id === 'revive_stone') this._showReviveTargets(row)
+        else this._onUse(inv.item_id)
+      })
       this._body.appendChild(row)
     })
+  }
+
+  // 부활석 — 죽은 에레멘탈 중 되살릴 대상 고르기
+  async _showReviveTargets(row) {
+    const dead = await window.arcana.pet.getDead()
+    const box  = document.createElement('div')
+    box.style.cssText = 'width:100%; margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;'
+    if (!dead.length) {
+      box.innerHTML = '<span style="font-size:12px; color:#aaa">되살릴 에레멘탈이 없습니다.</span>'
+    }
+    dead.forEach(d => {
+      const b = document.createElement('button')
+      b.style.cssText = 'padding:4px 10px; background:#9b59b6; border:none; color:#fff; border-radius:4px; cursor:pointer; font-size:12px'
+      b.textContent   = `✨ ${d.name} 되살리기`
+      b.addEventListener('click', () => this._onUse('revive_stone', d.id))
+      box.appendChild(b)
+    })
+    row.style.flexWrap = 'wrap'
+    row.querySelector('.revive-targets')?.remove()
+    box.className = 'revive-targets'
+    row.appendChild(box)
   }
 
   _renderShop() {
