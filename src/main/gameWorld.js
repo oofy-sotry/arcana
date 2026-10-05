@@ -20,6 +20,7 @@ const FactionSystem      = require('../game/systems/FactionSystem')
 const PvpSystem          = require('../game/systems/PvpSystem')
 const SummonerSystem     = require('../game/systems/SummonerSystem')
 const CollectionSystem   = require('../game/systems/CollectionSystem')
+const FaintSystem        = require('../game/systems/FaintSystem')
 const { TICK_INTERVAL_SECONDS, getElapsedSeconds, secondsToAge } = require('../game/utils/time')
 
 class GameWorld {
@@ -42,6 +43,7 @@ class GameWorld {
     this.pvpSystem           = null
     this.summonerSystem      = null
     this.collectionSystem    = null
+    this.faintSystem         = null
     this._tickTimer          = null
   }
 
@@ -57,7 +59,8 @@ class GameWorld {
     this.skillSystem     = new SkillSystem({ Pet, save: db.save })
     this.itemSystem      = new ItemSystem({ Pet, save: db.save, factionSystem: this.factionSystem })
     this.equipmentSystem     = new EquipmentSystem({ save: db.save, itemSystem: this.itemSystem })
-    this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem, equipmentSystem: this.equipmentSystem, summonerSystem: this.summonerSystem })
+    this.faintSystem         = new FaintSystem({ Pet, save: db.save })
+    this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem, equipmentSystem: this.equipmentSystem, summonerSystem: this.summonerSystem, faintSystem: this.faintSystem })
     this.explorationSystem   = new ExplorationSystem({ Pet, save: db.save, itemSystem: this.itemSystem, factionSystem: this.factionSystem, summonerSystem: this.summonerSystem })
     this.breedingSystem      = new BreedingSystem({ Pet, save: db.save })
     this.gachaSystem         = new GachaSystem({ Pet, save: db.save })
@@ -78,6 +81,7 @@ class GameWorld {
     if (pets.length > 0) {
       this.petSystem.applyOfflineProgress(pets)
       this._applyOfflineEnergyRecovery(pets)
+      pets.forEach(p => this.faintSystem.applyDailyDecay(p))
     }
 
     db.save()
@@ -97,6 +101,7 @@ class GameWorld {
     this.petSystem.tickConditions(pets)
     this.petSystem.tickAge(pets)
     this._tickEnergyRecovery(pets)
+    pets.forEach(p => this.faintSystem.applyDailyDecay(p)) // 하루가 지나면 기절 횟수 -1
     this._checkNotifications(this.petSystem.getAll())
 
     for (const pet of pets) {
