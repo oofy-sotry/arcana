@@ -42,6 +42,10 @@ async function showWorldScreen(summoner) {
       allPets.push(pet)
       if (gameUIReady) renderPetList()
     },
+    onPetsChanged: async () => {
+      allPets = await window.arcana.pet.getAll()
+      if (gameUIReady) renderPetList()
+    },
   }))
   el.style.display = 'flex'
 }
