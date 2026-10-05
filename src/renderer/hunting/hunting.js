@@ -257,6 +257,7 @@ async function fightMonster(monster, sprite) {
     const outcome = result.result === 'won' ? '승리!' : result.result === 'lost' ? '패배...' : '승부가 나지 않았다'
     addLog(`⚔ ${monster.name}: ${outcome} | 잔여 에너지 ${Math.round(result.finalEnergy)}`)
     if (result.drops?.length) addLog(`  드롭: ${result.drops.map(d => d.itemId).join(', ')}`)
+    if (result.faint) addLog(faintMessage(result.faint))
     updateEnergyDisplay(result.finalEnergy)
 
     if (result.result === 'won')  window._monsterRenderer.removeMonster(sprite, { respawn: !encounter })
@@ -294,6 +295,15 @@ function playTurnEffect(entry, monsterSprite) {
   r.flash(target)
   const color = entry.actor === 'pet' ? (entry.isCrit ? 0xffd166 : 0xffffff) : 0xff6b6b
   r.floatText(target.x, target.y - 24, `-${entry.damage}${entry.isCrit ? '!' : ''}`, color)
+}
+
+// 패배 후 기절/죽음 안내 (FaintSystem.recordLoss 결과)
+function faintMessage(faint) {
+  const name = currentPet?.name ?? '펫'
+  if (faint.died)     return `💀 ${name}이(가) 쓰러져 다시 일어나지 못했다...`
+  if (faint.revived)  return `✨ 부활석의 힘으로 ${name}이(가) 버텨냈다! (기절 횟수 0)`
+  if (faint.shielded) return `🛡 생명의 부적이 ${name}을(를) 지켜줬다 (기절 횟수 그대로)`
+  return `😵 ${name}이(가) 기절했다! (기절 ${faint.faintCount}/3 — 회복소에서 치료하세요)`
 }
 
 function setBattleLock(on) {
@@ -374,6 +384,8 @@ async function startAutoMode() {
   if (result?.battles) {
     addLog(`전투 ${result.battles.length}회 완료, 잔여 에너지: ${Math.round(result.finalEnergy)}`)
     result.battles.forEach(b => { addLog(`  ${b.monster}: ${b.result}`) })
+    const lastFaint = result.battles.at(-1)?.faint
+    if (lastFaint) addLog(faintMessage(lastFaint))
     updateEnergyDisplay(result.finalEnergy)
   }
   setMode('manual')
