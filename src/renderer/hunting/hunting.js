@@ -280,8 +280,7 @@ function knockBack(monsterSprite) {
 // 패배 후 기절/죽음 안내 (FaintSystem.recordLoss 결과)
 function faintMessage(faint) {
   const name = currentPet?.name ?? '펫'
-  if (faint.died)     return `💀 ${name}이(가) 쓰러져 다시 일어나지 못했다...`
-  if (faint.revived)  return `✨ 부활석의 힘으로 ${name}이(가) 버텨냈다! (기절 횟수 0)`
+  if (faint.died)     return `💀 ${name}이(가) 쓰러져 다시 일어나지 못했다... (부활석으로 되살릴 수 있다)`
   if (faint.shielded) return `🛡 생명의 부적이 ${name}을(를) 지켜줬다 (기절 횟수 그대로)`
   return `😵 ${name}이(가) 기절했다! (기절 ${faint.faintCount}/3 — 회복소에서 치료하세요)`
 }
