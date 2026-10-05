@@ -58,8 +58,11 @@ class PetCard {
         </div>
         <div style="font-size:12px; color:#888">Lv.${pet.level || 1} · ${stage}</div>
         <div style="font-size:11px; color:#555; margin-top:4px">부활석으로 되살릴 수 있습니다</div>` : `
-        <div style="font-size:16px; font-weight:bold">${pet.name}</div>
-        <div style="font-size:12px; color:#aaa">Lv.${pet.level || 1} · ${stage}</div>
+        <div style="font-size:16px; font-weight:bold">
+          ${pet.name}
+          ${Number(pet.is_fainted) === 1 ? `<span style="font-size:10px; background:#7a5a00; color:#fff; padding:2px 6px; border-radius:3px; margin-left:6px; vertical-align:middle">기절</span>` : ''}
+        </div>
+        <div style="font-size:12px; color:#aaa">Lv.${pet.level || 1} · ${stage}${pet.faint_count > 0 ? ` · <span style="color:#f39c12">기절 ${pet.faint_count}/3</span>` : ''}</div>
         <div style="margin-top:6px; display:flex; gap:8px; font-size:11px; color:#888">
           <span>배고픔 ${Math.round(cond.hunger ?? 100)}</span>
           <span>행복 ${Math.round(cond.happiness ?? 100)}</span>
