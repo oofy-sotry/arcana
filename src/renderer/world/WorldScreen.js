@@ -182,6 +182,8 @@ class WorldScreen {
       actions.appendChild(btn)
     }
 
+    if (npc.service === 'gym') this._renderGymActions(npc, actions)
+
     if (npc.service === 'shop') {
       new ShopDialog(actions, { onClose: () => this._closeDialog() }).open()
     }
@@ -199,6 +201,35 @@ class WorldScreen {
     }
 
     dialog.style.display = 'block'
+  }
+
+  // 관장 대화 — 단계별 도전 버튼(획득 ✔ / 도전 가능 ⚔ / 잠김 🔒)
+  async _renderGymActions(npc, actions) {
+    const gymId  = npc.leaderId.split('_')[0]
+    const view   = await window.arcana.gym.getView({ gymId })
+    const leader = view?.leaders.find(l => l.id === npc.leaderId)
+    if (!leader) return
+    for (const t of leader.tiers) {
+      const btn = document.createElement('button')
+      btn.style.cssText = `padding:7px 12px; margin:0 6px 6px 0; border:1px solid #e94560; border-radius:6px; font-size:12px;
+        cursor:${t.open ? 'pointer' : 'default'}; background:${t.earned ? '#1e5631' : t.open ? '#0f3460' : '#222'}; color:#eee;`
+      btn.textContent = t.earned ? `✔ ${t.tier}단계 (다시 도전)` : t.open ? `⚔ ${t.tier}단계 도전 · 권장 Lv ${t.level}` : `🔒 ${t.tier}단계`
+      btn.disabled = !t.open
+      btn.addEventListener('click', () => this._startGymBattle(npc.leaderId, t.tier))
+      actions.appendChild(btn)
+    }
+  }
+
+  // 관장전은 사냥 페이지의 전투 화면에서 — 끝나면 이 자리로 돌아오도록 위치 먼저 저장
+  async _startGymBattle(leaderId, tier) {
+    this._closeDialog()
+    if (this.engine) {
+      await window.arcana.summoner.saveMapState({
+        summonerId: this.summoner.id, mapId: this.engine.map.id,
+        tileX: this.engine.playerX, tileY: this.engine.playerY,
+      })
+    }
+    window.arcana.hunting.open({ gymLeaderId: leaderId, gymTier: tier })
   }
 
   // 회복소 치료 결과 안내 — 기절에서 깬 펫, 오늘 줄어든 기절 횟수
