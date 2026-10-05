@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('arcana', {
   pet: {
+    getDead:   ()                => ipcRenderer.invoke('pet:get-dead'),
     getAll:  ()                    => ipcRenderer.invoke('pet:get-all'),
     create:  ({ name, attribute }) => ipcRenderer.invoke('pet:create', { name, attribute }),
     addExp:  ({ petId, amount })   => ipcRenderer.invoke('pet:add-exp', { petId, amount }),
@@ -20,6 +21,7 @@ contextBridge.exposeInMainWorld('arcana', {
     buy:          ({ petId, itemId, quantity }) => ipcRenderer.invoke('item:buy', { petId, itemId, quantity }),
     getSellList:  ({ petId })      => ipcRenderer.invoke('item:get-sell-list', { petId }),
     sell:         ({ petId, itemId, quantity }) => ipcRenderer.invoke('item:sell', { petId, itemId, quantity }),
+    revive:       ({ petId, targetId }) => ipcRenderer.invoke('item:revive', { petId, targetId }),
   },
   overlay: {
     toggleMouse: (ignore)          => ipcRenderer.send('overlay:toggle-mouse', ignore),
