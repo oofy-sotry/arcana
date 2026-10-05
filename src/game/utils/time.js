@@ -16,10 +16,26 @@ function calcOfflineTicks(elapsedSeconds) {
   return Math.floor(elapsedSeconds / TICK_INTERVAL_SECONDS)
 }
 
+// 로컬 날짜 키 'YYYY-MM-DD' — "하루가 지나면" 판정(기절 횟수 감소, 하루 1번 치료)에 사용
+function toDayKey(ms = Date.now()) {
+  const d = new Date(ms)
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
+// 두 날짜 키 사이의 날 수 (to가 더 이르면 0)
+function daysBetween(fromKey, toKey) {
+  const parse = k => { const [y, m, d] = k.split('-').map(Number); return Date.UTC(y, m - 1, d) }
+  return Math.max(0, Math.round((parse(toKey) - parse(fromKey)) / 86400000))
+}
+
 module.exports = {
   AGE_DURATION_SECONDS,
   TICK_INTERVAL_SECONDS,
   getElapsedSeconds,
   secondsToAge,
   calcOfflineTicks,
+  toDayKey,
+  daysBetween,
 }
