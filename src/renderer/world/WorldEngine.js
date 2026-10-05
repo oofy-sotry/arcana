@@ -15,6 +15,8 @@ const TILE_COLORS = {
   8:  { base: '#6aaa50', border: '#4a8a30' },   // 출구 서
   9:  { base: '#6aaa50', border: '#4a8a30' },   // 출구 북
   10: { base: '#3a6b2a', border: '#2a5a1a' },   // 야생 풀밭 (배틀 발생)
+  11: { base: '#c9b79c', border: '#b5a386' },   // 실내 바닥
+  12: { base: '#7a4f2a', border: '#5c3a1e' },   // 실내 카운터 (못 지나감)
 }
 
 const APPEARANCE_COLORS = {
@@ -24,7 +26,7 @@ const APPEARANCE_COLORS = {
   female_b: { hair: '#9c27b0', robe: '#9b59b6', skin: '#f5d5b0' },
 }
 
-const WALKABLE = new Set([0, 3, 5, 6, 7, 8, 9, 10])
+const WALKABLE = new Set([0, 3, 5, 6, 7, 8, 9, 10, 11])
 const WILD_GRASS = new Set([10])
 
 // BFS 경로탐색
