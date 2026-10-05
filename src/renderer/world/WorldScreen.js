@@ -190,6 +190,8 @@ class WorldScreen {
 
     if (npc.service === 'gym') this._renderGymActions(npc, actions)
 
+    if (npc.service === 'breed') this._renderPanelService(actions, BreedingPanel)
+
     if (npc.service === 'shop') {
       new ShopDialog(actions, { onClose: () => this._closeDialog() }).open()
     }
@@ -224,6 +226,16 @@ class WorldScreen {
       btn.addEventListener('click', () => this._startGymBattle(npc.leaderId, t.tier))
       actions.appendChild(btn)
     }
+  }
+
+  // 육성소·소환소 — 기존 교배/가챠 화면을 대화 창 안에서 연다
+  // 결과를 보여준 직후 다시 그리면 결과 카드가 바로 사라지므로, 런처의 펫 목록만 갱신한다
+  async _renderPanelService(actions, Panel) {
+    const pets = await window.arcana.pet.getAll()
+    const wrap = document.createElement('div')
+    wrap.style.cssText = 'max-height:50vh; overflow-y:auto; margin-top:6px'
+    wrap.appendChild(new Panel(pets).render(() => this.callbacks.onPetsChanged?.()))
+    actions.appendChild(wrap)
   }
 
   // 관장전은 사냥 페이지의 전투 화면에서 — 끝나면 이 자리로 돌아오도록 위치 먼저 저장
