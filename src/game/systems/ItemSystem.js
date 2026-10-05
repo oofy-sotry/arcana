@@ -76,6 +76,13 @@ class ItemSystem {
     return { ok: true, itemId, quantity, earned, remainingCoins: (pet.coins || 0) + earned }
   }
 
+  // 상점 "팔기" 목록 — 가진 아이템 중 팔 수 있는 것만, 판매가 포함
+  getSellList(petId) {
+    return this.getInventory(petId)
+      .map(row => ({ itemId: row.item_id, name: row.data?.name ?? row.item_id, quantity: row.quantity, price: this.getSellPrice(row.item_id) }))
+      .filter(row => row.price > 0)
+  }
+
   getInventory(petId) {
     const rows = db.query(
       'SELECT * FROM pet_inventory WHERE pet_id = ? AND quantity > 0',
