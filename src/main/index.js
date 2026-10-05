@@ -34,6 +34,7 @@ app.whenReady().then(async () => {
     collectionSystem:  gameWorld.collectionSystem,
     faintSystem:       gameWorld.faintSystem,
     turnBattleSystem:  gameWorld.turnBattleSystem,
+    gymSystem:         gameWorld.gymSystem,
     windowManager,
   })
   ipcRouter.register()
