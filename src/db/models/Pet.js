@@ -29,6 +29,10 @@ function getAllPets() {
   return db.query('SELECT * FROM pets WHERE is_alive = 1')
 }
 
+function getDeadPets() {
+  return db.query('SELECT * FROM pets WHERE is_alive = 0')
+}
+
 function updatePet(id, fields) {
   const entries = Object.entries(fields)
   const setClause = entries.map(([k]) => `${k} = ?`).join(', ')
@@ -51,4 +55,4 @@ function updateConditions(petId, fields) {
   )
 }
 
-module.exports = { createPet, getPet, getAllPets, updatePet, getConditions, updateConditions }
+module.exports = { createPet, getPet, getAllPets, getDeadPets, updatePet, getConditions, updateConditions }
