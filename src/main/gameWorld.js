@@ -22,6 +22,7 @@ const SummonerSystem     = require('../game/systems/SummonerSystem')
 const CollectionSystem   = require('../game/systems/CollectionSystem')
 const FaintSystem        = require('../game/systems/FaintSystem')
 const TurnBattleSystem   = require('../game/systems/TurnBattleSystem')
+const GymSystem          = require('../game/systems/GymSystem')
 const { TICK_INTERVAL_SECONDS, getElapsedSeconds, secondsToAge } = require('../game/utils/time')
 
 class GameWorld {
@@ -46,6 +47,7 @@ class GameWorld {
     this.collectionSystem    = null
     this.faintSystem         = null
     this.turnBattleSystem    = null
+    this.gymSystem           = null
     this._tickTimer          = null
   }
 
@@ -62,7 +64,8 @@ class GameWorld {
     this.itemSystem      = new ItemSystem({ Pet, save: db.save, factionSystem: this.factionSystem })
     this.equipmentSystem     = new EquipmentSystem({ save: db.save, itemSystem: this.itemSystem })
     this.faintSystem         = new FaintSystem({ Pet, save: db.save })
-    this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem, equipmentSystem: this.equipmentSystem, summonerSystem: this.summonerSystem, faintSystem: this.faintSystem })
+    this.gymSystem           = new GymSystem({ save: db.save })
+    this.combatSystem    = new CombatSystem({ Pet, save: db.save, levelSystem: this.levelSystem, itemSystem: this.itemSystem, equipmentSystem: this.equipmentSystem, summonerSystem: this.summonerSystem, faintSystem: this.faintSystem, gymSystem: this.gymSystem })
     this.explorationSystem   = new ExplorationSystem({ Pet, save: db.save, itemSystem: this.itemSystem, factionSystem: this.factionSystem, summonerSystem: this.summonerSystem })
     this.breedingSystem      = new BreedingSystem({ Pet, save: db.save })
     this.gachaSystem         = new GachaSystem({ Pet, save: db.save })
@@ -88,6 +91,7 @@ class GameWorld {
       huntingSystem:  this.huntingSystem,
       questSystem:    this.questSystem,
       summonerSystem: this.summonerSystem,
+      gymSystem:      this.gymSystem,
     })
 
     const pets = this.petSystem.getAll()
