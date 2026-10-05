@@ -65,7 +65,7 @@ class TurnBattleSystem {
     const trainer = { leaderId, tier, name: leader.name }
     return this._begin(team, trainer, [
       { type: 'challenge', trainer: leader.name },
-      { type: 'send', trainer: leader.name, name: team[0].name },
+      this._sendEvent(leader.name, team[0]),
     ])
   }
 
@@ -102,8 +102,13 @@ class TurnBattleSystem {
     events.push({ type: 'defeat', name: s.monster.name, winner: active.name, exp: s.monster.exp, coins: reward.coins })
     s.teamIndex++
     s.monster = this._opponent(s.team[s.teamIndex])
-    events.push({ type: 'send', trainer: s.trainer.name, name: s.monster.name })
+    events.push(this._sendEvent(s.trainer.name, s.monster))
     return true
+  }
+
+  // 관장이 몬스터를 내보냄 — 화면이 이벤트 재생 중에 상대 그림·HP 바를 바꿀 수 있게 몬스터 정보 포함
+  _sendEvent(trainer, m) {
+    return { type: 'send', trainer, name: m.name, id: m.id, attribute: m.attribute, tier: m.tier, isBoss: !!m.isBoss, maxHp: m.hp }
   }
 
   // 파티(살아 있고 기절 안 한 펫)가 있으면 파티, 없으면 기절 안 한 펫 앞에서 3마리
