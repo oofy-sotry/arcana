@@ -46,6 +46,10 @@ class FaintSystem {
     return { fainted: true, died: false, faintCount: count + 1 }
   }
 
+  getDeadPets() {
+    return this.Pet.getDeadPets()
+  }
+
   // 부활석 — 죽은 펫을 기절 횟수 0, HP·MP 가득 찬 상태로 되살림
   revive(petId) {
     const pet = this.Pet.getPet(petId)
