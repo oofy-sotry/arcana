@@ -89,6 +89,8 @@ class IpcRouter {
       return result
     })
     ipcMain.handle('item:get-shop', () => this.itemSystem.getShopCatalog())
+    ipcMain.handle('item:get-sell-list', (_e, { petId }) => this.itemSystem.getSellList(petId))
+    ipcMain.handle('item:sell', (_e, { petId, itemId, quantity }) => this.itemSystem.sellItem(petId, itemId, quantity))
     ipcMain.handle('item:buy', (_e, { petId, itemId, quantity }) =>
       this.itemSystem.buyItem(petId, itemId, quantity)
     )
