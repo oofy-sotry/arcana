@@ -320,6 +320,16 @@ class IpcRouter {
       this.summonerSystem.saveMapState(summonerId, mapId, tileX, tileY)
     )
 
+    // ── 부활석 ────────────────────────────────────────────────────────
+    ipcMain.handle('pet:get-dead', () => this.faintSystem.getDeadPets())
+    // petId 펫의 가방에서 부활석 1개를 써서 targetId 죽은 펫을 되살림
+    ipcMain.handle('item:revive', (_e, { petId, targetId }) => {
+      const target = this.faintSystem.getDeadPets().find(p => p.id === targetId)
+      if (!target) return { ok: false, error: '죽은 에레멘탈이 아닙니다' }
+      if (!this.itemSystem.consumeItem(petId, 'revive_stone')) return { ok: false, error: '부활석이 없습니다' }
+      return this.faintSystem.revive(targetId)
+    })
+
     // ── 턴제 전투 ──────────────────────────────────────────────────────
     ipcMain.handle('battle:start', (_e, { zoneId, monsterId }) => this.turnBattleSystem.start({ zoneId, monsterId }))
     ipcMain.handle('battle:act',   (_e, action) => this.turnBattleSystem.act(action))
