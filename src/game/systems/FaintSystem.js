@@ -28,7 +28,7 @@ class FaintSystem {
   }
 
   // 전투 패배 — 기절 횟수가 이미 MAX_FAINTS면 죽음. 생명의 부적(death_shield)은 이번 기절을 횟수에 안 넣고
-  // 죽음도 막음, 부활석(auto_revive)은 죽을 상황에서 기절 횟수 0으로 살려냄
+  // 죽음도 막음. 죽은 펫은 부활석으로 되살림(revive)
   recordLoss(petOrId) {
     const pet   = this.Pet.getPet(typeof petOrId === 'object' ? petOrId.id : petOrId)
     if (!pet) return null
@@ -39,15 +39,20 @@ class FaintSystem {
       return { fainted: true, died: false, shielded: true, faintCount: count }
     }
     if (count >= MAX_FAINTS) {
-      if (this._consumeFlag(`auto_revive_${pet.id}`)) {
-        this.Pet.updatePet(pet.id, { faint_count: 0, is_fainted: 1 })
-        return { fainted: true, died: false, revived: true, faintCount: 0 }
-      }
       this.Pet.updatePet(pet.id, { is_alive: 0, is_fainted: 0 })
       return { fainted: false, died: true, faintCount: count }
     }
     this.Pet.updatePet(pet.id, { faint_count: count + 1, is_fainted: 1 })
     return { fainted: true, died: false, faintCount: count + 1 }
+  }
+
+  // 부활석 — 죽은 펫을 기절 횟수 0, HP·MP 가득 찬 상태로 되살림
+  revive(petId) {
+    const pet = this.Pet.getPet(petId)
+    if (!pet || Number(pet.is_alive) === 1) return { ok: false, error: '죽은 에레멘탈이 아닙니다' }
+    this.Pet.updatePet(petId, { is_alive: 1, is_fainted: 0, faint_count: 0, cur_hp: null, cur_mp: null })
+    this.save?.()
+    return { ok: true, name: pet.name }
   }
 
   // 회복소 치료 — 기절 상태는 언제든 풀고, 기절 횟수 -1은 펫마다 하루 1번
