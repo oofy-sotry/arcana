@@ -73,3 +73,11 @@ test('rollWildEncounter — 낮은 tier일수록 자주 나옴 (60/30/10)', () =
   assert.ok(Math.abs(count[2] / N - 0.3) < 0.05)
   assert.ok(Math.abs(count[3] / N - 0.1) < 0.05)
 })
+
+test('기절한 펫은 수동·자동 사냥 모두 거부', () => {
+  const { hs, fought } = makeSystem()
+  const fainted = { ...pet, is_fainted: 1 }
+  assert.match(hs.processManualBattle(fainted, zone.id).error, /기절/)
+  assert.match(hs.startAutoHunt(fainted, zone.id).error, /기절/)
+  assert.equal(fought.length, 0)
+})
