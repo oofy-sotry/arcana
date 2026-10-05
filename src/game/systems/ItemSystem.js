@@ -150,14 +150,9 @@ class ItemSystem {
         break
       }
 
-      case 'revive': {
-        // 부활석: 죽을 상황에서 1번 버티고 기절 횟수 0으로 살아남음 — FaintSystem.recordLoss에서 소비
-        db.run(
-          "INSERT OR REPLACE INTO world_state (key, value) VALUES (?, '1')",
-          [`auto_revive_${pet.id}`]
-        )
-        break
-      }
+      case 'revive':
+        // 부활석: 죽은 펫을 골라 되살림 — 대상이 필요해서 여기서는 쓰지 않고 item:revive(FaintSystem.revive)로 처리
+        return { ok: false, reason: 'needs_target' }
 
       case 'dark_evolve': {
         if ((pet.evolution_stage || 0) >= 4) return { ok: false, reason: 'max_stage' }
