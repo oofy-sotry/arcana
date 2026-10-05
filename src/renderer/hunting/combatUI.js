@@ -36,6 +36,36 @@ class CombatUI {
     if (battleResult.result === 'won')  this.setMonsterHp(0, this.currentMonMaxHp)
     if (battleResult.result === 'lost') this.setPetHp(0, this.currentPetMaxHp)
   }
+
+  // 전투 턴 로그를 한 턴씩 재생 — HP 바를 턴마다 깎고 onTurn(entry)로 스프라이트 연출 연결
+  async playBattle(battleResult, { onTurn } = {}) {
+    if (!battleResult) return
+    const log      = battleResult.log || []
+    const petMax   = battleResult.petMaxHp     || this.currentPetMaxHp
+    const monMax   = battleResult.monsterMaxHp || this.currentMonMaxHp
+    let petHp = petMax
+    let monHp = monMax
+    this.setPetHp(petHp, petMax)
+    this.setMonsterHp(monHp, monMax)
+
+    const interval = Math.min(350, 4000 / Math.max(1, log.length))
+    for (const entry of log) {
+      await new Promise(r => setTimeout(r, interval))
+      if (entry.actor === 'pet') {
+        monHp -= entry.damage || 0
+      } else {
+        petHp -= entry.damage || 0
+        monHp -= entry.counter || 0  // 패시브 반격
+      }
+      this.setPetHp(Math.round(petHp), petMax)
+      this.setMonsterHp(Math.round(monHp), monMax)
+      if (onTurn) onTurn(entry)
+    }
+
+    // 로그에 없는 지속 피해 등으로 어긋난 마지막 HP를 결과에 맞춤
+    if (battleResult.result === 'won')  this.setMonsterHp(0, monMax)
+    if (battleResult.result === 'lost') this.setPetHp(0, petMax)
+  }
 }
 
 window._combatUI = null
