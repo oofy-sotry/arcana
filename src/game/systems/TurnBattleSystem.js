@@ -1,4 +1,5 @@
 const ITEMS = require('../data/items')
+const { getLeader, getTeam } = require('../data/gyms')
 const { getMonster } = require('../data/monsters')
 const { calcDamage } = require('../utils/formula')
 
@@ -27,7 +28,7 @@ function wipeEscapeChance(tier) {
 }
 
 class TurnBattleSystem {
-  constructor({ Pet, save, combatSystem, skillSystem, itemSystem, partySystem, faintSystem, huntingSystem, questSystem, summonerSystem }) {
+  constructor({ Pet, save, combatSystem, skillSystem, itemSystem, partySystem, faintSystem, huntingSystem, questSystem, summonerSystem, gymSystem }) {
     this.Pet            = Pet
     this.save           = save
     this.combatSystem   = combatSystem
@@ -38,17 +39,37 @@ class TurnBattleSystem {
     this.huntingSystem  = huntingSystem
     this.questSystem    = questSystem || null
     this.summonerSystem = summonerSystem || null
+    this.gymSystem      = gymSystem || null
     this.session        = null
   }
 
   // ─── 시작 ──────────────────────────────────────────────────────────
-  start({ zoneId, monsterId }) {
+  // 야생: { zoneId, monsterId } / 관장전: { gymLeaderId, tier }
+  start({ zoneId, monsterId, gymLeaderId, tier } = {}) {
+    if (gymLeaderId) return this._startGym(gymLeaderId, tier)
+
     const zone = this.huntingSystem.canEnterZone(zoneId)
     if (!zone) return { error: '들어갈 수 없는 구역입니다' }
     if (monsterId !== zone.bossId && !zone.monsterIds.includes(monsterId)) return { error: '이 구역의 몬스터가 아닙니다' }
     const monster = getMonster(monsterId)
     if (!monster) return { error: '몬스터를 찾을 수 없습니다' }
+    return this._begin([monster], null, [{ type: 'appear', name: monster.name }])
+  }
 
+  // 관장전 — 도망·포획 불가, 상대가 쓰러지면 다음 몬스터. 이기면 배지
+  _startGym(leaderId, tier) {
+    const check = this.gymSystem?.canChallenge(leaderId, tier)
+    if (!check?.ok) return { error: check?.error || '체육관을 찾을 수 없습니다' }
+    const { leader } = getLeader(leaderId)
+    const team = getTeam(leader, tier).map(getMonster).filter(Boolean)
+    const trainer = { leaderId, tier, name: leader.name }
+    return this._begin(team, trainer, [
+      { type: 'challenge', trainer: leader.name },
+      { type: 'send', trainer: leader.name, name: team[0].name },
+    ])
+  }
+
+  _begin(team, trainer, events) {
     const pets = this._battleParty()
     if (!pets.length) return { error: '싸울 수 있는 에레멘탈이 없습니다 — 회복소에서 치료하세요' }
 
@@ -57,15 +78,32 @@ class TurnBattleSystem {
     this.Pet.updateConditions(pets[0].id, { energy: energy - ENERGY_COST })
 
     this.session = {
-      zoneId,
-      monster: { ...monster, maxHp: monster.hp, buffs: [], dots: [], stun: 0 },
+      team, teamIndex: 0, trainer,
+      monster: this._opponent(team[0]),
       party:   pets.map(p => this._combatant(p)),
       active:  0,
       runAttempts: 0,
       over:    false,
     }
     this.save()
-    return { state: this.view(), events: [{ type: 'appear', name: monster.name }] }
+    return { state: this.view(), events }
+  }
+
+  _opponent(monster) {
+    return { ...monster, maxHp: monster.hp, buffs: [], dots: [], stun: 0 }
+  }
+
+  // 관장 몬스터가 쓰러졌을 때 — 그 몬스터 보상을 주고 다음 몬스터를 내보냄. 남은 게 없으면 false
+  _nextOpponent(events) {
+    const s = this.session
+    if (!s.trainer || s.teamIndex >= s.team.length - 1) return false
+    const active = s.party[s.active]
+    const reward = this.combatSystem.grantVictory(this.Pet.getPet(active.id), s.monster)
+    events.push({ type: 'defeat', name: s.monster.name, winner: active.name, exp: s.monster.exp, coins: reward.coins })
+    s.teamIndex++
+    s.monster = this._opponent(s.team[s.teamIndex])
+    events.push({ type: 'send', trainer: s.trainer.name, name: s.monster.name })
+    return true
   }
 
   // 파티(살아 있고 기절 안 한 펫)가 있으면 파티, 없으면 기절 안 한 펫 앞에서 3마리
@@ -111,6 +149,7 @@ class TurnBattleSystem {
       active: s.active,
       moves: s.party[s.active].moves.map(mv => ({ id: mv.id, name: mv.name, mpCost: mv.mpCost, usable: s.party[s.active].mp >= mv.mpCost })),
       bag,
+      trainer: s.trainer ? { name: s.trainer.name, tier: s.trainer.tier, remaining: s.team.length - s.teamIndex } : null,
       needSwitch: s.party[s.active].ko && !s.over,
       over: s.over,
     }
@@ -137,6 +176,7 @@ class TurnBattleSystem {
         break
       }
       case 'run': {
+        if (s.trainer) return { error: '관장과의 승부에서는 도망칠 수 없다!' }
         s.runAttempts++
         if (Math.random() < runChance(this._stat(me, 'speed'), this._stat(s.monster, 'speed'), s.runAttempts - 1)) {
           events.push({ type: 'run', ok: true })
@@ -149,6 +189,7 @@ class TurnBattleSystem {
       case 'item': {
         const item = ITEMS[action.itemId]
         if (!item?.battleEffect) return { error: '전투에서 쓸 수 없는 아이템입니다' }
+        if (s.trainer && item.battleEffect.type === 'capture') return { error: '관장의 에레멘탈은 잡을 수 없다!' }
         if (!this.itemSystem.consumeItem(s.party[0].id, action.itemId)) return { error: '가방에 그 아이템이 없습니다' }
         if (item.battleEffect.type === 'capture') {
           const ok = Math.random() < captureChance(s.monster, s.monster.hp / s.monster.maxHp)
@@ -179,9 +220,9 @@ class TurnBattleSystem {
         return { error: '알 수 없는 행동입니다' }
     }
 
-    if (s.monster.hp <= 0) return this._finish('won', events)
+    if (s.monster.hp <= 0 && !this._nextOpponent(events)) return this._finish('won', events)
     this._endOfRound(events)
-    if (s.monster.hp <= 0) return this._finish('won', events)
+    if (s.monster.hp <= 0 && !this._nextOpponent(events)) return this._finish('won', events)
     if (s.party.every(c => c.ko)) return this._finish('lost', events)
     return { state: this.view(), events }
   }
@@ -318,6 +359,14 @@ class TurnBattleSystem {
       Object.assign(outcome, { exp: s.monster.exp, coins: reward.coins, drops: reward.drops, winner: active.name })
       this.Pet.updatePet(active.id, { affinity: Math.min(100, (pet.affinity || 0) + 1.0) })
       this.questSystem?.recordActivity('hunt', 1)
+      if (s.trainer) {
+        // 관장 상금 — 팀 몬스터 최대 코인 합, 승리한 펫에게
+        const prize = s.team.reduce((sum, m) => sum + m.coins.max, 0)
+        const fresh = this.Pet.getPet(active.id)
+        this.Pet.updatePet(active.id, { coins: (fresh.coins || 0) + prize })
+        outcome.prize = prize
+        outcome.badge = this.gymSystem.awardBadge(s.trainer.leaderId, s.trainer.tier)
+      }
     }
     if (result === 'captured') {
       outcome.captured = this._capture(s.monster)
