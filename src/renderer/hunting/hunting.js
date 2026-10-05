@@ -171,7 +171,7 @@ async function setupEncounter() {
     document.getElementById('btn-attack').style.display = 'none'
     return
   }
-  banner.textContent = `야생의 ${monster.name}이(가) 나타났다!`
+  banner.textContent = `야생의 ${Josa.attach(monster.name, '이')} 나타났다!`
   window._monsterRenderer.clearAll()
   const sprite = await window._monsterRenderer.spawnMonster(monster, { x: app.screen.width / 2 + 64, y: app.screen.height / 2 })
   if (!currentPet) { document.getElementById('btn-attack').style.display = 'none'; return }
@@ -303,9 +303,9 @@ function knockBack(monsterSprite) {
 // 패배 후 기절/죽음 안내 (FaintSystem.recordLoss 결과)
 function faintMessage(faint) {
   const name = currentPet?.name ?? '펫'
-  if (faint.died)     return `💀 ${name}이(가) 쓰러져 다시 일어나지 못했다... (부활석으로 되살릴 수 있다)`
-  if (faint.shielded) return `🛡 생명의 부적이 ${name}을(를) 지켜줬다 (기절 횟수 그대로)`
-  return `😵 ${name}이(가) 기절했다! (기절 ${faint.faintCount}/3 — 회복소에서 치료하세요)`
+  if (faint.died)     return `💀 ${Josa.attach(name, '이')} 쓰러져 다시 일어나지 못했다... (부활석으로 되살릴 수 있다)`
+  if (faint.shielded) return `🛡 생명의 부적이 ${Josa.attach(name, '을')} 지켜줬다 (기절 횟수 그대로)`
+  return `😵 ${Josa.attach(name, '이')} 기절했다! (기절 ${faint.faintCount}/3 — 회복소에서 치료하세요)`
 }
 
 function setBattleLock(on) {
