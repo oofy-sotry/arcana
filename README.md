@@ -77,6 +77,21 @@
 실시간 PvP·파티 사냥은 서버 메모리의 매칭 큐(`apps/server/realtime/queue.js`, `partyQueue.js`, `huntMatch.js`)로 짝을 맞춥니다.
 서버가 없어도 싱글플레이는 전부 동작하고, 온라인 탭만 연결 실패로 표시됩니다.
 
+### 모노레포 구성
+
+pnpm workspaces + Turborepo로 클라이언트·서버·공용 패키지를 한 저장소에서 관리합니다.
+
+| 패키지 | 언어 | 역할 |
+|---|---|---|
+| `apps/desktop` | JS | Electron 클라이언트 |
+| `apps/server` | JS | Express + WebSocket 온라인 서버 |
+| `packages/game-core` | JS | 클라이언트·서버가 함께 쓰는 게임 규칙 — 속성 상성, 데미지 공식, 몬스터 데이터 |
+| `packages/shared` | TypeScript | IPC 채널 이름 목록과 공용 데이터 타입(`Pet`, `Attribute` …) |
+
+- 전환 전에는 서버가 클라이언트 파일을 `../../src/game/...` 상대 경로로 직접 불러왔습니다. 이 공용 로직을 `game-core`로 분리해 서버를 클라이언트 폴더 없이 따로 배포할 수 있게 했습니다.
+- `packages/shared`의 채널 목록은 `apps/desktop/test/ipcChannels.test.js`가 `ipcRouter.js`·`preload.js`의 실제 채널과 비교해, 코드와 목록이 어긋나면 테스트가 실패합니다.
+- `turbo run test`는 의존 패키지 빌드(`^build` — shared의 `tsc`)를 먼저 실행한 뒤 패키지별 테스트를 병렬로 돌립니다.
+
 ### 실행 · 테스트 · 빌드
 
 ```bash
