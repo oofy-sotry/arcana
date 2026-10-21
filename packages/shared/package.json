@@ -1,0 +1,16 @@
+{
+  "name": "@arcana/shared",
+  "version": "0.1.0",
+  "description": "IPC 채널 이름과 공용 데이터 타입 (TypeScript)",
+  "private": true,
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.json && node --test"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
