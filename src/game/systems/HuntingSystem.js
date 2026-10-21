@@ -1,5 +1,5 @@
 const { ZONES, MONSTERS, getMonster } = require('../data/monsters')
-const { getMultiplier } = require('../data/attributes')
+const { getMultiplier } = require('@arcana/game-core/attributes')
 
 const AUTO_ENERGY_COST   = 30
 const MANUAL_ENERGY_COST = 15

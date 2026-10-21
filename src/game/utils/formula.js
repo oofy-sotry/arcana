@@ -1,4 +1,4 @@
-const { getMultiplier, isFavorable } = require('../data/attributes')
+const { getMultiplier, isFavorable } = require('@arcana/game-core/attributes')
 
 const CRIT_BASE_RATE   = 0.10
 const CRIT_BONUS_RATE  = 0.15 // 상성 유리 시 추가
