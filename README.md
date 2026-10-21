@@ -29,7 +29,7 @@
 └──────────────▲──────────────────────────────────────────▲───────────────┘
                │ IPC (invoke / send)                       │ HTTP
 ┌──────────────┴──────────────┐                 ┌──────────┴──────────────┐
-│ Preload                     │                 │ server/ (Express + ws)  │
+│ Preload                     │                 │ apps/server (Express+ws)│
 │ contextBridge로             │                 │ JWT 인증 · 세이브 ·     │
 │ window.arcana.* 만 노출     │                 │ 랭킹 · 교배 · 친구 ·    │
 └──────────────▲──────────────┘                 │ 실시간 매칭 큐          │
@@ -42,11 +42,11 @@
 └──────────────────────────────────────────────────┘
 ```
 
-게임 상태를 바꾸는 로직은 모두 main 프로세스의 `src/game/systems`에 있고, renderer는 화면 표시와 입력만 담당합니다.
+게임 상태를 바꾸는 로직은 모두 main 프로세스의 `apps/desktop/src/game/systems`에 있고, renderer는 화면 표시와 입력만 담당합니다.
 
 ### 보안 설정
 
-- 모든 `BrowserWindow`는 `contextIsolation: true`, `nodeIntegration: false` (`src/main/windowManager.js`).
+- 모든 `BrowserWindow`는 `contextIsolation: true`, `nodeIntegration: false` (`apps/desktop/src/main/windowManager.js`).
   renderer에서 Node API(`fs`, `child_process` 등)를 쓸 수 없으므로, 화면 코드에 문제가 생겨도 파일 시스템·DB에 직접 접근하지 못합니다.
 - preload는 `ipcRenderer`를 그대로 노출하지 않고, 기능별 함수(`window.arcana.pet.getAll()` 등)만 `contextBridge`로 노출합니다.
   renderer가 호출할 수 있는 채널이 preload에 적힌 목록으로 제한됩니다.
@@ -55,7 +55,7 @@
 
 ### IPC 설계
 
-- 채널 이름은 `도메인:동작` 형식(`pet:get-all`, `hunting:manual-battle`, `online:login` …)이고, 전부 `src/main/ipcRouter.js` 한 곳에서 등록합니다.
+- 채널 이름은 `도메인:동작` 형식(`pet:get-all`, `hunting:manual-battle`, `online:login` …)이고, 전부 `apps/desktop/src/main/ipcRouter.js` 한 곳에서 등록합니다.
 - `IpcRouter`는 생성자로 게임 시스템들을 주입받아 호출만 하므로, 시스템 로직은 Electron 없이 `node --test`로 테스트할 수 있습니다.
 - 요청·응답은 `ipcRenderer.invoke` / `ipcMain.handle`, 응답이 필요 없는 신호(오버레이 마우스 전환)만 `send` / `on`을 씁니다.
 - `ipcMain.handle`의 반환값은 구조적 복제를 거치므로 `BrowserWindow` 같은 객체를 반환하지 않도록 합니다(실제로 겪은 버그).
@@ -72,9 +72,9 @@
 
 ### 서버
 
-`server/`는 Express REST API(`/auth`, `/save`, `/ranking`, `/breeding`, `/battle`, `/friends`, `/client-log`)와
+`apps/server`는 Express REST API(`/auth`, `/save`, `/ranking`, `/breeding`, `/battle`, `/friends`, `/client-log`)와
 같은 HTTP 서버에 붙은 WebSocket(`ws`)으로 구성됩니다. 인증은 bcrypt 해시 + JWT, 저장소는 sql.js입니다.
-실시간 PvP·파티 사냥은 서버 메모리의 매칭 큐(`server/realtime/queue.js`, `partyQueue.js`, `huntMatch.js`)로 짝을 맞춥니다.
+실시간 PvP·파티 사냥은 서버 메모리의 매칭 큐(`apps/server/realtime/queue.js`, `partyQueue.js`, `huntMatch.js`)로 짝을 맞춥니다.
 서버가 없어도 싱글플레이는 전부 동작하고, 온라인 탭만 연결 실패로 표시됩니다.
 
 ### 실행 · 테스트 · 빌드
