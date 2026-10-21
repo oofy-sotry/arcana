@@ -1,7 +1,7 @@
 const ITEMS = require('../data/items')
 const { getLeader, getTeam } = require('../data/gyms')
 const { getMonster } = require('../data/monsters')
-const { calcDamage } = require('../utils/formula')
+const { calcDamage } = require('@arcana/game-core/formula')
 
 // 골드버전식 턴제 전투 — 매 턴 싸우다(기술) / 가방 / 교체 / 도망 중 하나를 고른다
 const ENERGY_COST  = 15   // 전투 1회 선두 펫 에너지 (기존 수동 사냥과 같음)

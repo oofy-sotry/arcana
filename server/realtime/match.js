@@ -1,6 +1,6 @@
 // 실시간 PvP 서버 권위(authoritative) 전투 진행.
 // 클라이언트 순수 로직(DB/Electron 의존 없음)을 상대경로로 그대로 재사용 — 중복 구현 안 함.
-const { calcDamage } = require('../../src/game/utils/formula')
+const { calcDamage } = require('@arcana/game-core/formula')
 
 const MAX_ROUNDS = 100
 

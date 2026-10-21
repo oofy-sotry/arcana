@@ -5,7 +5,8 @@
   "private": true,
   "license": "UNLICENSED",
   "exports": {
-    "./attributes": "./src/attributes.js"
+    "./attributes": "./src/attributes.js",
+    "./formula": "./src/formula.js"
   },
   "scripts": {
     "test": "node --test"

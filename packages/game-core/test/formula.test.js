@@ -1,6 +1,6 @@
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const { calcDamage, getAttributeMultiplier, isFavorable } = require('../src/game/utils/formula')
+const { calcDamage, getAttributeMultiplier, isFavorable } = require('../src/formula')
 
 test('getAttributeMultiplier — 상성표를 그대로 반환', () => {
   assert.equal(getAttributeMultiplier('fire', 'wind'), 1.3)   // 유리

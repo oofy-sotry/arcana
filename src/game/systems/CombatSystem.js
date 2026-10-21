@@ -1,4 +1,4 @@
-const { calcDamage }   = require('../utils/formula')
+const { calcDamage }   = require('@arcana/game-core/formula')
 const { getDropTable } = require('../data/monsters')
 const SKILLS           = require('../data/skills')
 const ITEMS            = require('../data/items')
