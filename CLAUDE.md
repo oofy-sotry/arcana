@@ -7,7 +7,7 @@ Electron 기반 데스크톱 펫 RPG. 펫(에레멘탈)이 바탕화면 위를 �
 호미에이아이 지원용 보강. 순서: README 정리 → 모노레포 전환 → AI 펫 에이전트 → 모델 라우팅·컨텍스트 선택 → 비용·지연 기록 → 배포 자동화.
 게임 콘텐츠(스토리·몬스터·맵) 추가와 기존 코드 전체 TypeScript 전환은 하지 않는다.
 
-## 구조 (모노레포 전환 후)
+## 구조 (pnpm workspaces + Turborepo)
 - `apps/desktop` — Electron 클라이언트
   - `src/main` — 게임 월드, 창 관리, IPC 라우터, 로거, AI 에이전트
   - `src/preload` — contextBridge로 renderer에 API 노출
@@ -15,7 +15,8 @@ Electron 기반 데스크톱 펫 RPG. 펫(에레멘탈)이 바탕화면 위를 �
   - `src/game` — 게임 시스템과 데이터
   - `src/db` — sql.js 저장소와 마이그레이션
 - `apps/server` — Express + sql.js, JWT 인증, 실시간 매칭
-- `packages/shared` — TypeScript. IPC 채널 이름, 공용 데이터 타입
+- `packages/shared` — TypeScript. IPC 채널 이름, 공용 데이터 타입 (`apps/desktop/test/ipcChannels.test.js`가 실제 채널과 일치하는지 확인)
+- `packages/game-core` — JS. 클라이언트·서버가 함께 쓰는 게임 규칙 (속성 상성, 데미지 공식, 몬스터 데이터)
 
 ## 작업 규칙
 - 한 단계씩 진행하고, 단계가 끝나면 무엇을 바꿨는지 요약한 뒤 다음 단계로 넘어가기 전에 확인을 받는다.
