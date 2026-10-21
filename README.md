@@ -44,6 +44,15 @@
 
 게임 상태를 바꾸는 로직은 모두 main 프로세스의 `src/game/systems`에 있고, renderer는 화면 표시와 입력만 담당합니다.
 
+### 보안 설정
+
+- 모든 `BrowserWindow`는 `contextIsolation: true`, `nodeIntegration: false` (`src/main/windowManager.js`).
+  renderer에서 Node API(`fs`, `child_process` 등)를 쓸 수 없으므로, 화면 코드에 문제가 생겨도 파일 시스템·DB에 직접 접근하지 못합니다.
+- preload는 `ipcRenderer`를 그대로 노출하지 않고, 기능별 함수(`window.arcana.pet.getAll()` 등)만 `contextBridge`로 노출합니다.
+  renderer가 호출할 수 있는 채널이 preload에 적힌 목록으로 제한됩니다.
+- 각 화면 HTML에 Content-Security-Policy를 둬서 외부 스크립트 로드를 막습니다(`script-src 'self'`).
+  PixiJS를 쓰는 오버레이·사냥 화면만 PixiJS 내부 동작 때문에 `'unsafe-eval'`과 `worker-src blob:`을 허용합니다.
+
 ---
 
 ## 핵심 특징
