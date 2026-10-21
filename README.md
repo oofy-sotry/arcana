@@ -157,10 +157,11 @@ legacy/tamagotchi → 초기 프로토타입 코드 보존 (구 다마고치)
 | 항목 | 내용 |
 |------|------|
 | 플랫폼 | Electron |
-| 언어 | JavaScript (CommonJS, Main/DB/Game 레이어 — 프리로드 contextBridge) |
+| 언어 | JavaScript (CommonJS, Main/DB/Game 레이어 — 프리로드 contextBridge), TypeScript (`packages/shared`) |
 | 렌더링 | PixiJS v8 (ES 모듈) |
 | 저장소 (클라이언트) | sql.js (WebAssembly SQLite) |
-| 저장소 (서버) | sql.js — `server/` Express 앱 |
+| 저장소 (서버) | sql.js — `apps/server` Express 앱 |
+| 모노레포 | pnpm workspaces + Turborepo |
 | 온라인 | 완료 — JWT 인증, 랭킹, 온라인 교배, PvP 시즌, 친구 |
 
 ---
