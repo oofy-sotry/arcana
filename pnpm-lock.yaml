@@ -182,6 +182,9 @@ importers:
         specifier: ^1.12.0
         version: 1.14.1
     devDependencies:
+      '@arcana/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       electron:
         specifier: ^33.0.0
         version: 33.4.11(supports-color@7.2.0)
