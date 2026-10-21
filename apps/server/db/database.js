@@ -1,7 +1,7 @@
 const path = require('path')
 const fs   = require('fs')
 
-const DEFAULT_DB_PATH = path.join(__dirname, '../../data/arcana-server.db')
+const DEFAULT_DB_PATH = path.join(__dirname, '../data/arcana-server.db')
 
 let db     = null
 let SQL    = null
