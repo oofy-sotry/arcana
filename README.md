@@ -95,16 +95,15 @@ pnpm workspaces + Turborepo로 클라이언트·서버·공용 패키지를 한 
 ### 실행 · 테스트 · 빌드
 
 ```bash
-npm install
-npm start                 # 클라이언트 실행 (서버 없이도 동작)
-npm test                  # 클라이언트 테스트 (node --test)
+pnpm install                              # 전체 워크스페이스 설치 (pnpm 12)
+pnpm --filter desktop start              # 클라이언트 실행 (서버 없이도 동작)
+JWT_SECRET=<랜덤 값> pnpm --filter server start   # 온라인 서버 (기본 포트 4000)
 
-cd server && npm install
-JWT_SECRET=<랜덤 값> npm start   # 온라인 서버 (기본 포트 4000)
-npm test                  # 서버 테스트
-
-npm run build             # electron-builder 설치 파일 생성
+pnpm test                                # 전체 테스트 (turbo run test)
+pnpm --filter desktop build              # electron-builder 설치 파일 생성
 ```
+
+Windows 설치 파일은 `apps/desktop`에서 `pnpm exec electron-builder --win --x64`로 만듭니다(Linux에서는 wine 필요).
 
 서버 주소는 기본값 `http://localhost:4000`이며, 게임 안 온라인 탭에서 바꿀 수 있습니다(환경변수 `ARCANA_SERVER_URL`로 초기값 지정 가능).
 
