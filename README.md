@@ -53,6 +53,13 @@
 - 각 화면 HTML에 Content-Security-Policy를 둬서 외부 스크립트 로드를 막습니다(`script-src 'self'`).
   PixiJS를 쓰는 오버레이·사냥 화면만 PixiJS 내부 동작 때문에 `'unsafe-eval'`과 `worker-src blob:`을 허용합니다.
 
+### IPC 설계
+
+- 채널 이름은 `도메인:동작` 형식(`pet:get-all`, `hunting:manual-battle`, `online:login` …)이고, 전부 `src/main/ipcRouter.js` 한 곳에서 등록합니다.
+- `IpcRouter`는 생성자로 게임 시스템들을 주입받아 호출만 하므로, 시스템 로직은 Electron 없이 `node --test`로 테스트할 수 있습니다.
+- 요청·응답은 `ipcRenderer.invoke` / `ipcMain.handle`, 응답이 필요 없는 신호(오버레이 마우스 전환)만 `send` / `on`을 씁니다.
+- `ipcMain.handle`의 반환값은 구조적 복제를 거치므로 `BrowserWindow` 같은 객체를 반환하지 않도록 합니다(실제로 겪은 버그).
+
 ---
 
 ## 핵심 특징
