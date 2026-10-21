@@ -2,7 +2,7 @@ const { test } = require('node:test')
 const assert = require('node:assert/strict')
 
 const TurnBattleSystem = require('../src/game/systems/TurnBattleSystem')
-const { ZONES, getMonster } = require('../src/game/data/monsters')
+const { ZONES, getMonster } = require('@arcana/game-core/monsters')
 
 const zone = ZONES.find(z => z.id === 'zone_1_fire')
 

@@ -1,7 +1,7 @@
 // 파티 사냥 서버 권위 전투 진행 — 파티 전원 vs 몬스터 1마리씩 순차 인카운터.
 // 클라이언트 순수 로직(DB/Electron 의존 없음)을 상대경로로 그대로 재사용.
 const { calcDamage } = require('@arcana/game-core/formula')
-const { getZone, getMonster, getDropTable } = require('../../src/game/data/monsters')
+const { getZone, getMonster, getDropTable } = require('@arcana/game-core/monsters')
 
 const REGULAR_ENCOUNTER_COUNT = 3 // 일반 몬스터 수 (+ 마지막에 구역 보스 1마리 확정 추가)
 

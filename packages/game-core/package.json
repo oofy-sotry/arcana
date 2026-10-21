@@ -6,7 +6,8 @@
   "license": "UNLICENSED",
   "exports": {
     "./attributes": "./src/attributes.js",
-    "./formula": "./src/formula.js"
+    "./formula": "./src/formula.js",
+    "./monsters": "./src/monsters.js"
   },
   "scripts": {
     "test": "node --test"

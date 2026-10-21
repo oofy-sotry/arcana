@@ -1,6 +1,6 @@
 const ITEMS = require('../data/items')
 const { getLeader, getTeam } = require('../data/gyms')
-const { getMonster } = require('../data/monsters')
+const { getMonster } = require('@arcana/game-core/monsters')
 const { calcDamage } = require('@arcana/game-core/formula')
 
 // 골드버전식 턴제 전투 — 매 턴 싸우다(기술) / 가방 / 교체 / 도망 중 하나를 고른다

@@ -7,7 +7,7 @@ const dbPath = path.join(__dirname, '../src/db/database.js')
 require.cache[dbPath] = { id: dbPath, filename: dbPath, loaded: true, exports: { run: () => {}, query: () => [] } }
 
 const HuntingSystem = require('../src/game/systems/HuntingSystem')
-const { ZONES } = require('../src/game/data/monsters')
+const { ZONES } = require('@arcana/game-core/monsters')
 
 function makeSystem() {
   const fought = []
