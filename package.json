@@ -2,6 +2,7 @@
   "name": "arcana-monorepo",
   "private": true,
   "license": "UNLICENSED",
+  "packageManager": "pnpm@12.14.0",
   "scripts": {
     "test": "pnpm -r test"
   }
