@@ -25,6 +25,9 @@
   "build": {
     "appId": "com.oofy-sotry.arcana",
     "productName": "Arcana",
+    "extraMetadata": {
+      "name": "arcana"
+    },
     "extraResources": [
       {
         "from": "node_modules/sql.js/dist/sql-wasm.wasm",
