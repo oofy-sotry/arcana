@@ -70,6 +70,13 @@
 
 `forward: true`가 없으면 클릭 통과 상태에서 hover 이벤트도 받지 못해, 펫 위에 마우스를 올렸는지 알 수 없습니다.
 
+### 서버
+
+`server/`는 Express REST API(`/auth`, `/save`, `/ranking`, `/breeding`, `/battle`, `/friends`, `/client-log`)와
+같은 HTTP 서버에 붙은 WebSocket(`ws`)으로 구성됩니다. 인증은 bcrypt 해시 + JWT, 저장소는 sql.js입니다.
+실시간 PvP·파티 사냥은 서버 메모리의 매칭 큐(`server/realtime/queue.js`, `partyQueue.js`, `huntMatch.js`)로 짝을 맞춥니다.
+서버가 없어도 싱글플레이는 전부 동작하고, 온라인 탭만 연결 실패로 표시됩니다.
+
 ---
 
 ## 핵심 특징
