@@ -29,6 +29,9 @@ importers:
 
   server:
     dependencies:
+      '@arcana/game-core':
+        specifier: workspace:*
+        version: link:../packages/game-core
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
