@@ -7,6 +7,17 @@
 - [x] `docs/ai-log.md`, `docs/progress.md` 생성
 - [x] pnpm 12.14.0 설치 (corepack)
 
+## 2026-10-21 — D1 README 정리, 빌드 확인
+- [x] README 소개에서 다른 작품 이름 삭제 → "몬스터 육성·수집 장르의 오리지널 세계관"
+- [x] 현재 상태 표 갱신(골드 개편, 캐릭터 스프라이트 130장)
+- [x] 기술 구조 섹션: 프로세스 구조 그림, 보안 설정, IPC 설계, 오버레이 클릭 통과, 서버, 실행·테스트·빌드
+- [x] 프로젝트 구조 트리 갱신
+- [x] 오프라인 실행 확인: 서버 없이 시작 화면 → 소환사 생성 → 월드맵 진입까지 런처 콘솔 에러 없음(헤드리스 하네스)
+- [x] Windows 설치 파일 빌드 확인: `electron-builder --win --x64` 종료 코드 0
+- [x] 기준 테스트: 클라이언트 128/128, 서버 65/65 통과
+- 발견: 런처 CSP에 `connect-src`가 없어 실시간 PvP·파티 사냥 WebSocket이 차단됨(`CSP BLOCK connect-src ws://…`) — 수정 여부 확인 대기
+- 발견: 패키징 대상에 `server/`·`test/`가 포함됨 — `build.files` 정리는 D2/D6에서
+
 ## 다음 할 일
-- D1: README 정리(다른 작품 이름 삭제, 현재 상태 표 갱신, 기술 섹션), 오프라인 실행 확인, Windows 빌드 확인
+- D2: pnpm workspaces + Turborepo 모노레포 전환
 - 후순위: 골드버전 개편 6-2 두 번째 마을(`town2`)부터 재개 — 위키 GOLD_REDESIGN 7-2장
