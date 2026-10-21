@@ -1,33 +1,8 @@
 {
-  "name": "arcana",
-  "version": "0.2.3",
-  "description": "Arcana — Desktop Pet RPG",
-  "main": "src/main/index.js",
-  "author": "oofy-sotry",
-  "license": "UNLICENSED",
+  "name": "arcana-monorepo",
   "private": true,
+  "license": "UNLICENSED",
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder",
-    "test": "node --test"
-  },
-  "dependencies": {
-    "@arcana/game-core": "workspace:*",
-    "pixi.js": "^8.0.0",
-    "sql.js": "^1.12.0"
-  },
-  "devDependencies": {
-    "electron": "^33.0.0",
-    "electron-builder": "^25.0.0"
-  },
-  "build": {
-    "appId": "com.oofy-sotry.arcana",
-    "productName": "Arcana",
-    "extraResources": [
-      {
-        "from": "node_modules/sql.js/dist/sql-wasm.wasm",
-        "to": "sql-wasm.wasm"
-      }
-    ]
+    "test": "pnpm -r test"
   }
 }

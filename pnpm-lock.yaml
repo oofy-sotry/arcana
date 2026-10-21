@@ -6,11 +6,13 @@ settings:
 
 importers:
 
-  .:
+  .: {}
+
+  apps/desktop:
     dependencies:
       '@arcana/game-core':
         specifier: workspace:*
-        version: link:packages/game-core
+        version: link:../../packages/game-core
       pixi.js:
         specifier: ^8.0.0
         version: 8.19.0
