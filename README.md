@@ -183,18 +183,23 @@ legacy/tamagotchi → 초기 프로토타입 코드 보존 (구 다마고치)
 
 ```
 arcana/
-├── src/
-│   ├── main/            # 게임 월드, 창 관리, IPC 라우터, 로거
-│   ├── preload/         # contextBridge API (window.arcana.*)
-│   ├── renderer/        # 오버레이 · 런처 · 월드맵 · 사냥 화면
-│   ├── game/            # 게임 시스템(systems) · 데이터(data) · 서비스(services)
-│   └── db/              # sql.js 저장소 · 마이그레이션
-├── server/              # 온라인 기능 서버 (Express + ws + sql.js)
-├── test/                # 클라이언트 테스트 (node --test)
-├── assets/
-│   ├── sprites/characters/  # 캐릭터 스프라이트 130장
-│   ├── ui/ · audio/ · items/ # 아직 미제작
-├── docs/                # 진행 상황 · AI 작업 기록
+├── apps/
+│   ├── desktop/             # Electron 클라이언트
+│   │   ├── src/
+│   │   │   ├── main/        # 게임 월드, 창 관리, IPC 라우터, 로거
+│   │   │   ├── preload/     # contextBridge API (window.arcana.*)
+│   │   │   ├── renderer/    # 오버레이 · 런처 · 월드맵 · 사냥 화면
+│   │   │   ├── game/        # 게임 시스템(systems) · 데이터(data) · 서비스(services)
+│   │   │   └── db/          # sql.js 저장소 · 마이그레이션
+│   │   ├── test/            # 클라이언트 테스트 (node --test)
+│   │   └── assets/          # 캐릭터 스프라이트 130장 (ui · audio · items는 아직 미제작)
+│   └── server/              # 온라인 기능 서버 (Express + ws + sql.js)
+├── packages/
+│   ├── game-core/           # 공용 게임 규칙 (속성 상성 · 데미지 공식 · 몬스터 데이터)
+│   └── shared/              # TypeScript — IPC 채널 이름 · 공용 타입
+├── docs/                    # 진행 상황 · AI 작업 기록
+├── pnpm-workspace.yaml
+├── turbo.json
 └── README.md
 ```
 
