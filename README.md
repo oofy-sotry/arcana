@@ -167,17 +167,22 @@ legacy/tamagotchi → 초기 프로토타입 코드 보존 (구 다마고치)
 
 ```
 arcana/
-├── src/                 # Electron 클라이언트 (main/game/db/renderer/preload)
-├── server/              # 온라인 기능 서버 (Express + sql.js)
+├── src/
+│   ├── main/            # 게임 월드, 창 관리, IPC 라우터, 로거
+│   ├── preload/         # contextBridge API (window.arcana.*)
+│   ├── renderer/        # 오버레이 · 런처 · 월드맵 · 사냥 화면
+│   ├── game/            # 게임 시스템(systems) · 데이터(data) · 서비스(services)
+│   └── db/              # sql.js 저장소 · 마이그레이션
+├── server/              # 온라인 기능 서버 (Express + ws + sql.js)
+├── test/                # 클라이언트 테스트 (node --test)
 ├── assets/
-│   ├── sprites/         # 캐릭터 스프라이트 — 아직 미제작 (.gitkeep만 존재)
-│   ├── ui/               # UI 에셋 — 아직 미제작
-│   ├── audio/            # 사운드 — 아직 미제작
-│   └── items/             # 아이템 이미지 — 아직 미제작
+│   ├── sprites/characters/  # 캐릭터 스프라이트 130장
+│   ├── ui/ · audio/ · items/ # 아직 미제작
+├── docs/                # 진행 상황 · AI 작업 기록
 └── README.md
 ```
 
-> 설계 문서는 [Wiki](https://github.com/oofy-sotry/arcana/wiki)에 있습니다 (저장소에는 더 이상 `docs/` 폴더가 없습니다).
+> 설계 문서는 [Wiki](https://github.com/oofy-sotry/arcana/wiki)에 있습니다. 저장소 `docs/`에는 진행 상황과 AI 작업 기록만 둡니다.
 > 상세 폴더 구조는 [ARCHITECTURE](https://github.com/oofy-sotry/arcana/wiki/ARCHITECTURE) 9절 참조.
 
 ---
