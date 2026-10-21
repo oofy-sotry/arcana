@@ -45,9 +45,9 @@ Electron 기반 데스크톱 펫 RPG. 펫(에레멘탈)이 바탕화면 위를 �
 - LLM 공급자에 연결할 수 없으면 에이전트 기능만 비활성화하고 게임은 정상 동작해야 한다.
 
 ## 명령
-- 실행: `pnpm --filter desktop start` (전환 전: `npm start`)
-- 테스트: `pnpm turbo run test` (전환 전: `npm test`, 서버는 `server/`에서 `npm test`)
-- 빌드: `pnpm --filter desktop build` (전환 전: `npm run build`)
+- 실행: `pnpm --filter desktop start`
+- 테스트: `pnpm test` (= `turbo run test`, 패키지별 결과는 `<패키지>:test:` 접두어로 출력)
+- 빌드: `pnpm --filter desktop build` (Windows 설치 파일: `apps/desktop`에서 `pnpm exec electron-builder --win --x64`)
 
 ## 기록
 - 작업을 마칠 때 진행 상황과 다음 할 일을 `docs/progress.md`에 남긴다.
