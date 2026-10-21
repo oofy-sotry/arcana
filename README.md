@@ -25,7 +25,7 @@
 
 ---
 
-## 현재 상태 (2026-08-28 기준)
+## 현재 상태 (2026-10-21 기준, v0.2.3)
 
 | 단계 | 상태 |
 |------|------|
@@ -39,7 +39,8 @@
 | 온라인 (서버·인증·PvP·친구) | ✅ 완료 |
 | 장비·세력·히든엔딩·PvP 시즌 | ✅ 완료 |
 | 소환사·월드맵 | ✅ 완료 |
-| 스프라이트 제작 | ⏳ 대기 (`assets/sprites`·`ui`·`audio`·`items` 전부 `.gitkeep`만 존재, 실제 에셋 없음) |
+| 골드버전 형식 개편 (기절·회복소·상점·턴제 전투·포획·체육관·육성소) | ✅ 1~5단계 + 6-1 완료, 6-2 두 번째 마을부터 진행 예정 |
+| 스프라이트 | 🔶 일부 — 캐릭터 스프라이트 130장(`assets/sprites/characters`) 배치, 몬스터·UI·사운드·아이템 이미지는 미제작(색상 도형으로 대체 표시) |
 
 > 전체 진행 체크리스트는 [COMMIT_PLAN](https://github.com/oofy-sotry/arcana/wiki/COMMIT_PLAN), 남은 작업은
 > [ROADMAP](https://github.com/oofy-sotry/arcana/wiki/ROADMAP) Phase 8 "남은 작업 후보" 참조.
