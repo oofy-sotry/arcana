@@ -1,0 +1,11 @@
+{
+  "name": "@arcana/game-core",
+  "version": "0.1.0",
+  "description": "클라이언트·서버가 함께 쓰는 게임 규칙 (속성 상성, 데미지 공식, 몬스터 데이터)",
+  "private": true,
+  "license": "UNLICENSED",
+  "exports": {},
+  "scripts": {
+    "test": "node --test"
+  }
+}
