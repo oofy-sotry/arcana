@@ -28,6 +28,11 @@
     "extraMetadata": {
       "name": "arcana"
     },
+    "files": [
+      "**/*",
+      "!test/**",
+      "!**/.turbo/**"
+    ],
     "extraResources": [
       {
         "from": "node_modules/sql.js/dist/sql-wasm.wasm",
