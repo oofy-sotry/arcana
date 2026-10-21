@@ -1,5 +1,5 @@
 {
-  "name": "arcana-server",
+  "name": "server",
   "version": "0.1.0",
   "description": "Arcana Online Server",
   "main": "index.js",
