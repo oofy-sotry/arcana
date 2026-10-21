@@ -60,6 +60,16 @@
 - 요청·응답은 `ipcRenderer.invoke` / `ipcMain.handle`, 응답이 필요 없는 신호(오버레이 마우스 전환)만 `send` / `on`을 씁니다.
 - `ipcMain.handle`의 반환값은 구조적 복제를 거치므로 `BrowserWindow` 같은 객체를 반환하지 않도록 합니다(실제로 겪은 버그).
 
+### 오버레이 클릭 통과
+
+오버레이는 화면 전체 크기의 투명·항상 위 창이라, 그대로 두면 바탕화면 클릭을 전부 가로챕니다.
+
+1. 창을 만들 때 `setIgnoreMouseEvents(true, { forward: true })` — 클릭은 아래 창으로 통과시키고, 마우스 이동 이벤트만 오버레이에 전달합니다.
+2. 펫 스프라이트에 `pointerover`가 오면 `overlay:toggle-mouse(false)`를 보내 그 순간만 클릭을 받습니다.
+3. `pointerout`이 오면 다시 `true`로 돌려 클릭 통과 상태로 복귀합니다.
+
+`forward: true`가 없으면 클릭 통과 상태에서 hover 이벤트도 받지 못해, 펫 위에 마우스를 올렸는지 알 수 없습니다.
+
 ---
 
 ## 핵심 특징
