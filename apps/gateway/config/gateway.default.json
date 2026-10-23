@@ -1,0 +1,23 @@
+{
+  "upstreams": {
+    "gemini": {
+      "baseURL": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "apiKeyEnv": "GEMINI_API_KEY"
+    },
+    "ollama": {
+      "baseURL": "http://localhost:11434/v1"
+    }
+  },
+  "models": {
+    "gemini-flash-lite-latest": "gemini",
+    "qwen2.5:3b": "ollama"
+  },
+  "summary": {
+    "model": "gemini-flash-lite-latest",
+    "maxTurns": 20,
+    "maxChars": 400,
+    "resultTtlSeconds": 3600
+  },
+  "maxBodyBytes": 262144,
+  "upstreamTimeoutSeconds": 120
+}
