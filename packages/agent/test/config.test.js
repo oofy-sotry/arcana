@@ -11,7 +11,7 @@ test('기본 설정 — 공급자 2개(ollama·gemini)와 small·large 모델', 
   const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
   assert.ok(config.providers.ollama.baseURL)
   assert.ok(config.providers.gemini.baseURL)
-  assert.equal(config.models[config.defaultModel].provider, 'ollama')
+  assert.equal(config.models[config.defaultModel].provider, 'gemini') // tool을 쓰는 대화는 큰 모델 (작은 모델은 D4 라우팅에서 잡담용)
   assert.ok(config.maxSteps > 0)
 })
 
