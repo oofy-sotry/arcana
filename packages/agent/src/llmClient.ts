@@ -4,6 +4,8 @@ export interface ToolCall {
   id:       string
   type:     'function'
   function: { name: string; arguments: string }
+  /** Gemini thought_signature — 다음 요청에 그대로 되돌려 보내야 400이 나지 않는다 */
+  extra_content?: unknown
 }
 
 export interface ChatMessage {
@@ -116,6 +118,7 @@ export function createChatClient({ baseURL, apiKey, fetchImpl = fetch, now = Dat
         markFirst()
         const call = calls[tc.index ?? i] ??={ id: '', type: 'function', function: { name: '', arguments: '' } }
         if (tc.id) call.id = tc.id
+        if (tc.extra_content) call.extra_content = tc.extra_content
         if (tc.function?.name) call.function.name += tc.function.name
         if (tc.function?.arguments) call.function.arguments += tc.function.arguments
       }
