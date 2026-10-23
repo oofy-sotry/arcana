@@ -1,11 +1,33 @@
 const { app } = require('electron')
+const path          = require('path')
+const { createAgentService, loadAgentConfig, loadSecrets } = require('@arcana/agent')
 const GameWorld     = require('./gameWorld')
 const WindowManager = require('./windowManager')
 const IpcRouter     = require('./ipcRouter')
 const logger        = require('./logger')
+const { createAgentGameApi } = require('./agentGameApi')
 
 const gameWorld     = new GameWorld()
 const windowManager = new WindowManager()
+
+// AI 펫 에이전트 — 설정은 userData/agent.json, 키는 환경변수 또는 userData/agent-secrets.json.
+// 설정을 못 읽거나 공급자에 연결할 수 없으면 에이전트만 꺼지고 게임은 그대로 시작한다
+function createAgent() {
+  const userData = app.getPath('userData')
+  try {
+    const service = createAgentService({
+      config:  loadAgentConfig({ overridePath: path.join(userData, 'agent.json') }),
+      secrets: loadSecrets(path.join(userData, 'agent-secrets.json')),
+      env:     process.env,
+      game:    createAgentGameApi(gameWorld),
+    })
+    service.init().then(s => console.log('[agent]', s.enabled ? `켜짐 (${s.model})` : `꺼짐 (${s.reason})`))
+    return service
+  } catch (err) {
+    console.error('[agent] 설정을 읽을 수 없어 에이전트를 끕니다:', err.message)
+    return null
+  }
+}
 
 app.whenReady().then(async () => {
   logger.install() // 창 생성·IPC 등록 전에 설치해야 전부 수집됨
@@ -35,6 +57,7 @@ app.whenReady().then(async () => {
     faintSystem:       gameWorld.faintSystem,
     turnBattleSystem:  gameWorld.turnBattleSystem,
     gymSystem:         gameWorld.gymSystem,
+    agentService:      createAgent(),
     windowManager,
   })
   ipcRouter.register()
