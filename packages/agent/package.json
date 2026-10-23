@@ -10,7 +10,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "tsc -p tsconfig.json && node --test",
-    "route-report": "tsc -p tsconfig.json && node scripts/routeReport.js"
+    "route-report": "tsc -p tsconfig.json && node scripts/routeReport.js",
+    "benchmark": "tsc -p tsconfig.json && node scripts/benchmark.js"
   },
   "devDependencies": {
     "@arcana/shared": "workspace:*",
