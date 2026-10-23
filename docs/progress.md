@@ -38,7 +38,12 @@
 - 결정: 작은 모델은 tool 없는 짧은 대화에만, tool이 필요한 요청은 큰 모델로 (D4 라우팅에서 구현)
 - [x] 테스트: desktop 64, server 65, game-core 5, shared 2, agent 44 — 전부 통과(종료 코드 0)
 
+- [x] desktop 배선: `agentService`(TS, 연결 확인·꺼짐 상태·입력 검증 500자), `agentGameApi.js`(기존 시스템 호출만), IPC `agent:status`·`agent:chat`, preload `arcana.agent`
+- [x] 기본 모델을 large(Gemini)로 변경 — 작은 모델은 D4에서 tool 없는 대화용으로 라우팅
+- [x] 실기기 확인(헤드리스 Electron, 실제 main/index.js): 켜짐 → "내 펫 상태 어때?"에 tool 1번·2단계·첫 토큰 0.7초로 답함 / 키 없음·연결 불가·깨진 설정 3경우 모두 에이전트만 꺼지고 펫 생성·조회 정상 / 로그·저장 파일 182개에 키 없음
+- [x] 테스트: desktop 69, server 65, game-core 5, shared 2, agent 55 — 전부 통과(종료 코드 0)
+
 ## 다음 할 일
-- D3 5단계: desktop main 배선(에이전트 생성·IPC 핸들러·preload 노출), 공급자 연결 불가 시 에이전트만 비활성화
-- D3 6단계: 런처 대화창, 실모델 완료 기준 확인
+- D3 6단계: 런처 대화창(토큰 스트리밍 포함 여부 결정), 실모델 완료 기준 확인
+- 확인 필요: Windows 설치 파일에 `@arcana/agent`의 `dist`·`config`가 포함되는지 (빌드 전에 agent 빌드 필요)
 - 후순위: 골드버전 개편 6-2 두 번째 마을(`town2`)부터 재개 — 위키 GOLD_REDESIGN 7-2장
