@@ -1,8 +1,8 @@
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const { IPC_INVOKE_CHANNELS, IPC_SEND_CHANNELS } = require('../dist')
+const { IPC_INVOKE_CHANNELS, IPC_SEND_CHANNELS, IPC_EVENT_CHANNELS } = require('../dist')
 
-const ALL = [...IPC_INVOKE_CHANNELS, ...IPC_SEND_CHANNELS]
+const ALL = [...IPC_INVOKE_CHANNELS, ...IPC_SEND_CHANNELS, ...IPC_EVENT_CHANNELS]
 
 test('채널 이름 — 중복 없음', () => {
   assert.equal(new Set(ALL).size, ALL.length)
