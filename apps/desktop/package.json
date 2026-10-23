@@ -35,6 +35,9 @@
       "owner": "oofy-sotry",
       "repo": "arcana"
     },
+    "nsis": {
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
     "files": [
       "**/*",
       "!test/**",
