@@ -8,6 +8,7 @@ import { createPetTools, type GameApi } from './petTools'
 import { routeRequest } from './router'
 import { buildContext } from './context'
 import { createConversationMemory } from './memory'
+import { estimateCostUsd } from './pricing'
 
 export const MAX_MESSAGE_LENGTH = 500
 /** 잡담 모델이 게임 기능이 필요하다고 판단했을 때 답하는 표시 — 큰 모델로 다시 보낸다 */
@@ -68,6 +69,10 @@ export type AgentChatResult =
       history:       { turns: number; summarized: number }
       /** 무료 한도 초과로 다시 시도한 횟수 */
       retries:       number
+      /** 참고 단가표로 환산한 비용(USD) — 단가가 없으면 null */
+      costUsd:       number | null
+      /** 요청을 받은 때부터 결과까지 */
+      totalMs:       number
     }
   | { ok: false; reason: 'disabled' | 'invalid_input' | 'rate_limited' | 'unreachable' | 'error'; error: string }
 
@@ -77,6 +82,7 @@ export interface AgentServiceOptions {
   env:           Record<string, string | undefined>
   game:          GameApi
   createClient?: (opts: { baseURL: string; apiKey?: string }) => ChatClient
+  now?:          () => number
 }
 
 export interface ChatOptions {
@@ -112,7 +118,7 @@ function holdMarker(onToken?: (token: string) => void) {
   return { push, flush }
 }
 
-export function createAgentService({ config, secrets, env, game, createClient = createChatClient }: AgentServiceOptions) {
+export function createAgentService({ config, secrets, env, game, createClient = createChatClient, now = Date.now }: AgentServiceOptions) {
   let status: AgentStatus = { enabled: false, reason: 'not_ready' }
   let large: Target | undefined
   let small: Target | undefined
@@ -176,6 +182,7 @@ export function createAgentService({ config, secrets, env, game, createClient = 
   }
 
   async function chat(message: unknown, opts: ChatOptions = {}): Promise<AgentChatResult> {
+    const started = now()
     if (!status.enabled || !large) return { ok: false, reason: 'disabled', error: '에이전트가 꺼져 있습니다' }
     const text = typeof message === 'string' ? message.trim() : ''
     if (!text) return { ok: false, reason: 'invalid_input', error: '메시지가 비어 있습니다' }
@@ -236,6 +243,8 @@ export function createAgentService({ config, secrets, env, game, createClient = 
         context:      { chars: context.text.length, parts: context.parts },
         history:      historyStats,
         retries,
+        costUsd:      estimateCostUsd(config, finalRoute.modelName, result.usage),
+        totalMs:      now() - started,
       }
     } catch (err) {
       const error = (err as Error).message
