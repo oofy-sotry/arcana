@@ -45,6 +45,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build --filter 'desktop^...' # 워크스페이스 의존 패키지(shared·agent)만 빌드
+        shell: bash # pwsh는 pnpm.CMD를 거쳐 cmd가 ^를 지워 desktop 자체(electron-builder)까지 빌드함
       - run: pnpm exec electron-builder --win --x64 --publish never
         working-directory: apps/desktop
       - uses: actions/upload-artifact@v7
