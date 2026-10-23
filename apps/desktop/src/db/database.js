@@ -65,6 +65,7 @@ function runMigrations() {
     require('./migrations/015_faint'),
     require('./migrations/016_current_hp_mp'),
     require('./migrations/017_badges'),
+    require('./migrations/018_agent_requests'),
   ]
 
   const [{ values: [[currentVersion]] }] = db.exec('PRAGMA user_version')
