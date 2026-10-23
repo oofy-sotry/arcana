@@ -97,6 +97,7 @@ export const IPC_INVOKE_CHANNELS = [
   'collection:get-base-line',
   'agent:status',
   'agent:chat',
+  'agent:stats',
 ] as const
 
 /** renderer → main 단방향 신호 (ipcRenderer.send / ipcMain.on) */
