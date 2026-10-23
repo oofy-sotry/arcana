@@ -1,0 +1,18 @@
+{
+  "name": "@arcana/agent",
+  "version": "0.1.0",
+  "description": "AI 펫 에이전트 — 설정, OpenAI 호환 클라이언트, 에이전트 루프, 게임 tool (TypeScript)",
+  "private": true,
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "config"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.json && node --test"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^7.0.2"
+  }
+}
