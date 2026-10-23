@@ -142,6 +142,7 @@ contextBridge.exposeInMainWorld('arcana', {
   },
   agent: {
     status: () => ipcRenderer.invoke('agent:status'),
+    stats:  () => ipcRenderer.invoke('agent:stats'),
     // 콜백은 이 요청(requestId)의 이벤트만 받고, 응답이 끝나면 리스너를 지운다. renderer에는 이벤트 객체를 넘기지 않음
     chat: async ({ message, onToken, onToolCall } = {}) => {
       const requestId = ++agentRequestSeq
