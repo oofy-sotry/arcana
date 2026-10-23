@@ -1,0 +1,13 @@
+{
+  "name": "gateway",
+  "version": "0.1.0",
+  "description": "LLM 게이트웨이 (Python FastAPI) — turbo가 test를 함께 돌리도록 둔 스크립트 모음",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "setup": "python3 -m venv .venv && .venv/bin/pip install -q -r requirements-dev.txt",
+    "test": ".venv/bin/python -m pytest -q",
+    "start": ".venv/bin/python -m uvicorn arcana_gateway.main:app --host 0.0.0.0 --port 8000",
+    "worker": ".venv/bin/python -m arcana_gateway.worker"
+  }
+}
