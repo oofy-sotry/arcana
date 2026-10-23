@@ -83,6 +83,11 @@ export interface AgentServiceOptions {
   game:          GameApi
   createClient?: (opts: { baseURL: string; apiKey?: string }) => ChatClient
   now?:          () => number
+  /**
+   * 비교 측정용 — full: 모든 요청을 큰 모델에 tool·상태 전부 / routing: 라우팅만, 상태는 전부 /
+   * routing+context(기본): 라우팅 + 컨텍스트 선택
+   */
+  strategy?:     'full' | 'routing' | 'routing+context'
 }
 
 export interface ChatOptions {
@@ -118,7 +123,7 @@ function holdMarker(onToken?: (token: string) => void) {
   return { push, flush }
 }
 
-export function createAgentService({ config, secrets, env, game, createClient = createChatClient, now = Date.now }: AgentServiceOptions) {
+export function createAgentService({ config, secrets, env, game, createClient = createChatClient, now = Date.now, strategy = 'routing+context' }: AgentServiceOptions) {
   let status: AgentStatus = { enabled: false, reason: 'not_ready' }
   let large: Target | undefined
   let small: Target | undefined
@@ -154,7 +159,8 @@ export function createAgentService({ config, secrets, env, game, createClient = 
 
   // 한 경로로 실행 — 그 경로에 맞는 컨텍스트와 tool만 넣는다
   async function runRoute(target: Target, route: RouteInfo, text: string, history: ChatMessage[], opts: ChatOptions) {
-    const context = buildContext(game, route, { maxPets: config.routing.contextMaxPets })
+    const contextRoute = strategy === 'routing+context' ? route : { kind: 'tools' as const, tools: allTools.map(t => t.name) }
+    const context = buildContext(game, contextRoute, { maxPets: config.routing.contextMaxPets })
     const prompt  = route.kind === 'chat' ? CHAT_PROMPT : TOOL_PROMPT
     const result  = await runAgent({
       client:        target.client,
@@ -190,7 +196,9 @@ export function createAgentService({ config, secrets, env, game, createClient = 
       return { ok: false, reason: 'invalid_input', error: `메시지는 ${MAX_MESSAGE_LENGTH}자까지 보낼 수 있습니다` }
     }
 
-    const decision = routeRequest(text, config)
+    const decision = strategy === 'full'
+      ? { kind: 'tools' as const, modelName: config.defaultModel, tools: allTools.map(t => t.name), reason: 'strategy_full' }
+      : routeRequest(text, config)
     const route: RouteInfo = { kind: decision.kind, modelName: decision.modelName, tools: decision.tools, reason: decision.reason }
     const history      = memory.toMessages()
     const historyStats = memory.stats()
