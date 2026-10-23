@@ -30,5 +30,12 @@
     "retryDelayMs": 2000,
     "historyTurns": 4,
     "contextMaxPets": 6
+  },
+  "pricing": {
+    "note": "참고 단가(USD/100만 토큰). 실제 과금 없음 — large는 Gemini 3.1 Flash-Lite 유료 단가(2026-10-23 확인: morphllm.com·mem0.ai 가격표, gemini-flash-lite-latest가 가리키는 버전은 API에 표시되지 않음), small은 로컬 실행이라 0",
+    "models": {
+      "small": { "inputPer1M": 0, "outputPer1M": 0 },
+      "large": { "inputPer1M": 0.25, "outputPer1M": 1.5 }
+    }
   }
 }
