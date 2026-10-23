@@ -43,7 +43,14 @@
 - [x] 실기기 확인(헤드리스 Electron, 실제 main/index.js): 켜짐 → "내 펫 상태 어때?"에 tool 1번·2단계·첫 토큰 0.7초로 답함 / 키 없음·연결 불가·깨진 설정 3경우 모두 에이전트만 꺼지고 펫 생성·조회 정상 / 로그·저장 파일 182개에 키 없음
 - [x] 테스트: desktop 69, server 65, game-core 5, shared 2, agent 55 — 전부 통과(종료 코드 0)
 
+- [x] 런처 "도우미" 탭: 토큰 스트리밍(main→renderer 이벤트 `agent:token`·`agent:tool`, shared `IPC_EVENT_CHANNELS`), tool 실행 줄, 측정값(모델·tool 수·단계·토큰·첫 토큰), 꺼짐 이유 안내. 모델 출력은 textContent로만 표시
+- [x] 실기기 확인(헤드리스 런처 + 스크린샷): "불꽃이 상태 어때? 어디서 사냥하면 좋을까?" → 펫 상태 확인·사냥터 찾기 tool 2번, 3단계로 답함 / 키 없음이면 안내 문구 + 입력 비활성 / 렌더러 콘솔 오류 없음
+- 스크린샷으로 찾아 고친 것: 답에 마크다운 `**`가 그대로 보임(시스템 프롬프트에 평문 지시), 꺼진 보내기 버튼이 눌리는 것처럼 보임
+- [x] 패키징 확인(`electron-builder --dir`): asar에 `@arcana/agent`의 `dist`·`config/agent.default.json` 포함. TS 원본(`src/*.ts`)도 함께 들어감 — 실행엔 무관, D6에서 정리
+- [x] 테스트: desktop 76, server 65, game-core 5, shared 2, agent 56 — 전부 통과(종료 코드 0)
+- **D3 완료**
+
 ## 다음 할 일
-- D3 6단계: 런처 대화창(토큰 스트리밍 포함 여부 결정), 실모델 완료 기준 확인
-- 확인 필요: Windows 설치 파일에 `@arcana/agent`의 `dist`·`config`가 포함되는지 (빌드 전에 agent 빌드 필요)
+- D4: 모델 라우팅(작은 모델=tool 없는 짧은 대화, tool 필요=큰 모델)·컨텍스트 선택(요청에 필요한 게임 상태만)
+- D6에서: 설치 파일에 agent TS 원본이 들어가지 않게 정리
 - 후순위: 골드버전 개편 6-2 두 번째 마을(`town2`)부터 재개 — 위키 GOLD_REDESIGN 7-2장
