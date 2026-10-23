@@ -8,15 +8,15 @@
   { "message": "잘 자", "expect": "chat" },
   { "message": "오늘 날씨 어때?", "expect": "chat" },
   { "message": "불꽃이 상태 어때?", "expect": "tools", "tools": ["get_pets"] },
-  { "message": "배고파 보이면 밥 줘", "expect": "tools", "tools": ["get_pets", "get_inventory", "use_item"] },
+  { "message": "배고파 보이면 밥 줘", "expect": "tools", "tools": ["get_pets", "get_inventory", "use_item"], "actions": ["use_item"] },
   { "message": "가방에 뭐 있어?", "expect": "tools", "tools": ["get_inventory"] },
   { "message": "사료 몇 개 남았어?", "expect": "tools", "tools": ["get_inventory"] },
-  { "message": "불꽃이 씻겨줘", "expect": "tools", "tools": ["get_inventory", "use_item"] },
+  { "message": "불꽃이 씻겨줘", "expect": "tools", "tools": ["get_inventory", "use_item"], "actions": ["use_item"] },
   { "message": "어디서 사냥하면 좋을까?", "expect": "tools", "tools": ["get_hunting_zones"] },
   { "message": "레벨 맞는 사냥터 추천해줘", "expect": "tools", "tools": ["get_pets", "get_hunting_zones"] },
-  { "message": "사냥 보내줘", "expect": "tools", "tools": ["get_hunting_zones", "start_auto_hunt"] },
-  { "message": "배고파 보이면 밥 주고 레벨 맞는 사냥터 가줘", "expect": "tools", "tools": ["get_pets", "get_inventory", "use_item", "get_hunting_zones", "start_auto_hunt"] },
+  { "message": "사냥 보내줘", "expect": "tools", "tools": ["get_hunting_zones", "start_auto_hunt"], "actions": ["start_auto_hunt"] },
+  { "message": "배고파 보이면 밥 주고 레벨 맞는 사냥터 가줘", "expect": "tools", "tools": ["get_pets", "get_inventory", "use_item", "get_hunting_zones", "start_auto_hunt"], "actions": ["use_item", "start_auto_hunt"] },
   { "message": "파티 구성 보여줘", "expect": "tools", "tools": ["get_party"] },
   { "message": "지쳤으면 물약 먹여줘", "expect": "tools", "tools": ["get_pets", "get_inventory", "use_item"] },
-  { "message": "에너지 괜찮으면 사냥 시작해", "expect": "tools", "tools": ["get_pets", "get_hunting_zones", "start_auto_hunt"] }
+  { "message": "에너지 괜찮으면 사냥 시작해", "expect": "tools", "tools": ["get_pets", "get_hunting_zones", "start_auto_hunt"], "actions": ["start_auto_hunt"] }
 ]
