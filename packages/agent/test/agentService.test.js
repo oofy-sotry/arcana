@@ -321,3 +321,36 @@ test('totalMs — 요청을 받은 때부터 결과까지 (now 주입)', async (
   await service.init()
   assert.equal((await service.chat('상태')).totalMs, 450)
 })
+
+// ── 비교 측정용 strategy ────────────────────────────────────────────────
+
+test("strategy 'full' — 잡담도 큰 모델에 tool 6개 전부, 상태 전부(가방 포함)", async () => {
+  const factory = fakeClientFactory({ responses: { big: [{ content: '안녕' }] } })
+  const service = make(factory, { strategy: 'full' })
+  await service.init()
+  const res = await service.chat('안녕')
+  assert.equal(res.model, 'big')
+  assert.equal(res.route.kind, 'tools')
+  assert.equal(res.route.reason, 'strategy_full')
+  assert.deepEqual(toolNames(factory.requests[0]), ALL_TOOLS)
+  assert.deepEqual(res.context.parts, ['pets', 'inventory'])
+})
+
+test("strategy 'routing' — 모델·tool은 라우팅대로, 상태는 전부", async () => {
+  const factory = fakeClientFactory({ responses: { big: [{ content: 'a' }], tiny: [{ content: 'b' }] } })
+  const service = make(factory, { strategy: 'routing' })
+  await service.init()
+  const tools = await service.chat('상태')
+  assert.deepEqual(toolNames(factory.requests[0]), ['get_pets'])
+  assert.deepEqual(tools.context.parts, ['pets', 'inventory'])
+  const chat = await service.chat('안녕')
+  assert.equal(chat.model, 'tiny')
+  assert.deepEqual(chat.context.parts, ['pets', 'inventory'])
+})
+
+test('strategy 기본값은 라우팅 + 컨텍스트 선택', async () => {
+  const factory = fakeClientFactory({ responses: { big: [{ content: 'a' }] } })
+  const service = make(factory)
+  await service.init()
+  assert.deepEqual((await service.chat('상태')).context.parts, ['pets'])
+})
