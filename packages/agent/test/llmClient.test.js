@@ -66,6 +66,19 @@ test('tool 호출 — index별로 이름·인자 조각을 이어 붙임', async
   ])
 })
 
+test('tool 호출 — index가 없으면(Gemini) 배열 순서로 구분', async () => {
+  const { fetchImpl } = fakeFetch([
+    delta({ tool_calls: [
+      { id: 'c1', type: 'function', function: { name: 'get_pet_status', arguments: '{"petId":1}' } },
+      { id: 'c2', type: 'function', function: { name: 'get_party', arguments: '{}' } },
+    ] }),
+    'data: [DONE]\n\n',
+  ])
+  const res = await createChatClient({ baseURL: 'http://x', fetchImpl }).chat({ model: 'm', messages: [] })
+  assert.deepEqual(res.toolCalls.map(c => c.function.name), ['get_pet_status', 'get_party'])
+  assert.equal(res.toolCalls[0].function.arguments, '{"petId":1}')
+})
+
 test('usage — 마지막 청크의 토큰 수, 첫 토큰·전체 시간 기록', async () => {
   const { fetchImpl } = fakeFetch([
     delta({ content: 'a' }),
