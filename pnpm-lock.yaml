@@ -218,6 +218,9 @@ importers:
 
   packages/agent:
     devDependencies:
+      '@arcana/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@types/node':
         specifier: ^20.19.43
         version: 20.19.43

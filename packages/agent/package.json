@@ -12,6 +12,7 @@
     "test": "tsc -p tsconfig.json && node --test"
   },
   "devDependencies": {
+    "@arcana/shared": "workspace:*",
     "@types/node": "^20.19.43",
     "typescript": "^7.0.2"
   }
