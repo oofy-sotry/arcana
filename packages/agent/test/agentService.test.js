@@ -31,6 +31,7 @@ const config = {
     historyTurns:  2,
     contextMaxPets: 6,
   },
+  pricing: { note: 't', models: { small: { inputPer1M: 0, outputPer1M: 0 }, large: { inputPer1M: 1, outputPer1M: 2 } } },
 }
 
 const game = {
@@ -291,4 +292,32 @@ test('실패한 요청은 대화 기록에 남기지 않음', async () => {
   await service.chat('상태')
   const res = await service.chat('상태')
   assert.deepEqual(res.history, { turns: 0, summarized: 0 })
+})
+
+// ── 환산 비용·시간 ──────────────────────────────────────────────────────
+
+test('환산 비용 — 실제로 답한 모델의 단가, 잡담 모델(로컬)은 0', async () => {
+  const factory = fakeClientFactory({ responses: {
+    big:  [{ content: 'a', usage: { promptTokens: 10, completionTokens: 4 } }],
+    tiny: [{ content: 'b', usage: { promptTokens: 50, completionTokens: 5 } }],
+  } })
+  const service = make(factory)
+  await service.init()
+  assert.equal((await service.chat('상태')).costUsd, 0.000018)
+  assert.equal((await service.chat('안녕')).costUsd, 0)
+})
+
+test('환산 비용 — 잡담 모델에서 큰 모델로 넘기면 큰 모델 단가', async () => {
+  const factory = fakeClientFactory({ responses: { tiny: [{ content: 'NEED_TOOLS' }], big: [{ content: 'ok', usage: { promptTokens: 100, completionTokens: 0 } }] } })
+  const service = make(factory)
+  await service.init()
+  assert.equal((await service.chat('챙겨줘')).costUsd, 0.0001)
+})
+
+test('totalMs — 요청을 받은 때부터 결과까지 (now 주입)', async () => {
+  const times = [1000, 1450]
+  const factory = fakeClientFactory({ responses: { big: [{ content: 'a' }] } })
+  const service = make(factory, { now: () => times.shift() })
+  await service.init()
+  assert.equal((await service.chat('상태')).totalMs, 450)
 })
