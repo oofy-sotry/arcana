@@ -74,6 +74,28 @@ class AgentPanel {
     button.style.cursor  = on ? 'pointer' : 'default'
   }
 
+  static statsLines(stats) {
+    if (!stats.total) return ['아직 기록이 없어요']
+    const sec = ms => (ms === null || ms === undefined ? '-' : `${(ms / 1000).toFixed(1)}초`)
+    return [
+      `전체 ${stats.total}건 (실패 ${stats.failed}) · 환산 비용 $${stats.totalCostUsd.toFixed(4)}`,
+      ...stats.byModel.map(m =>
+        `${m.model}: ${m.count}건 · 평균 ${sec(m.avgTotalMs)} (첫 토큰 ${sec(m.avgFirstTokenMs)}) · 토큰 ${m.promptTokens}/${m.completionTokens} · $${m.costUsd.toFixed(4)}`),
+    ]
+  }
+
+  // 📊 통계 — 열 때마다 DB 기록을 다시 읽는다
+  async _toggleStats(box) {
+    if (box.style.display === 'block') { box.style.display = 'none'; return }
+    box.style.display = 'block'
+    box.textContent = '불러오는 중...'
+    try {
+      box.textContent = AgentPanel.statsLines(await this.api.stats()).join('\n')
+    } catch (err) {
+      box.textContent = `통계를 불러올 수 없어요: ${err.message}`
+    }
+  }
+
   _bubble(log, who) {
     const el = document.createElement('div')
     const mine = who === 'user'
@@ -145,6 +167,14 @@ class AgentPanel {
     header.style.cssText = `font-size:12px; color:${this.status.enabled ? '#7bd88f' : '#aaa'}`
     header.textContent = `🤖 도우미 — ${AgentPanel.statusText(this.status)}`
 
+    const statsBox = document.createElement('div')
+    statsBox.style.cssText = 'display:none; font-size:11px; color:#ccc; white-space:pre-wrap; padding:6px 8px; background:#16213e; border:1px solid #0f3460; border-radius:4px'
+    const statsButton = document.createElement('button')
+    statsButton.textContent = '📊 통계'
+    statsButton.style.cssText = 'margin-left:8px; padding:2px 8px; background:none; color:#aaa; border:1px solid #0f3460; border-radius:4px; cursor:pointer; font-size:11px'
+    statsButton.onclick = () => this._toggleStats(statsBox)
+    header.appendChild(statsButton)
+
     const log = document.createElement('div')
     log.style.cssText = 'flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px; padding:8px; background:#0a0a1a; border:1px solid #0f3460; border-radius:6px'
     if (this.status.enabled) this._note(log, '예) "불꽃이 배고파 보이는데 먹을 거 있으면 줘", "어디서 사냥하면 좋을까?"')
@@ -167,6 +197,7 @@ class AgentPanel {
     form.appendChild(input)
     form.appendChild(button)
     el.appendChild(header)
+    el.appendChild(statsBox)
     el.appendChild(log)
     el.appendChild(form)
     return el
