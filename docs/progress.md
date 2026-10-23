@@ -105,5 +105,4 @@
 - D6 6-4: FastAPI 에이전트 서버 + Redis 큐 워커 (main 프로세스 에이전트 규칙과 어떻게 둘지 결정 필요)
 - D6 6-5: 서버·FastAPI·Redis Docker 이미지 → ghcr.io, VM에서 docker compose
 - 나중에(선택): VM에 AVX2를 노출하면(호스트 Hyper-V·메모리 무결성 끄기 등) 작은 모델 재측정
-- D6에서: 설치 파일에 agent TS 원본이 들어가지 않게 정리
 - 후순위: 골드버전 개편 6-2 두 번째 마을(`town2`)부터 재개 — 위키 GOLD_REDESIGN 7-2장
