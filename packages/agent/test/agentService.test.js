@@ -195,6 +195,20 @@ test('잡담 모델이 NEED_TOOLS로 답하면 tool 전체를 주고 큰 모델�
   assert.deepEqual(tokens, ['먹였어요'])
 })
 
+test('NEED_TOOLS 표시는 대소문자·앞뒤 공백·마침표와 상관없이 알아보고, 화면에 흘리지 않음', async () => {
+  for (const marker of ['need_tools', ' Need_Tools.', 'NEED_', 'NEED_TOOLS']) {
+    const parts = marker === 'NEED_' ? ['NEED_', 'TOOLS'] : [marker]
+    const stream = req => { for (const p of parts) req.onToken?.(p); return { content: parts.join(''), toolCalls: [], totalMs: 1 } }
+    const factory = fakeClientFactory({ responses: { tiny: [stream], big: [{ content: '했어요' }] } })
+    const service = make(factory)
+    await service.init()
+    const tokens = []
+    const res = await service.chat('챙겨줘', { onToken: t => tokens.push(t) })
+    assert.equal(res.route.fallback, 'chat_model_needs_tools', marker)
+    assert.deepEqual(tokens, ['했어요'], marker)
+  }
+})
+
 test('잡담 모델이 시간 초과·오류면 큰 모델(tool 전체)로 넘김', async () => {
   const hang = req => new Promise((_, reject) => req.signal.addEventListener('abort', () => reject(new Error('aborted'))))
   const factory = fakeClientFactory({ responses: { tiny: [hang], big: [{ content: '안녕하세요' }] } })
