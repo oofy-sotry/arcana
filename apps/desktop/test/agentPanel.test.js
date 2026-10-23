@@ -53,3 +53,21 @@ test('turnsOff — 연결 끊김·꺼짐 결과면 패널 입력도 끈다, 한�
   assert.equal(AgentPanel.turnsOff({ ok: false, reason: 'invalid_input' }), false)
   assert.equal(AgentPanel.turnsOff({ ok: true }), false)
 })
+
+test('statsLines — 전체 건수·실패·누적 환산 비용, 모델별 호출 수·평균 지연·토큰·비용', () => {
+  assert.deepEqual(AgentPanel.statsLines({
+    total: 5, failed: 1, totalCostUsd: 0.0061234,
+    byModel: [
+      { model: 'gemini-x', count: 3, avgTotalMs: 2450, avgFirstTokenMs: 812, promptTokens: 9000, completionTokens: 300, costUsd: 0.0061234 },
+      { model: 'qwen', count: 1, avgTotalMs: 15000, avgFirstTokenMs: null, promptTokens: 120, completionTokens: 9, costUsd: 0 },
+    ],
+  }), [
+    '전체 5건 (실패 1) · 환산 비용 $0.0061',
+    'gemini-x: 3건 · 평균 2.5초 (첫 토큰 0.8초) · 토큰 9000/300 · $0.0061',
+    'qwen: 1건 · 평균 15.0초 (첫 토큰 -) · 토큰 120/9 · $0.0000',
+  ])
+})
+
+test('statsLines — 기록이 없으면 안내 한 줄', () => {
+  assert.deepEqual(AgentPanel.statsLines({ total: 0, failed: 0, totalCostUsd: 0, byModel: [] }), ['아직 기록이 없어요'])
+})
