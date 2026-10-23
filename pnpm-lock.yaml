@@ -172,6 +172,9 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@arcana/agent':
+        specifier: workspace:*
+        version: link:../../packages/agent
       '@arcana/game-core':
         specifier: workspace:*
         version: link:../../packages/game-core

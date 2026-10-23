@@ -13,6 +13,7 @@
     "test": "node --test"
   },
   "dependencies": {
+    "@arcana/agent": "workspace:*",
     "@arcana/game-core": "workspace:*",
     "pixi.js": "^8.0.0",
     "sql.js": "^1.12.0"
