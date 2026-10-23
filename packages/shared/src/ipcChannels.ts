@@ -104,6 +104,13 @@ export const IPC_SEND_CHANNELS = [
   'overlay:toggle-mouse',
 ] as const
 
+/** main → renderer 이벤트 (event.sender.send / ipcRenderer.on) — 에이전트 응답 스트리밍 */
+export const IPC_EVENT_CHANNELS = [
+  'agent:token',
+  'agent:tool',
+] as const
+
 export type IpcInvokeChannel = typeof IPC_INVOKE_CHANNELS[number]
 export type IpcSendChannel   = typeof IPC_SEND_CHANNELS[number]
-export type IpcChannel       = IpcInvokeChannel | IpcSendChannel
+export type IpcEventChannel  = typeof IPC_EVENT_CHANNELS[number]
+export type IpcChannel       = IpcInvokeChannel | IpcSendChannel | IpcEventChannel
