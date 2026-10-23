@@ -2,7 +2,7 @@ const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const fs   = require('fs')
 const path = require('path')
-const { IPC_INVOKE_CHANNELS, IPC_SEND_CHANNELS } = require('@arcana/shared')
+const { IPC_INVOKE_CHANNELS, IPC_SEND_CHANNELS, IPC_EVENT_CHANNELS } = require('@arcana/shared')
 
 const read = rel => fs.readFileSync(path.join(__dirname, '../src', rel), 'utf8')
 const channels = (src, re) => [...src.matchAll(re)].map(m => m[1]).sort()
@@ -25,4 +25,12 @@ test('preload invoke 채널 = shared IPC_INVOKE_CHANNELS', () => {
 
 test('preload send 채널 = shared IPC_SEND_CHANNELS', () => {
   assert.deepEqual(channels(preload, /ipcRenderer\.send\('([^']+)'/g), [...IPC_SEND_CHANNELS].sort())
+})
+
+test('ipcRouter sender.send 채널 = shared IPC_EVENT_CHANNELS', () => {
+  assert.deepEqual(channels(router, /sender\.send\('([^']+)'/g), [...IPC_EVENT_CHANNELS].sort())
+})
+
+test('preload on 채널 = shared IPC_EVENT_CHANNELS', () => {
+  assert.deepEqual(channels(preload, /ipcRenderer\.on\('([^']+)'/g), [...IPC_EVENT_CHANNELS].sort())
 })
