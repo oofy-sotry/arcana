@@ -1,6 +1,6 @@
 {
   "maxSteps": 6,
-  "defaultModel": "small",
+  "defaultModel": "large",
   "providers": {
     "ollama": {
       "baseURL": "http://localhost:11434/v1"
