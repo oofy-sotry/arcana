@@ -102,6 +102,17 @@ export function createChatClient({ baseURL, apiKey, fetchImpl = fetch, now = Dat
     const calls: ToolCall[] = []
     const markFirst = () => { if (firstTokenMs === undefined) firstTokenMs = now() - startedAt }
 
+    // 조각이 들어갈 호출 자리. Gemini는 index 없이 호출 전체를 보내고, 병렬 호출은 청크마다 따로 온다 →
+    // 처음 보는 id면 새 호출, 아는 id면 그 호출, id도 없으면 바로 앞 호출에 이어 붙인다
+    const slotOf = (tc: { index?: number; id?: string }) => {
+      if (tc.index !== undefined) return tc.index
+      if (tc.id) {
+        const known = calls.findIndex(c => c?.id === tc.id)
+        return known >= 0 ? known : calls.length
+      }
+      return Math.max(calls.length - 1, 0)
+    }
+
     const handleData = (data: string) => {
       if (data === '[DONE]') return
       const chunk = JSON.parse(data)
@@ -113,10 +124,9 @@ export function createChatClient({ baseURL, apiKey, fetchImpl = fetch, now = Dat
         content += delta.content
         onToken?.(delta.content)
       }
-      // Gemini는 조각에 index 없이 호출 전체를 한 번에 보낸다 → 배열 순서로 구분
-      for (const [i, tc] of (delta.tool_calls ?? []).entries()) {
+      for (const tc of delta.tool_calls ?? []) {
         markFirst()
-        const call = calls[tc.index ?? i] ??={ id: '', type: 'function', function: { name: '', arguments: '' } }
+        const call = calls[slotOf(tc)] ??={ id: '', type: 'function', function: { name: '', arguments: '' } }
         if (tc.id) call.id = tc.id
         if (tc.extra_content) call.extra_content = tc.extra_content
         if (tc.function?.name) call.function.name += tc.function.name
