@@ -95,6 +95,8 @@ export const IPC_INVOKE_CHANNELS = [
   'faction:chapter',
   'faction:advance-chapter',
   'collection:get-base-line',
+  'agent:status',
+  'agent:chat',
 ] as const
 
 /** renderer → main 단방향 신호 (ipcRenderer.send / ipcMain.on) */
