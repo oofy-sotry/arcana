@@ -115,6 +115,14 @@ test('chat — 시스템 프롬프트+사용자 메시지로 실행, 펫 tool �
   assert.ok(req.tools.some(t => t.function.name === 'get_pets'))
 })
 
+test('chat — 시스템 프롬프트는 마크다운 없이 평문 답을 요구 (런처는 textContent로 표시)', async () => {
+  const factory = fakeClientFactory({ responses: [{ content: 'ok' }] })
+  const service = make({}, factory)
+  await service.init()
+  await service.chat('안녕')
+  assert.match(factory.requests[0].messages[0].content, /마크다운/)
+})
+
 test('chat — 단계 상한은 설정의 maxSteps', async () => {
   const call = { id: 'c', type: 'function', function: { name: 'get_pets', arguments: '{}' } }
   const factory = fakeClientFactory({ responses: Array.from({ length: 5 }, () => ({ toolCalls: [call] })) })
