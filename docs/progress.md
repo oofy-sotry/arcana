@@ -99,9 +99,11 @@
 - 수동 실행 결과: `Arcana-Setup-0.3.0.exe`(112MB) + `latest.yml` 이름 일치 확인
 - 실행 확인은 못 함: 이 VM은 GUI 세션이 없어(X 서버 없음) wine으로 띄우면 창 생성에서 종료. 처음엔 wine-Electron 비호환으로 잘못 판단했다가 정정 — Windows 호스트에서 직접 확인 필요
 - [x] 테스트: desktop 89, server 65, game-core 5, shared 2, agent 106 — 전부 통과(종료 코드 0)
+- [x] 2026-10-24 `win-client-v0.3.0` 태그 push → Release 워크플로 성공(test 24초, windows 1분 39초) → Releases에 `Arcana-Setup-0.3.0.exe`(117MB)·blockmap·`latest.yml` 업로드, `releases/latest`가 v0.3.0을 가리킴
+- 확인: electron-updater는 프리릴리스를 허용하지 않으면 `releases/latest`의 `tag_name`으로 다운로드 경로만 만들고 버전은 `latest.yml`에서 읽음 → 태그 접두어 `win-client-`는 문제 없음(소스 확인)
 
 ## 다음 할 일
-- D6 이어서: `win-client-v0.3.0` 태그 push → Releases 확인 → **Windows에서 설치·실행(완료 기준)** → `0.3.1`을 내서 자동 업데이트 실제 확인
+- D6 이어서: **Windows에서 v0.3.0 설치·실행(완료 기준)** → `0.3.1`을 내서 자동 업데이트 실제 확인
 - D6 6-4: FastAPI 에이전트 서버 + Redis 큐 워커 (main 프로세스 에이전트 규칙과 어떻게 둘지 결정 필요)
 - D6 6-5: 서버·FastAPI·Redis Docker 이미지 → ghcr.io, VM에서 docker compose
 - 나중에(선택): VM에 AVX2를 노출하면(호스트 Hyper-V·메모리 무결성 끄기 등) 작은 모델 재측정
