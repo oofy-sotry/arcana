@@ -102,6 +102,7 @@ function setupTabs() {
       if (tab === 'faction')   renderFactionTab()
       if (tab === 'story')     renderStoryTab()
       if (tab === 'collection') renderCollectionTab()
+      if (tab === 'agent')     renderAgentTab()
     })
   })
 }
@@ -385,6 +386,19 @@ async function renderCollectionTab() {
   const entries = await window.arcana.collection.getBaseLine()
   container.innerHTML = ''
   container.appendChild(new CollectionPanel(entries).render())
+}
+
+// 대화 기록을 지키려고 켜진 패널은 한 번만 그린다. 꺼져 있으면 탭을 열 때마다 상태를 다시 본다
+let agentPanelReady = false
+async function renderAgentTab() {
+  if (agentPanelReady) return
+  const container = document.getElementById('tab-agent')
+  container.innerHTML = '<span style="color:#aaa;font-size:13px">로딩 중...</span>'
+
+  const status = await window.arcana.agent.status()
+  container.innerHTML = ''
+  container.appendChild(new AgentPanel(status, window.arcana.agent).render())
+  agentPanelReady = status.enabled
 }
 
 document.addEventListener('DOMContentLoaded', init)
