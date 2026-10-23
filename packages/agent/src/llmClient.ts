@@ -1,4 +1,4 @@
-// OpenAI 호환 Chat Completions 클라이언트 — Ollama(/v1)와 GitHub Models가 같은 형식이라
+// OpenAI 호환 Chat Completions 클라이언트 — Ollama(/v1)와 Gemini(/v1beta/openai)가 같은 형식이라
 // 공급자는 baseURL·apiKey만 바꿔 끼운다. 응답은 SSE 스트리밍으로 받아 토큰마다 onToken 호출
 export interface ToolCall {
   id:       string
