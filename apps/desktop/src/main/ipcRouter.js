@@ -403,10 +403,16 @@ class IpcRouter {
     ipcMain.handle('agent:status', () =>
       this.agentService?.status() ?? { enabled: false, reason: 'not_ready' }
     )
-    ipcMain.handle('agent:chat', (_e, payload) => {
+    // requestId(정수)를 주면 응답 토큰·tool 실행을 요청한 창에만 이벤트로 흘려보낸다
+    ipcMain.handle('agent:chat', (e, payload) => {
       if (!this.agentService) return { ok: false, reason: 'disabled', error: '에이전트가 꺼져 있습니다' }
-      const message = payload && typeof payload === 'object' ? payload.message : undefined
-      return this.agentService.chat(message)
+      const { message, requestId } = payload && typeof payload === 'object' ? payload : {}
+      if (!Number.isSafeInteger(requestId)) return this.agentService.chat(message)
+      const alive = () => !e.sender.isDestroyed()
+      return this.agentService.chat(message, {
+        onToken:    token => { if (alive()) e.sender.send('agent:token', { requestId, token }) },
+        onToolCall: ev    => { if (alive()) e.sender.send('agent:tool', { requestId, name: ev.name, ok: ev.ok }) },
+      })
     })
   }
 
