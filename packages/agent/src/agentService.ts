@@ -88,6 +88,9 @@ interface Target { client: ChatClient; model: string }
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
+// 작은 모델은 표시를 need_tools·Need_Tools. 처럼 바꿔 쓰기도 해서 대소문자를 무시한다
+const isNeedTools = (text: string) => text.toUpperCase().includes(NEED_TOOLS)
+
 // 잡담 모델 출력이 NEED_TOOLS 표시인지 판단될 때까지 토큰을 붙잡아 두어 화면에 흘리지 않는다
 function holdMarker(onToken?: (token: string) => void) {
   let buffer   = ''
@@ -95,13 +98,13 @@ function holdMarker(onToken?: (token: string) => void) {
   const push = (token: string) => {
     if (released) return onToken?.(token)
     buffer += token
-    const head = buffer.trimStart()
+    const head = buffer.trimStart().toUpperCase()
     if (NEED_TOOLS.startsWith(head) || head.startsWith(NEED_TOOLS)) return
     released = true
     onToken?.(buffer)
   }
   const flush = () => {
-    if (released || !buffer || buffer.includes(NEED_TOOLS)) return
+    if (released || !buffer || isNeedTools(buffer)) return
     released = true
     onToken?.(buffer)
   }
@@ -200,7 +203,7 @@ export function createAgentService({ config, secrets, env, game, createClient = 
         let chatRun: Awaited<ReturnType<typeof runRoute>> | undefined
         try {
           chatRun = await runRoute(small, route, text, history, { ...opts, onToken: held.push, signal })
-          if (chatRun.result.reply.includes(NEED_TOOLS)) fallback = 'chat_model_needs_tools'
+          if (isNeedTools(chatRun.result.reply)) fallback = 'chat_model_needs_tools'
           else held.flush()
         } catch {
           fallback = 'chat_model_failed'
