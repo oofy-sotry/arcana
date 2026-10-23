@@ -3,7 +3,8 @@ const assert = require('node:assert/strict')
 const AgentPanel = require('../src/renderer/launcher/components/AgentPanel')
 
 test('statusText — 켜짐은 모델 이름, 꺼짐은 이유별 안내', () => {
-  assert.equal(AgentPanel.statusText({ enabled: true, model: 'gemini-x' }), '켜짐 · gemini-x')
+  assert.equal(AgentPanel.statusText({ enabled: true, model: 'gemini-x', chatModel: 'qwen' }), '켜짐 · gemini-x (잡담: qwen)')
+  assert.equal(AgentPanel.statusText({ enabled: true, model: 'gemini-x', chatModel: null }), '켜짐 · gemini-x (잡담도 이 모델)')
   for (const reason of ['no_key', 'unreachable', 'bad_config', 'not_ready']) {
     const text = AgentPanel.statusText({ enabled: false, reason })
     assert.match(text, /^꺼짐 · /, reason)
@@ -27,14 +28,22 @@ test('failText — 한도 초과·연결 끊김·꺼짐은 안내 문구, 입력
   assert.match(AgentPanel.failText({ ok: false, reason: 'error', error: 'boom' }), /boom/)
 })
 
-test('metaText — 모델·tool 횟수·단계·토큰·첫 토큰 시간', () => {
-  const text = AgentPanel.metaText({
-    ok: true, model: 'gemini-x', toolCalls: 2, steps: 3,
-    usage: { promptTokens: 1200, completionTokens: 40 }, firstTokenMs: 840,
-  })
-  assert.equal(text, 'gemini-x · tool 2번 · 3단계 · 토큰 1200/40 · 첫 토큰 0.8초')
-  assert.equal(AgentPanel.metaText({ ok: true, model: 'm', toolCalls: 0, steps: 1, usage: { promptTokens: 5, completionTokens: 1 } }),
-    'm · tool 0번 · 1단계 · 토큰 5/1')
+const meta = extra => ({
+  ok: true, model: 'gemini-x', toolCalls: 2, steps: 3, usage: { promptTokens: 1200, completionTokens: 40 }, firstTokenMs: 840,
+  route: { kind: 'tools', tools: ['get_pets', 'use_item'] }, context: { chars: 245 }, ...extra,
+})
+
+test('metaText — 모델·경로(tool 수)·상태 크기·tool 횟수·단계·토큰·첫 토큰 시간', () => {
+  assert.equal(AgentPanel.metaText(meta()), 'gemini-x · tool 2개 · 상태 245자 · tool 2번 · 3단계 · 토큰 1200/40 · 첫 토큰 0.8초')
+  assert.equal(AgentPanel.metaText(meta({ model: 'm', toolCalls: 0, steps: 1, usage: { promptTokens: 5, completionTokens: 1 }, firstTokenMs: undefined,
+    route: { kind: 'chat', tools: [] }, context: { chars: 12 } })),
+    'm · 잡담 · 상태 12자 · tool 0번 · 1단계 · 토큰 5/1')
+})
+
+test('metaText — 처음 경로에서 넘긴 경우 이유를 덧붙임', () => {
+  assert.match(AgentPanel.metaText(meta({ route: { kind: 'tools', tools: ['get_pets'], fallback: 'chat_model_needs_tools' } })), / · 잡담 모델이 tool 필요로 판단해 넘김$/)
+  assert.match(AgentPanel.metaText(meta({ route: { kind: 'tools', tools: ['get_pets'], fallback: 'chat_model_failed' } })), / · 잡담 모델 실패로 넘김$/)
+  assert.match(AgentPanel.metaText(meta({ retries: 1 })), / · 한도 초과로 1번 다시 시도$/)
 })
 
 test('turnsOff — 연결 끊김·꺼짐 결과면 패널 입력도 끈다, 한도 초과·입력 오류는 유지', () => {
