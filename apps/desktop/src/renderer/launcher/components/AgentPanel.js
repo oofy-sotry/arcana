@@ -41,6 +41,11 @@ class AgentPanel {
     return `오류가 났어요: ${res.error}`
   }
 
+  /** main 쪽 에이전트가 꺼진 결과인지 — 이후 입력을 막는다 */
+  static turnsOff(res) {
+    return !res.ok && (res.reason === 'unreachable' || res.reason === 'disabled')
+  }
+
   static metaText(res) {
     const parts = [
       res.model,
@@ -110,6 +115,7 @@ class AgentPanel {
       } else {
         reply.textContent = AgentPanel.failText(res)
         reply.style.color = '#e94560'
+        if (AgentPanel.turnsOff(res)) this.status = { ...this.status, enabled: false }
       }
     } catch (err) {
       reply.textContent = AgentPanel.failText({ reason: 'error', error: err.message })
