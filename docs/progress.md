@@ -89,8 +89,21 @@
 - [x] 테스트: desktop 83, server 65, game-core 5, shared 2, agent 106 — 전부 통과(종료 코드 0)
 - **D5 완료**
 
+## 2026-10-23 — D6 배포 자동화 (진행 중)
+- 결정(사용자): AWS는 무료가 아님(2025-07 이후 새 계정은 크레딧 $100~200·6개월 무료 플랜) → **AWS 대신 ghcr.io 이미지 + VM에서 docker compose**(서버·FastAPI·Redis)로 비용 0
+- [x] 6-1 CI(`ci.yml`): push·PR마다 `pnpm test`. GitHub에서도 테스트 수가 로컬과 같음. 액션은 Node 24 기반 버전(checkout·setup-node v7, pnpm/action-setup v6)
+- [x] 6-2 릴리스(`release.yml`): 태그 `win-client-v<앱 버전>` push → 버전 일치 확인 → 리눅스 테스트 → Windows 러너 빌드 → Releases 업로드. 수동 실행은 빌드만 하고 아티팩트로
+- [x] 설치 파일에서 agent TS 원본·측정 스크립트·결과 제외. electron-builder는 `node_modules` 밖 워크스페이스 패키지를 **저장소 루트 기준 경로**(`packages/agent/...`)로 매칭해서 `node_modules/...` 패턴이 안 먹었음(소스 확인)
+- [x] 6-3 자동 업데이트: `electron-updater` 6.8.9, `src/main/updater.js`(개발 실행은 건너뜀, 받은 뒤 재시작/나중에, 확인 실패는 로그만 — 테스트 6개), `publish`(GitHub) 설정, `latest.yml`도 업로드, 앱 버전 0.3.0
+- CI로만 드러난 문제 2건 수정: ① Windows에서 `pnpm.CMD`를 거치며 cmd가 turbo 필터 `desktop^...`의 `^`를 지워 desktop(electron-builder)까지 빌드 → bash로 실행 (6-2 첫 실행의 "packaging 두 번"도 이 때문이었음) ② 설치 파일 이름의 공백이 GitHub 업로드 때 점으로 바뀌어 `latest.yml`과 어긋남 → `Arcana-Setup-<버전>.exe`로 고정
+- 수동 실행 결과: `Arcana-Setup-0.3.0.exe`(112MB) + `latest.yml` 이름 일치 확인
+- 실행 확인은 못 함: 이 VM은 GUI 세션이 없어(X 서버 없음) wine으로 띄우면 창 생성에서 종료. 처음엔 wine-Electron 비호환으로 잘못 판단했다가 정정 — Windows 호스트에서 직접 확인 필요
+- [x] 테스트: desktop 89, server 65, game-core 5, shared 2, agent 106 — 전부 통과(종료 코드 0)
+
 ## 다음 할 일
-- D6: GitHub Actions 배포 자동화 (선택 항목 FastAPI·Redis 큐·AWS·electron-updater 포함)
+- D6 이어서: `win-client-v0.3.0` 태그 push → Releases 확인 → **Windows에서 설치·실행(완료 기준)** → `0.3.1`을 내서 자동 업데이트 실제 확인
+- D6 6-4: FastAPI 에이전트 서버 + Redis 큐 워커 (main 프로세스 에이전트 규칙과 어떻게 둘지 결정 필요)
+- D6 6-5: 서버·FastAPI·Redis Docker 이미지 → ghcr.io, VM에서 docker compose
 - 나중에(선택): VM에 AVX2를 노출하면(호스트 Hyper-V·메모리 무결성 끄기 등) 작은 모델 재측정
 - D6에서: 설치 파일에 agent TS 원본이 들어가지 않게 정리
 - 후순위: 골드버전 개편 6-2 두 번째 마을(`town2`)부터 재개 — 위키 GOLD_REDESIGN 7-2장
