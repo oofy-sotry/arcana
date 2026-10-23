@@ -79,6 +79,29 @@ test('tool 호출 — index가 없으면(Gemini) 배열 순서로 구분', async
   assert.equal(res.toolCalls[0].function.arguments, '{"petId":1}')
 })
 
+test('tool 호출 — index 없이 청크마다 따로 온 병렬 호출(Gemini)은 id로 구분', async () => {
+  const { fetchImpl } = fakeFetch([
+    delta({ tool_calls: [{ id: 'c1', type: 'function', function: { name: 'use_item', arguments: '{"petId":1}' } }] }),
+    delta({ tool_calls: [{ id: 'c2', type: 'function', function: { name: 'get_hunting_zones', arguments: '{"petId":1}' } }] }),
+    'data: [DONE]\n\n',
+  ])
+  const res = await createChatClient({ baseURL: 'http://x', fetchImpl }).chat({ model: 'm', messages: [] })
+  assert.deepEqual(res.toolCalls.map(c => [c.id, c.function.name, c.function.arguments]), [
+    ['c1', 'use_item', '{"petId":1}'],
+    ['c2', 'get_hunting_zones', '{"petId":1}'],
+  ])
+})
+
+test('tool 호출 — index도 id도 없는 조각은 바로 앞 호출에 이어 붙임', async () => {
+  const { fetchImpl } = fakeFetch([
+    delta({ tool_calls: [{ id: 'c1', type: 'function', function: { name: 'use_item', arguments: '{"petId"' } }] }),
+    delta({ tool_calls: [{ function: { arguments: ':1}' } }] }),
+    'data: [DONE]\n\n',
+  ])
+  const res = await createChatClient({ baseURL: 'http://x', fetchImpl }).chat({ model: 'm', messages: [] })
+  assert.deepEqual(res.toolCalls.map(c => c.function.arguments), ['{"petId":1}'])
+})
+
 test('tool 호출 — extra_content(Gemini thought_signature)는 다음 요청에 되돌려 보내도록 보존', async () => {
   const extra = { google: { thought_signature: 'sig' } }
   const { fetchImpl } = fakeFetch([
