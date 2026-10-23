@@ -14,5 +14,21 @@
   "models": {
     "small": { "provider": "ollama", "model": "qwen2.5:3b" },
     "large": { "provider": "gemini", "model": "gemini-flash-lite-latest" }
+  },
+  "routing": {
+    "chatModel": "small",
+    "baseTools": ["get_pets"],
+    "tools": {
+      "get_pets":          { "keywords": ["상태", "컨디션", "기분", "배고", "배불", "피곤", "지쳤", "에너지", "행복", "청결", "더러", "레벨", "기절", "괜찮"] },
+      "get_inventory":     { "keywords": ["가방", "아이템", "인벤", "뭐 있", "뭐가 있", "남았", "몇 개"] },
+      "use_item":          { "keywords": ["먹여", "먹이", "밥", "사료", "간식", "씻", "비누", "목욕", "장난감", "놀아", "물약", "회복시", "아이템 써", "아이템 사용"], "requires": ["get_inventory"] },
+      "get_hunting_zones": { "keywords": ["사냥터", "어디서", "어디로", "어디 가", "추천"] },
+      "start_auto_hunt":   { "keywords": ["사냥 가", "사냥가", "사냥 보내", "사냥 시작", "사냥해", "사냥하러", "사냥터 가", "잡아", "싸워", "싸우러"], "requires": ["get_hunting_zones"] },
+      "get_party":         { "keywords": ["파티", "편성", "팀원", "동료"] }
+    },
+    "chatTimeoutMs": 90000,
+    "retryDelayMs": 2000,
+    "historyTurns": 4,
+    "contextMaxPets": 6
   }
 }
