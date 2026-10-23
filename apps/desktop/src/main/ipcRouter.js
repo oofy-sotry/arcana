@@ -5,7 +5,7 @@ class IpcRouter {
                 huntingSystem, explorationSystem,
                 breedingSystem, gachaSystem, partySystem, questSystem, onlineSystem,
                 equipmentSystem, factionSystem, pvpSystem, summonerSystem, collectionSystem,
-                faintSystem, turnBattleSystem, gymSystem, windowManager }) {
+                faintSystem, turnBattleSystem, gymSystem, agentService, windowManager }) {
     this.petSystem         = petSystem
     this.levelSystem       = levelSystem
     this.evolutionSystem   = evolutionSystem
@@ -26,6 +26,7 @@ class IpcRouter {
     this.faintSystem       = faintSystem
     this.turnBattleSystem  = turnBattleSystem
     this.gymSystem         = gymSystem
+    this.agentService      = agentService
     this.windowManager     = windowManager
   }
 
@@ -396,6 +397,17 @@ class IpcRouter {
     })
 
     ipcMain.handle('collection:get-base-line', () => this.collectionSystem.getBaseLineEntries())
+
+    // ── AI 펫 에이전트 ─────────────────────────────────────────────────────
+    // 공급자에 연결할 수 없으면 꺼짐 상태만 돌려주고 게임은 그대로 동작. 메시지 검증은 agentService.chat이 한다
+    ipcMain.handle('agent:status', () =>
+      this.agentService?.status() ?? { enabled: false, reason: 'not_ready' }
+    )
+    ipcMain.handle('agent:chat', (_e, payload) => {
+      if (!this.agentService) return { ok: false, reason: 'disabled', error: '에이전트가 꺼져 있습니다' }
+      const message = payload && typeof payload === 'object' ? payload.message : undefined
+      return this.agentService.chat(message)
+    })
   }
 
   // 4장 진입 시 파티 펫 충성도 판정: 70+ 유지, 30~70 설득 필요, 30 미만 이탈
