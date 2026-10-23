@@ -78,3 +78,29 @@ test('resolveModel — 없는 모델·공급자 이름은 오류', () => {
   const broken = { ...config, models: { x: { provider: 'nowhere', model: 'm' } } }
   assert.throws(() => resolveModel(broken, 'x', { env: {}, secrets: {} }), /nowhere/)
 })
+
+test('기본 라우팅 설정 — 잡담 모델은 models에 있고, tool 규칙은 펫 tool 6개와 정확히 일치', () => {
+  const { createPetTools } = require('../dist')
+  const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
+  const r = config.routing
+  assert.ok(config.models[r.chatModel])
+  const toolNames = createPetTools({}).map(t => t.name).sort()
+  assert.deepEqual(Object.keys(r.tools).sort(), toolNames)
+  for (const [name, rule] of Object.entries(r.tools)) {
+    assert.ok(rule.keywords.length > 0, name)
+    for (const dep of rule.requires ?? []) assert.ok(toolNames.includes(dep), `${name} → ${dep}`)
+  }
+  for (const t of r.baseTools) assert.ok(toolNames.includes(t), t)
+  assert.ok(r.chatTimeoutMs > 0 && r.retryDelayMs >= 0 && r.historyTurns > 0 && r.contextMaxPets > 0)
+})
+
+test('사용자 설정 — routing은 바꾼 값만 덮어쓰고, tools는 tool별로 병합', () => {
+  const overridePath = path.join(tmp(), 'agent.json')
+  fs.writeFileSync(overridePath, JSON.stringify({ routing: { historyTurns: 2, tools: { get_party: { keywords: ['팀원'] } } } }))
+  const base   = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
+  const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH, overridePath })
+  assert.equal(config.routing.historyTurns, 2)
+  assert.equal(config.routing.chatModel, base.routing.chatModel)
+  assert.deepEqual(config.routing.tools.get_party, { keywords: ['팀원'] })
+  assert.deepEqual(config.routing.tools.use_item, base.routing.tools.use_item)
+})
