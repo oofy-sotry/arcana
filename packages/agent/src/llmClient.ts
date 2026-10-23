@@ -111,9 +111,10 @@ export function createChatClient({ baseURL, apiKey, fetchImpl = fetch, now = Dat
         content += delta.content
         onToken?.(delta.content)
       }
-      for (const tc of delta.tool_calls ?? []) {
+      // Gemini는 조각에 index 없이 호출 전체를 한 번에 보낸다 → 배열 순서로 구분
+      for (const [i, tc] of (delta.tool_calls ?? []).entries()) {
         markFirst()
-        const call = calls[tc.index] ??= { id: '', type: 'function', function: { name: '', arguments: '' } }
+        const call = calls[tc.index ?? i] ??={ id: '', type: 'function', function: { name: '', arguments: '' } }
         if (tc.id) call.id = tc.id
         if (tc.function?.name) call.function.name += tc.function.name
         if (tc.function?.arguments) call.function.arguments += tc.function.arguments
