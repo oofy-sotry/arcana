@@ -9,6 +9,12 @@ const AGENT_TOOL_LABELS = {
   get_party:         '파티 확인',
 }
 
+const AGENT_FALLBACK_TEXT = {
+  chat_model_needs_tools: '잡담 모델이 tool 필요로 판단해 넘김',
+  chat_model_failed:      '잡담 모델 실패로 넘김',
+  no_chat_model:          '잡담 모델 없음',
+}
+
 const AGENT_DISABLED_TEXT = {
   no_key:      'API 키가 없어요 (환경변수 GEMINI_API_KEY 또는 agent-secrets.json의 geminiKey)',
   unreachable: 'AI 공급자에 연결할 수 없어요. 게임은 그대로 할 수 있어요',
@@ -25,7 +31,7 @@ class AgentPanel {
   }
 
   static statusText(status) {
-    if (status.enabled) return `켜짐 · ${status.model}`
+    if (status.enabled) return `켜짐 · ${status.model} (${status.chatModel ? `잡담: ${status.chatModel}` : '잡담도 이 모델'})`
     return `꺼짐 · ${AGENT_DISABLED_TEXT[status.reason] || AGENT_DISABLED_TEXT.not_ready}`
   }
 
@@ -49,11 +55,15 @@ class AgentPanel {
   static metaText(res) {
     const parts = [
       res.model,
+      res.route.kind === 'chat' ? '잡담' : `tool ${res.route.tools.length}개`,
+      `상태 ${res.context.chars}자`,
       `tool ${res.toolCalls}번`,
       `${res.steps}단계`,
       `토큰 ${res.usage.promptTokens}/${res.usage.completionTokens}`,
     ]
     if (res.firstTokenMs !== undefined) parts.push(`첫 토큰 ${(res.firstTokenMs / 1000).toFixed(1)}초`)
+    if (res.route.fallback) parts.push(AGENT_FALLBACK_TEXT[res.route.fallback] || res.route.fallback)
+    if (res.retries) parts.push(`한도 초과로 ${res.retries}번 다시 시도`)
     return parts.join(' · ')
   }
 
