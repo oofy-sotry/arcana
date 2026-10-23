@@ -1,0 +1,18 @@
+{
+  "maxSteps": 6,
+  "defaultModel": "small",
+  "providers": {
+    "ollama": {
+      "baseURL": "http://localhost:11434/v1"
+    },
+    "github": {
+      "baseURL": "https://models.github.ai/inference",
+      "apiKeyEnv": "GITHUB_MODELS_TOKEN",
+      "apiKeySecret": "githubToken"
+    }
+  },
+  "models": {
+    "small": { "provider": "ollama", "model": "qwen2.5:3b" },
+    "large": { "provider": "github", "model": "openai/gpt-4.1-mini" }
+  }
+}
