@@ -79,6 +79,16 @@ test('tool 호출 — index가 없으면(Gemini) 배열 순서로 구분', async
   assert.equal(res.toolCalls[0].function.arguments, '{"petId":1}')
 })
 
+test('tool 호출 — extra_content(Gemini thought_signature)는 다음 요청에 되돌려 보내도록 보존', async () => {
+  const extra = { google: { thought_signature: 'sig' } }
+  const { fetchImpl } = fakeFetch([
+    delta({ tool_calls: [{ id: 'c1', type: 'function', extra_content: extra, function: { name: 'get_party', arguments: '{}' } }] }),
+    'data: [DONE]\n\n',
+  ])
+  const res = await createChatClient({ baseURL: 'http://x', fetchImpl }).chat({ model: 'm', messages: [] })
+  assert.deepEqual(res.toolCalls[0].extra_content, extra)
+})
+
 test('usage — 마지막 청크의 토큰 수, 첫 토큰·전체 시간 기록', async () => {
   const { fetchImpl } = fakeFetch([
     delta({ content: 'a' }),
