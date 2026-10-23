@@ -30,6 +30,11 @@
     "extraMetadata": {
       "name": "arcana"
     },
+    "publish": {
+      "provider": "github",
+      "owner": "oofy-sotry",
+      "repo": "arcana"
+    },
     "files": [
       "**/*",
       "!test/**",
