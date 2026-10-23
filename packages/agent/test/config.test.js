@@ -104,3 +104,23 @@ test('사용자 설정 — routing은 바꾼 값만 덮어쓰고, tools는 tool�
   assert.deepEqual(config.routing.tools.get_party, { keywords: ['팀원'] })
   assert.deepEqual(config.routing.tools.use_item, base.routing.tools.use_item)
 })
+
+test('기본 참고 단가표 — 모든 모델에 입력·출력 단가(0 이상), 출처 메모', () => {
+  const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
+  assert.ok(config.pricing.note.length > 0)
+  for (const name of Object.keys(config.models)) {
+    const p = config.pricing.models[name]
+    assert.ok(p, name)
+    assert.ok(p.inputPer1M >= 0 && p.outputPer1M >= 0, name)
+  }
+})
+
+test('사용자 설정 — 단가는 모델별로 덮어씀', () => {
+  const overridePath = path.join(tmp(), 'agent.json')
+  fs.writeFileSync(overridePath, JSON.stringify({ pricing: { models: { large: { inputPer1M: 1, outputPer1M: 2 } } } }))
+  const base   = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
+  const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH, overridePath })
+  assert.deepEqual(config.pricing.models.large, { inputPer1M: 1, outputPer1M: 2 })
+  assert.deepEqual(config.pricing.models.small, base.pricing.models.small)
+  assert.equal(config.pricing.note, base.pricing.note)
+})
