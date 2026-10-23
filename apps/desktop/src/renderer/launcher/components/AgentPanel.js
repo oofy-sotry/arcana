@@ -52,6 +52,13 @@ class AgentPanel {
     return parts.join(' · ')
   }
 
+  // 입력·버튼을 함께 켜고 끈다. 꺼진 버튼은 흐리게 해서 누를 수 없다는 게 보이게
+  _setEnabled(input, button, on) {
+    input.disabled = button.disabled = !on
+    button.style.opacity = on ? '1' : '0.4'
+    button.style.cursor  = on ? 'pointer' : 'default'
+  }
+
   _bubble(log, who) {
     const el = document.createElement('div')
     const mine = who === 'user'
@@ -76,7 +83,7 @@ class AgentPanel {
     if (!message || this.busy) return
     this.busy = true
     input.value = ''
-    input.disabled = button.disabled = true
+    this._setEnabled(input, button, false)
 
     this._bubble(log, 'user').textContent = message
     const reply = this._bubble(log, 'agent')
@@ -109,7 +116,7 @@ class AgentPanel {
       reply.style.color = '#e94560'
     } finally {
       this.busy = false
-      input.disabled = button.disabled = !this.status.enabled
+      this._setEnabled(input, button, this.status.enabled)
       input.focus()
     }
   }
@@ -136,7 +143,7 @@ class AgentPanel {
     const button = document.createElement('button')
     button.textContent  = '보내기'
     button.style.cssText = 'padding:8px 14px; background:#e94560; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:13px'
-    input.disabled = button.disabled = !this.status.enabled
+    this._setEnabled(input, button, this.status.enabled)
 
     button.onclick  = () => this._send(log, input, button)
     input.onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) this._send(log, input, button) }
