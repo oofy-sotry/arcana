@@ -138,4 +138,8 @@ contextBridge.exposeInMainWorld('arcana', {
   collection: {
     getBaseLine: () => ipcRenderer.invoke('collection:get-base-line'),
   },
+  agent: {
+    status: ()            => ipcRenderer.invoke('agent:status'),
+    chat:   ({ message }) => ipcRenderer.invoke('agent:chat', { message }),
+  },
 })
