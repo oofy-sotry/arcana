@@ -41,12 +41,25 @@ export interface RoutingConfig {
   contextMaxPets: number
 }
 
+/** 참고 단가 — USD / 100만 토큰. 무료 공급자라 실제 과금은 없고 환산 비용 계산에만 쓴다 */
+export interface ModelPrice {
+  inputPer1M:  number
+  outputPer1M: number
+}
+
+export interface PricingConfig {
+  /** 단가 출처·확인 날짜 */
+  note:   string
+  models: Record<string, ModelPrice>
+}
+
 export interface AgentConfig {
   maxSteps:     number
   defaultModel: string
   providers:    Record<string, ProviderConfig>
   models:       Record<string, ModelConfig>
   routing:      RoutingConfig
+  pricing:      PricingConfig
 }
 
 export interface ResolvedModel {
@@ -86,6 +99,10 @@ export function loadAgentConfig({ defaultsPath = DEFAULT_CONFIG_PATH, overridePa
       ...base.routing,
       ...override.routing,
       tools: { ...base.routing?.tools, ...override.routing?.tools },
+    },
+    pricing:      {
+      note:   override.pricing?.note ?? base.pricing?.note,
+      models: { ...base.pricing?.models, ...override.pricing?.models },
     },
   }
 }
