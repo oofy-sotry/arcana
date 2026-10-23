@@ -1,12 +1,12 @@
 const { ipcMain, BrowserWindow } = require('electron')
-const { formatChatLog } = require('@arcana/agent')
+const { formatChatLog, toRequestRecord } = require('@arcana/agent')
 
 class IpcRouter {
   constructor({ petSystem, levelSystem, evolutionSystem, skillSystem, itemSystem,
                 huntingSystem, explorationSystem,
                 breedingSystem, gachaSystem, partySystem, questSystem, onlineSystem,
                 equipmentSystem, factionSystem, pvpSystem, summonerSystem, collectionSystem,
-                faintSystem, turnBattleSystem, gymSystem, agentService, windowManager }) {
+                faintSystem, turnBattleSystem, gymSystem, agentService, agentRequestLog, windowManager }) {
     this.petSystem         = petSystem
     this.levelSystem       = levelSystem
     this.evolutionSystem   = evolutionSystem
@@ -28,6 +28,7 @@ class IpcRouter {
     this.turnBattleSystem  = turnBattleSystem
     this.gymSystem         = gymSystem
     this.agentService      = agentService
+    this.agentRequestLog   = agentRequestLog
     this.windowManager     = windowManager
   }
 
@@ -416,9 +417,16 @@ class IpcRouter {
       } : {}
       const started = Date.now()
       const res     = await this.agentService.chat(message, stream)
-      console.log('[agent]', formatChatLog(res, Date.now() - started))
+      const totalMs = Date.now() - started
+      console.log('[agent]', formatChatLog(res, totalMs))
+      // 기록 실패가 대화를 막지 않게 한다
+      try { this.agentRequestLog?.record(toRequestRecord(res, { createdAt: started, totalMs })) }
+      catch (err) { console.error('[agent] 요청 기록 실패:', err.message) }
       return res
     })
+    ipcMain.handle('agent:stats', () =>
+      this.agentRequestLog?.stats() ?? { total: 0, failed: 0, totalCostUsd: 0, byModel: [] }
+    )
   }
 
   // 4장 진입 시 파티 펫 충성도 판정: 70+ 유지, 30~70 설득 필요, 30 미만 이탈
