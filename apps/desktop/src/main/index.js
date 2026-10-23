@@ -6,6 +6,8 @@ const WindowManager = require('./windowManager')
 const IpcRouter     = require('./ipcRouter')
 const logger        = require('./logger')
 const { createAgentGameApi } = require('./agentGameApi')
+const { createAgentRequestLog } = require('./agentRequestLog')
+const db            = require('../db/database')
 
 const gameWorld     = new GameWorld()
 const windowManager = new WindowManager()
@@ -58,6 +60,7 @@ app.whenReady().then(async () => {
     turnBattleSystem:  gameWorld.turnBattleSystem,
     gymSystem:         gameWorld.gymSystem,
     agentService:      createAgent(),
+    agentRequestLog:   createAgentRequestLog(db),
     windowManager,
   })
   ipcRouter.register()
