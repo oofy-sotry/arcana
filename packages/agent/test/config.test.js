@@ -7,10 +7,10 @@ const { loadAgentConfig, loadSecrets, resolveModel, DEFAULT_CONFIG_PATH } = requ
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'arcana-agent-'))
 
-test('기본 설정 — 공급자 2개(ollama·github)와 small·large 모델', () => {
+test('기본 설정 — 공급자 2개(ollama·gemini)와 small·large 모델', () => {
   const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
   assert.ok(config.providers.ollama.baseURL)
-  assert.ok(config.providers.github.baseURL)
+  assert.ok(config.providers.gemini.baseURL)
   assert.equal(config.models[config.defaultModel].provider, 'ollama')
   assert.ok(config.maxSteps > 0)
 })
@@ -28,7 +28,7 @@ test('사용자 설정 — 바꾼 모델만 덮어쓰고 나머지는 기본값 
   assert.equal(config.maxSteps, 3)
   assert.equal(config.models.small.model, 'llama3.2:3b')
   assert.ok(config.models.large)
-  assert.ok(config.providers.github)
+  assert.ok(config.providers.gemini)
 })
 
 test('사용자 설정이 깨진 JSON이면 오류에 파일 경로 포함', () => {
@@ -54,14 +54,14 @@ test('resolveModel — 키가 필요 없는 공급자(ollama)', () => {
 
 test('resolveModel — 환경변수 키가 비밀 파일보다 우선', () => {
   const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
-  const m = resolveModel(config, 'large', { env: { GITHUB_MODELS_TOKEN: 'from-env' }, secrets: { githubToken: 'from-file' } })
+  const m = resolveModel(config, 'large', { env: { GEMINI_API_KEY: 'from-env' }, secrets: { geminiKey: 'from-file' } })
   assert.equal(m.apiKey, 'from-env')
   assert.equal(m.available, true)
 })
 
 test('resolveModel — 환경변수가 없으면 비밀 파일 키 사용', () => {
   const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
-  const m = resolveModel(config, 'large', { env: {}, secrets: { githubToken: 'from-file' } })
+  const m = resolveModel(config, 'large', { env: {}, secrets: { geminiKey: 'from-file' } })
   assert.equal(m.apiKey, 'from-file')
 })
 
