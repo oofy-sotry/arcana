@@ -1,5 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
+let agentRequestSeq = 0
+
 contextBridge.exposeInMainWorld('arcana', {
   pet: {
     getDead:   ()                => ipcRenderer.invoke('pet:get-dead'),
@@ -139,7 +141,20 @@ contextBridge.exposeInMainWorld('arcana', {
     getBaseLine: () => ipcRenderer.invoke('collection:get-base-line'),
   },
   agent: {
-    status: ()            => ipcRenderer.invoke('agent:status'),
-    chat:   ({ message }) => ipcRenderer.invoke('agent:chat', { message }),
+    status: () => ipcRenderer.invoke('agent:status'),
+    // 콜백은 이 요청(requestId)의 이벤트만 받고, 응답이 끝나면 리스너를 지운다. renderer에는 이벤트 객체를 넘기지 않음
+    chat: async ({ message, onToken, onToolCall } = {}) => {
+      const requestId = ++agentRequestSeq
+      const tokenListener = (_e, d) => { if (d.requestId === requestId) onToken?.(d.token) }
+      const toolListener  = (_e, d) => { if (d.requestId === requestId) onToolCall?.({ name: d.name, ok: d.ok }) }
+      ipcRenderer.on('agent:token', tokenListener)
+      ipcRenderer.on('agent:tool', toolListener)
+      try {
+        return await ipcRenderer.invoke('agent:chat', { message, requestId })
+      } finally {
+        ipcRenderer.removeListener('agent:token', tokenListener)
+        ipcRenderer.removeListener('agent:tool', toolListener)
+      }
+    },
   },
 })
