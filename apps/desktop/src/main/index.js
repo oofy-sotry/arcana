@@ -1,4 +1,5 @@
-const { app } = require('electron')
+const { app, dialog } = require('electron')
+const { autoUpdater } = require('electron-updater')
 const path          = require('path')
 const { createAgentService, loadAgentConfig, loadSecrets } = require('@arcana/agent')
 const GameWorld     = require('./gameWorld')
@@ -7,6 +8,7 @@ const IpcRouter     = require('./ipcRouter')
 const logger        = require('./logger')
 const { createAgentGameApi } = require('./agentGameApi')
 const { createAgentRequestLog } = require('./agentRequestLog')
+const { createUpdater } = require('./updater')
 const db            = require('../db/database')
 
 const gameWorld     = new GameWorld()
@@ -66,6 +68,8 @@ app.whenReady().then(async () => {
   ipcRouter.register()
 
   windowManager.createTray(() => app.quit())
+
+  createUpdater({ autoUpdater, isPackaged: app.isPackaged, dialog }).start() // 기다리지 않음 — 확인·다운로드는 뒤에서
 })
 
 app.on('before-quit', () => {
