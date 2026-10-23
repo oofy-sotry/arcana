@@ -19,11 +19,34 @@ export interface ModelConfig {
   model:    string
 }
 
+/** 키워드가 들어 있으면 이 tool이 필요하다고 본다. requires는 함께 넣을 tool */
+export interface ToolRouteRule {
+  keywords:  string[]
+  requires?: string[]
+}
+
+export interface RoutingConfig {
+  /** tool이 필요 없는 짧은 대화에 쓸 모델 (models의 이름) — tool이 필요하면 defaultModel */
+  chatModel:     string
+  /** tool 경로면 항상 넣는 tool */
+  baseTools:     string[]
+  tools:         Record<string, ToolRouteRule>
+  /** 잡담 모델이 이 시간 안에 못 끝내면 큰 모델로 넘긴다 */
+  chatTimeoutMs: number
+  /** 무료 한도 초과(429) 뒤 한 번 다시 시도하기 전 대기 */
+  retryDelayMs:  number
+  /** 원문으로 남길 최근 대화 턴 수 — 더 오래된 턴은 요약 한 줄로 */
+  historyTurns:  number
+  /** 프롬프트에 넣을 펫 수 상한 */
+  contextMaxPets: number
+}
+
 export interface AgentConfig {
   maxSteps:     number
   defaultModel: string
   providers:    Record<string, ProviderConfig>
   models:       Record<string, ModelConfig>
+  routing:      RoutingConfig
 }
 
 export interface ResolvedModel {
@@ -59,6 +82,11 @@ export function loadAgentConfig({ defaultsPath = DEFAULT_CONFIG_PATH, overridePa
     defaultModel: override.defaultModel ?? base.defaultModel,
     providers:    { ...base.providers, ...override.providers },
     models:       { ...base.models, ...override.models },
+    routing:      {
+      ...base.routing,
+      ...override.routing,
+      tools: { ...base.routing?.tools, ...override.routing?.tools },
+    },
   }
 }
 
