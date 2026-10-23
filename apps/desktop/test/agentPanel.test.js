@@ -36,3 +36,11 @@ test('metaText — 모델·tool 횟수·단계·토큰·첫 토큰 시간', () =
   assert.equal(AgentPanel.metaText({ ok: true, model: 'm', toolCalls: 0, steps: 1, usage: { promptTokens: 5, completionTokens: 1 } }),
     'm · tool 0번 · 1단계 · 토큰 5/1')
 })
+
+test('turnsOff — 연결 끊김·꺼짐 결과면 패널 입력도 끈다, 한도 초과·입력 오류는 유지', () => {
+  assert.equal(AgentPanel.turnsOff({ ok: false, reason: 'unreachable' }), true)
+  assert.equal(AgentPanel.turnsOff({ ok: false, reason: 'disabled' }), true)
+  assert.equal(AgentPanel.turnsOff({ ok: false, reason: 'rate_limited' }), false)
+  assert.equal(AgentPanel.turnsOff({ ok: false, reason: 'invalid_input' }), false)
+  assert.equal(AgentPanel.turnsOff({ ok: true }), false)
+})
