@@ -6,7 +6,7 @@ import pytest
 
 from arcana_gateway.config import load_config
 from arcana_gateway.jobs import JobQueue
-from arcana_gateway.worker import process_one
+from arcana_gateway.worker import CLAIM_TIMEOUT, connect_redis, process_one
 
 TURN = {"user": "밥 줘", "reply": "사과를 먹였어요"}
 
@@ -97,3 +97,9 @@ def test_unknown_kind_fails(queue, config):
     job_id = queue.submit("diary", {})
     run(queue, client_with(ok("x")), config)
     assert queue.get(job_id)["status"] == "failed"
+
+
+def test_redis_socket_timeout_is_longer_than_claim_wait():
+    # redis-py 8 기본 소켓 시간 초과(5초)가 BLMOVE 대기(5초)보다 먼저 끝나 워커가 TimeoutError로 죽던 문제
+    r = connect_redis("redis://127.0.0.1:6380/0")
+    assert r.connection_pool.connection_kwargs["socket_timeout"] > CLAIM_TIMEOUT
