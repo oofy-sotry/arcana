@@ -107,7 +107,7 @@
 - [x] `apps/gateway`(Python 3.12, FastAPI 0.162): OpenAI 호환 `/v1/chat/completions`(SSE 그대로 전달)·`/v1/models`, 게이트웨이 토큰 인증, 공급자 키는 서버 환경변수에만, 요청마다 JSON 로그 한 줄(모델·토큰·첫 토큰·전체 시간·상태, 원문 없음), 429 등 공급자 상태 그대로 전달, 모델·본문 크기 검증
 - [x] Redis 큐: `POST /v1/jobs/summary` → 대기 목록 → 워커가 `BLMOVE`로 처리 중 목록으로 옮겨 처리(죽어도 job이 남음) → 결과만 TTL 1시간(입력 대화는 삭제), Redis가 없으면 job API만 503
 - [x] desktop 쪽(`packages/agent`): 설정 `summary.enabled`(기본 꺼짐)일 때 밀려난 턴을 job으로 보내고 응답은 기다리지 않음. 결과가 오기 전·실패·60초 초과면 규칙 요약 유지. 큰 모델 공급자를 `gateway`로 바꾸는 것도 설정만으로
-- [x] CI·릴리스 test job에 Python 3.12 + `pnpm --filter gateway setup`
+- [x] CI·릴리스 test job에 Python 3.12 + `pnpm --filter gateway run venv` (처음엔 스크립트 이름을 setup으로 지어 CI에서 pnpm 자체 `pnpm setup`이 실행됨 → venv로 변경)
 - 실행으로만 드러난 버그 2건 수정: ① redis-py 8의 소켓 읽기 기본 시간 초과(5초)가 워커의 `BLMOVE` 대기(5초)와 같아 빈 큐에서 워커가 `TimeoutError`로 죽음 → 소켓 시간 초과를 대기+5초로, 루프는 `RedisError` 전체에 버팀 ② 스트림을 `aiter_raw`로 넘기면서 `content-encoding`을 빼 gzip 응답이 깨질 수 있음(테스트에서 발견) → `aiter_bytes`
 - 실호출에서 요약이 대화에 없는 "사냥 준비 중"을 지어냄 → 프롬프트에 추측 금지
 - [x] 실측(에이전트 → 게이트웨이 → Gemini, 큐 → 워커, 개발용 Redis는 6380 별도 컨테이너): 4턴 대화에서 밀려난 1턴을 요약(워커 3.0초), 4번째 요청에 `history=3턴(요약0+LLM)`, 이름·사료 준 일을 기억. 게이트웨이가 더하는 첫 토큰 지연 약 20~30ms(클라이언트 3498ms / 게이트웨이 3472ms). 로그에 키·토큰 없음
