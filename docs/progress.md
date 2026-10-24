@@ -117,5 +117,6 @@
 ## 다음 할 일
 - D6 이어서: **Windows에서 v0.3.0 설치·실행(완료 기준)** → `0.3.1`을 내서 자동 업데이트 실제 확인
 - D6 6-5: 서버·게이트웨이·워커·Redis Docker 이미지 → ghcr.io, VM에서 docker compose (Ollama 주소는 `ARCANA_GATEWAY_CONFIG` 덮어쓰기로)
+- D7 마무리: README(아키텍처 그림·AI 에이전트 설계·D5 비교 표·게이트웨이·한계), 데모 GIF 2개(돌아다니는 펫, 에이전트 실행), ai-log 정리
 - 나중에(선택): VM에 AVX2를 노출하면(호스트 Hyper-V·메모리 무결성 끄기 등) 작은 모델 재측정
 - 후순위: 골드버전 개편 6-2 두 번째 마을(`town2`)부터 재개 — 위키 GOLD_REDESIGN 7-2장
