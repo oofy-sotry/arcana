@@ -496,3 +496,24 @@ test('요약 job — timeoutMs 안에 끝나지 않으면 포기', async () => {
   assert.match(events[0].error, /시간/)
   assert.ok(summary.gets() <= 4) // pollMs 10 × 30 = 300ms씩 → 1000ms 안에 몇 번만
 })
+
+test('요약 job — 실패하면 failureBackoffMs 동안 다시 보내지 않음', async () => {
+  let t = 0
+  const summary = fakeSummaryFactory({ submitError: new Error('503') })
+  const service = make(fakeClientFactory(chatReplies(6)), {
+    config: { ...summaryConfig, summary: { ...summaryConfig.summary, failureBackoffMs: 500 } },
+    secrets: { remoteKey: 'k', gwToken: 'g' },
+    createSummaryClient: summary.createSummaryClient, now: () => t, sleep: async () => {},
+  })
+  await service.init()
+  await chatTurns(service, 3)
+  await service.flushSummary()
+  assert.equal(summary.submits.length, 1)
+  await service.chat('안녕4')
+  await service.flushSummary()
+  assert.equal(summary.submits.length, 1) // 쉬는 중
+  t += 600
+  await service.chat('안녕5')
+  await service.flushSummary()
+  assert.equal(summary.submits.length, 2)
+})
