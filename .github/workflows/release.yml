@@ -30,7 +30,11 @@ jobs:
             echo "::error::태그 $GITHUB_REF_NAME 와 apps/desktop 버전 $version 이 다름"
             exit 1
           fi
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter gateway setup
       - run: pnpm test
 
   windows:
