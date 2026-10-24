@@ -142,6 +142,8 @@ export function createAgentService({
   const memory   = createConversationMemory({ maxTurns: config.routing.historyTurns })
   const summarizer = connectSummarizer()
   let summaryTask: Promise<void> | undefined
+  // 이 시각 전에는 요약 job을 보내지 않음 (실패 뒤 쉬는 중)
+  let summaryRetryAt = 0
 
   // 요약 job — 설정에서 켜고 게이트웨이 키가 있을 때만. 없으면 규칙 요약만 쓴다
   function connectSummarizer(): SummaryClient | undefined {
@@ -172,13 +174,14 @@ export function createAgentService({
         if (now() - started >= config.summary.timeoutMs) throw new Error(`요약 job이 ${config.summary.timeoutMs}ms 시간 안에 끝나지 않음`)
       }
     } catch (err) {
+      summaryRetryAt = now() + (config.summary.failureBackoffMs ?? 0)
       onSummary?.({ ok: false, ms: now() - started, error: (err as Error).message })
     }
   }
 
   // 응답을 기다리게 하지 않도록 뒤에서 돌리고, 한 번에 job 하나만
   function summarizeInBackground() {
-    if (!summarizer || summaryTask) return
+    if (!summarizer || summaryTask || now() < summaryRetryAt) return
     summaryTask = runSummaryJob(summarizer).finally(() => { summaryTask = undefined })
   }
 
