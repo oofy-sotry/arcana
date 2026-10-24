@@ -72,8 +72,8 @@ def main():
         while True:
             try:
                 process_one(queue, client, config)
-            except redis.ConnectionError as err:
-                # Redis가 잠깐 끊겨도 워커는 살아 있다가 다시 붙는다
+            except redis.RedisError as err:
+                # Redis가 잠깐 끊기거나 응답이 늦어도 워커는 살아 있다가 다시 붙는다
                 log_event("worker_redis_error", error=str(err)[:200])
                 time.sleep(3)
 
