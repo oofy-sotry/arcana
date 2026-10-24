@@ -368,17 +368,26 @@ arcana/
 ├── apps/
 │   ├── desktop/             # Electron 클라이언트
 │   │   ├── src/
-│   │   │   ├── main/        # 게임 월드, 창 관리, IPC 라우터, 로거
+│   │   │   ├── main/        # 게임 월드, 창 관리, IPC 라우터, 로거, 에이전트 배선, 자동 업데이트
 │   │   │   ├── preload/     # contextBridge API (window.arcana.*)
-│   │   │   ├── renderer/    # 오버레이 · 런처 · 월드맵 · 사냥 화면
+│   │   │   ├── renderer/    # 오버레이 · 런처(도우미 탭 포함) · 월드맵 · 사냥 화면
 │   │   │   ├── game/        # 게임 시스템(systems) · 데이터(data) · 서비스(services)
-│   │   │   └── db/          # sql.js 저장소 · 마이그레이션
+│   │   │   └── db/          # sql.js 저장소 · 마이그레이션 18개
 │   │   ├── test/            # 클라이언트 테스트 (node --test)
 │   │   └── assets/          # 캐릭터 스프라이트 130장 (ui · audio · items는 아직 미제작)
-│   └── server/              # 온라인 기능 서버 (Express + ws + sql.js)
+│   ├── server/              # 온라인 기능 서버 (Express + ws + sql.js) + Dockerfile
+│   └── gateway/             # Python FastAPI LLM 게이트웨이 · Redis 큐 요약 워커 + Dockerfile
 ├── packages/
+│   ├── agent/               # TypeScript — AI 펫 에이전트 (설정 · 루프 · 라우팅 · 컨텍스트 · 기록)
+│   │   ├── config/          # agent.default.json (공급자 · 모델 · 라우팅 키워드 · 단가)
+│   │   ├── scripts/         # route-report · benchmark (3조건 비교 측정)
+│   │   └── bench/           # 측정 원본 결과
 │   ├── game-core/           # 공용 게임 규칙 (속성 상성 · 데미지 공식 · 몬스터 데이터)
 │   └── shared/              # TypeScript — IPC 채널 이름 · 공용 타입
+├── deploy/                  # 스모크 검사 · 컨테이너용 게이트웨이 설정
+├── .github/workflows/       # ci · release · images
+├── compose.yaml             # server · gateway · worker · redis
+├── .env.example             # compose 비밀값 예시 (.env는 커밋하지 않음)
 ├── docs/                    # 진행 상황 · AI 작업 기록
 ├── pnpm-workspace.yaml
 ├── turbo.json
