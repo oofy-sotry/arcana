@@ -103,3 +103,15 @@ def test_redis_socket_timeout_is_longer_than_claim_wait():
     # redis-py 8 기본 소켓 시간 초과(5초)가 BLMOVE 대기(5초)보다 먼저 끝나 워커가 TimeoutError로 죽던 문제
     r = connect_redis("redis://127.0.0.1:6380/0")
     assert r.connection_pool.connection_kwargs["socket_timeout"] > CLAIM_TIMEOUT
+
+
+def test_missing_upstream_key_fails_without_calling(queue, config):
+    from dataclasses import replace
+    no_key = replace(config, upstreams={"gemini": replace(config.upstreams["gemini"], api_key=None, available=False)})
+    job_id = queue.submit("summary", {"previous": None, "turns": [TURN]})
+    client = client_with(ok("x"))
+    run(queue, client, no_key)
+    assert client.calls == []
+    job = queue.get(job_id)
+    assert job["status"] == "failed"
+    assert "키" in job["error"]
