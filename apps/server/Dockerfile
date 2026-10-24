@@ -10,6 +10,7 @@ COPY packages/game-core/package.json packages/game-core/
 RUN pnpm install --frozen-lockfile --prod --filter server...
 
 FROM node:24-bookworm-slim
+LABEL org.opencontainers.image.source=https://github.com/oofy-sotry/arcana
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=deps --chown=node:node /app ./
