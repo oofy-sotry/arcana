@@ -155,6 +155,39 @@ def test_rate_limit_status_is_passed_through(client, upstream, events):
     assert events[-1]["status"] == 429
 
 
+GOOGLE_HEADERS = {
+    "date": "Sat, 24 Oct 2026 07:43:11 GMT",
+    "server": "scaffolding on HTTPServer2",
+    "set-cookie": "NID=abc; domain=.generativelanguage.googleapis.com; HttpOnly",
+    "alt-svc": 'h3=":443"',
+    "x-frame-options": "SAMEORIGIN",
+}
+
+
+def assert_only_safe_headers(res):
+    # 공급자 쿠키·서버 정보는 넘기지 않고, date·server가 두 번 나가지 않아야 함 (실제 Gemini 응답에서 발견)
+    assert "set-cookie" not in res.headers
+    assert "alt-svc" not in res.headers
+    assert "x-frame-options" not in res.headers
+    assert res.headers.get("server") != "scaffolding on HTTPServer2"
+
+
+def test_stream_passes_only_content_type(client, upstream):
+    upstream.response = httpx.Response(200, content=sse({"choices": []}),
+                                       headers={**GOOGLE_HEADERS, "content-type": "text/event-stream"})
+    res = client.post("/v1/chat/completions", json=CHAT, headers=AUTH)
+    assert res.headers["content-type"].startswith("text/event-stream")
+    assert_only_safe_headers(res)
+
+
+def test_rate_limit_keeps_retry_after(client, upstream):
+    upstream.response = httpx.Response(429, json={"error": {}}, headers={**GOOGLE_HEADERS, "retry-after": "7"})
+    res = client.post("/v1/chat/completions", json=CHAT, headers=AUTH)
+    assert res.headers["retry-after"] == "7"
+    assert res.headers["content-type"] == "application/json"
+    assert_only_safe_headers(res)
+
+
 def test_unreachable_upstream_is_502(client, upstream, events):
     upstream.error = httpx.ConnectError("refused")
     res = client.post("/v1/chat/completions", json=CHAT, headers=AUTH)
