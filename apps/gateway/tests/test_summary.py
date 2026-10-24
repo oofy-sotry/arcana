@@ -26,12 +26,18 @@ def test_previous_is_optional():
     {"turns": "안녕"},
     {"turns": [{"user": "a"}]},
     {"turns": [{"user": 1, "reply": "b"}]},
-    {"turns": [{"user": "a", "reply": "b"}] * 4},  # max_turns 3 초과
     {"previous": 3, "turns": [{"user": "a", "reply": "b"}]},
 ])
 def test_invalid_payload_is_rejected(payload):
     with pytest.raises(ValueError):
         validate_payload(payload, SETTINGS)
+
+
+def test_turns_over_limit_keep_latest():
+    # 데스크톱과 게이트웨이 상한이 어긋나도 요약이 계속 실패하지 않게 — 거절 대신 최근 턴만
+    turns = [{"user": f"q{n}", "reply": f"a{n}"} for n in range(1, 6)]
+    payload = validate_payload({"turns": turns}, SETTINGS)
+    assert [t["user"] for t in payload["turns"]] == ["q3", "q4", "q5"]
 
 
 def test_long_text_is_clipped():
