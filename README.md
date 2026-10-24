@@ -191,6 +191,34 @@ renderer(도우미 탭) ──agent:chat──▶ main: AgentService
 
 ---
 
+## LLM 게이트웨이와 작업 큐
+
+`apps/gateway`(Python FastAPI)는 데스크톱 에이전트가 Gemini 대신 붙을 수 있는 OpenAI 호환 주소입니다. 설정으로 켤 때만 쓰고, 기본은 데스크톱이 Gemini에 직접 붙습니다.
+
+```
+desktop main (에이전트 루프·tool) ──OpenAI 호환──▶ gateway (FastAPI) ──▶ Gemini / Ollama
+        │ 밀려난 대화 턴                              │ 공급자 키는 서버 환경변수에만
+        └─POST /v1/jobs/summary─▶ Redis 대기 목록 ─BLMOVE─▶ 워커 ──▶ Gemini
+          GET /v1/jobs/:id ◀── 결과 (TTL 1시간, 입력 대화는 삭제)
+```
+
+- **왜 에이전트를 서버로 옮기지 않았나**: 게임 상태와 tool이 데스크톱 로컬 DB에 있어서, 서버가 루프를 돌리면 tool을 부를 때마다 데스크톱과 왕복해야 합니다. 루프는 main에 두고, 서버는 키 보관·계측·오래 걸리는 작업만 맡았습니다.
+- **게이트웨이**: `/v1/chat/completions`는 SSE 스트림을 그대로 넘기고, 데스크톱은 Gemini 키 대신 게이트웨이 토큰만 가집니다. 요청마다 모델·토큰·첫 토큰·전체 시간·상태를 JSON 한 줄로 남깁니다(원문 없음). 429 등 공급자 상태 코드는 그대로 돌려줘 데스크톱의 재시도·폴백이 그대로 동작하고, 응답 헤더는 `content-type`·`retry-after`만 넘깁니다.
+- **큐 작업은 대화 요약**: LLM 요약은 응답 지연과 무료 한도 때문에 응답 경로에서 뺐던 기능입니다. 큐로 옮겨 응답 지연 없이 되살렸습니다. 결과가 오기 전·실패·60초 초과면 규칙 요약을 그대로 쓰고, 실패 뒤 60초는 다시 보내지 않습니다.
+- **job이 사라지지 않게**: 워커는 `BLMOVE`로 대기 목록에서 처리 중 목록으로 옮겨 가져갑니다. 처리 도중 죽으면 다음 시작 때 처리 중 목록을 되돌립니다(워커 강제 종료 실험으로 확인, 워커 하나 전제).
+- **실측**: 게이트웨이가 더하는 첫 토큰 지연은 약 20~30ms(클라이언트 3498ms / 게이트웨이 3472ms). 4턴 대화에서 밀려난 첫 턴을 워커가 약 3초에 요약했고, 다음 요청에 그 요약이 들어가 앞에서 말한 이름을 기억했습니다.
+
+데스크톱에서 켜려면 `userData/agent.json`에 아래처럼 쓰고, `agent-secrets.json`에 `gatewayToken`을 넣습니다.
+
+```json
+{
+  "models":  { "large": { "provider": "gateway", "model": "gemini-flash-lite-latest" } },
+  "summary": { "enabled": true }
+}
+```
+
+---
+
 ## 핵심 특징
 
 - 🖥️ **데스크톱 위를 자유롭게 돌아다니는 펫** — 창 안에 갇히지 않음
