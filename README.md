@@ -97,14 +97,18 @@ AI 에이전트도 main 프로세스에서 돌고, renderer는 IPC로 요청을 
 
 ### 모노레포 구성
 
-pnpm workspaces + Turborepo로 클라이언트·서버·공용 패키지를 한 저장소에서 관리합니다.
+pnpm workspaces + Turborepo로 클라이언트·서버·게이트웨이·공용 패키지를 한 저장소에서 관리합니다.
 
 | 패키지 | 언어 | 역할 |
 |---|---|---|
 | `apps/desktop` | JS | Electron 클라이언트 |
 | `apps/server` | JS | Express + WebSocket 온라인 서버 |
+| `apps/gateway` | Python | FastAPI LLM 게이트웨이 + Redis 큐 요약 워커 (`package.json`은 turbo가 pytest를 함께 돌리기 위한 스크립트만) |
+| `packages/agent` | TypeScript | AI 펫 에이전트 — 설정, OpenAI 호환 스트리밍 클라이언트, 에이전트 루프, 라우팅, 컨텍스트 선택, 요청 기록 |
 | `packages/game-core` | JS | 클라이언트·서버가 함께 쓰는 게임 규칙 — 속성 상성, 데미지 공식, 몬스터 데이터 |
 | `packages/shared` | TypeScript | IPC 채널 이름 목록과 공용 데이터 타입(`Pet`, `Attribute` …) |
+
+기존 JS 코드는 그대로 두고, 새로 만든 에이전트와 공용 타입만 TypeScript로 썼습니다.
 
 - 전환 전에는 서버가 클라이언트 파일을 `../../src/game/...` 상대 경로로 직접 불러왔습니다. 이 공용 로직을 `game-core`로 분리해 서버를 클라이언트 폴더 없이 따로 배포할 수 있게 했습니다.
 - `packages/shared`의 채널 목록은 `apps/desktop/test/ipcChannels.test.js`가 `ipcRouter.js`·`preload.js`의 실제 채널과 비교해, 코드와 목록이 어긋나면 테스트가 실패합니다.
