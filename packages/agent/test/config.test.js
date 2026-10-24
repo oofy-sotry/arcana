@@ -161,3 +161,8 @@ test('resolveProvider — 모델 없이 공급자 주소·키만 (요약 job용)
   assert.equal(resolveProvider(config, 'ollama', { env: {}, secrets: {} }).available, true)
   assert.throws(() => resolveProvider(config, 'nowhere', { env: {}, secrets: {} }), /nowhere/)
 })
+
+test('기본 설정 — 요약 실패 뒤 쉬는 시간', () => {
+  const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
+  assert.ok(config.summary.failureBackoffMs > 0)
+})
