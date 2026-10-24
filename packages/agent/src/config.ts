@@ -62,6 +62,8 @@ export interface SummaryJobConfig {
   pollMs:    number
   /** 이 시간 안에 끝나지 않으면 포기하고 규칙 요약 유지 */
   timeoutMs: number
+  /** 실패한 뒤 이 시간 동안은 job을 보내지 않음 — 게이트웨이 키가 없을 때 대화마다 실패 job이 쌓이지 않게 */
+  failureBackoffMs?: number
 }
 
 export interface AgentConfig {
