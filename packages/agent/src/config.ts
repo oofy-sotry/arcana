@@ -124,27 +124,24 @@ export function loadSecrets(secretsPath: string): Record<string, string> {
   return readJsonIfExists(secretsPath) as Record<string, string>
 }
 
-export function resolveModel(
-  config: AgentConfig,
-  name: string,
-  { env, secrets }: { env: Record<string, string | undefined>; secrets: Record<string, string> },
-): ResolvedModel {
-  const modelConfig = config.models[name]
-  if (!modelConfig) throw new Error(`설정에 없는 모델입니다: ${name}`)
-  const provider = config.providers[modelConfig.provider]
-  if (!provider) throw new Error(`설정에 없는 공급자입니다: ${modelConfig.provider}`)
+type KeySources = { env: Record<string, string | undefined>; secrets: Record<string, string> }
+
+/** 공급자 주소와 키 — 키는 환경변수가 비밀 파일보다 우선 */
+export function resolveProvider(config: AgentConfig, name: string, { env, secrets }: KeySources) {
+  const provider = config.providers[name]
+  if (!provider) throw new Error(`설정에 없는 공급자입니다: ${name}`)
 
   const needsKey = Boolean(provider.apiKeyEnv || provider.apiKeySecret)
   const apiKey   = (provider.apiKeyEnv && env[provider.apiKeyEnv])
     || (provider.apiKeySecret && secrets[provider.apiKeySecret])
     || undefined
 
-  return {
-    name,
-    provider:  modelConfig.provider,
-    baseURL:   provider.baseURL,
-    model:     modelConfig.model,
-    apiKey,
-    available: !needsKey || Boolean(apiKey),
-  }
+  return { baseURL: provider.baseURL, apiKey, available: !needsKey || Boolean(apiKey) }
+}
+
+export function resolveModel(config: AgentConfig, name: string, keys: KeySources): ResolvedModel {
+  const modelConfig = config.models[name]
+  if (!modelConfig) throw new Error(`설정에 없는 모델입니다: ${name}`)
+  const { baseURL, apiKey, available } = resolveProvider(config, modelConfig.provider, keys)
+  return { name, provider: modelConfig.provider, baseURL, model: modelConfig.model, apiKey, available }
 }
