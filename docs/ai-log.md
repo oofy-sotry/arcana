@@ -114,3 +114,11 @@
 ### 직접 확인·수정한 것 (6-4)
 - Windows 확인 전에 6-4를 먼저 하기로 결정
 - FastAPI 역할은 LLM 게이트웨이(에이전트 루프는 main 그대로), 큐 작업은 LLM 대화 요약으로 결정
+
+### Claude에게 맡긴 것 (6-5)
+- 서버·게이트웨이 Dockerfile, compose.yaml, 스모크 검사 스크립트(먼저 작성), 이미지 CI(빌드 → 스모크 → ghcr.io push)
+- VM에서 직접 빌드·ghcr.io pull 두 경로로 띄워 확인, 익명 pull 확인
+
+### Claude가 저지른 실수와 바로잡은 것 (6-5)
+- `.dockerignore`에 `.gitignore`처럼 `*.log`를 써서 하위 폴더의 `server.log`가 이미지에 들어감 — 이미지 안을 열어 보고 발견, `**/`로
+- 워커 healthcheck를 `disable`로 둠 — 로컬 compose는 통과했지만 CI 러너 compose가 `up --wait`에서 실패, Redis ping으로 교체
