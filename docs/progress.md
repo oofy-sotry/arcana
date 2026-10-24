@@ -122,11 +122,25 @@
 - [x] VM 확인: ghcr.io의 `sha-2c353ad` 이미지를 pull해 네 서비스 healthy, 스모크 통과(Gemini 요약 done), 데스크톱 에이전트 → 컨테이너 게이트웨이로 4턴 대화·LLM 요약까지
 - 발견·수정: ① `.dockerignore`의 `*.log`는 루트만 뜻해서 `server.log`가 이미지에 들어감 → `**/` ② 워커 healthcheck를 `disable`로 두자 CI 러너의 compose가 `up --wait`에서 실패(이 VM의 Compose v5.5.1은 통과) → Redis ping 헬스체크
 - 한계: 컨테이너에서 호스트 Ollama에 안 닿음 — Ollama가 `127.0.0.1`에만 열림(`OLLAMA_HOST=0.0.0.0` 필요, sudo). 데스크톱 잡담 모델은 Ollama에 직접 붙으므로 동작엔 지장 없음
-- 아직 안 한 것: 이 VM의 실제 운영 서버를 compose로 바꾸기(기존 DB 연결·새 JWT_SECRET이면 기존 로그인 토큰 무효) — 사용자 결정 필요
+
+### 6-4·6-5 검토 수정 + 운영 전환 (2026-10-24)
+- 검토로 찾아 고친 것 7건 (전부 테스트 먼저):
+  1. 게이트웨이가 공급자 응답 헤더를 거의 다 넘김 — 실제 Gemini 응답으로 확인하니 Google `set-cookie`(NID)까지 클라이언트로 가고 `date`·`server`가 두 번씩 나감 → `content-type`·`retry-after`만
+  2. 요약 job API에 본문 크기 상한이 없음 → `read_json`으로 묶어 대화 API와 같은 256KB
+  3. 워커가 처리 도중 죽으면 그 job을 다시 처리할 방법이 없었음(문서엔 "남는다"고만 씀) → 워커 시작 때 `requeue_processing`. **실제로 job 제출 직후 워커를 `docker kill` → 재시작하자 `requeued: 1` → done 확인**
+  4. 요약 모델 키가 없어도 키 없이 Gemini를 호출 → 호출 없이 바로 실패
+  5. 데스크톱(최대 20턴)·게이트웨이(20턴 넘으면 거절) 상한이 우연히 같아서만 동작 → 게이트웨이가 최근 턴만 사용 (기존 "초과 거절" 테스트를 의도적으로 바꿈)
+  6. 요약이 계속 실패하면 대화마다 job을 다시 보냄 → 실패 뒤 `failureBackoffMs`(60초) 쉼
+  7. 이미지 CI가 동시에 돌면 `latest`가 오래된 커밋으로 덮일 수 있음 → `concurrency`
+- 검토에서 문제없던 것: 정적 검사(pyflakes, tsc 미사용 변수), TODO·디버그 출력 없음, 로그·Redis·이미지에 키 없음
+- 결정(사용자): ① 이 VM 서버를 compose로 상시 운영 — **기존 DB는 계정 0개(테이블만)라 지킬 데이터 없음**, 예전 서버는 코드 기본 JWT_SECRET(공개됨)으로 떠 있었음 → 새 랜덤 값. ② Windows 클라이언트의 게이트웨이 사용, ③ 게이트웨이 경유 Ollama는 나중으로
+- [x] 운영 시작: 저장소 루트 `.env`(권한 600, git 제외 — JWT_SECRET·게이트웨이 토큰 새로 생성, Gemini 키, `SERVER_DATA_DIR=./apps/server/data`) → ghcr.io `latest`(`sha-23fda3b`) pull → 네 서비스 healthy, 스모크 통과, `10.0.2.15:4000/health` 응답(VirtualBox 포워딩 경로), 게이트웨이 8000은 바깥 주소에서 응답 없음. Docker 서비스가 부팅 시 자동 시작(`enabled`)이라 `restart: unless-stopped`로 재부팅 뒤에도 뜸
+- [x] 테스트: desktop 89, server 65, game-core 5, shared 2, agent 132, gateway 80 — 전부 통과(종료 코드 0), CI·Images 통과
 
 ## 다음 할 일
-- D6 이어서: **Windows에서 v0.3.0 설치·실행(완료 기준)** → `0.3.1`을 내서 자동 업데이트 실제 확인
-- (결정 필요) 이 VM의 운영 서버를 compose로 전환: `.env`에 `SERVER_DATA_DIR=./apps/server/data`, JWT_SECRET 값 결정
+- D6 이어서: **Windows에서 v0.3.0 설치·실행(완료 기준)** → `0.3.1`을 내서 자동 업데이트 실제 확인. 온라인 탭 서버 주소는 그대로 `localhost:4000`(VirtualBox 포워딩)
+- 나중에(결정 ②): Windows 클라이언트가 게이트웨이 쓰기 — `.env`에 `GATEWAY_BIND=0.0.0.0`, VirtualBox 포워딩 8000 추가, 클라이언트 `agent.json`·`gatewayToken`. HTTP 평문이라 같은 와이파이에서만
+- 나중에(결정 ③): 게이트웨이 경유 Ollama — Ollama 서비스에 `OLLAMA_HOST=0.0.0.0`(sudo)
 - D7 마무리: README(아키텍처 그림·AI 에이전트 설계·D5 비교 표·게이트웨이·한계), 데모 GIF 2개(돌아다니는 펫, 에이전트 실행), ai-log 정리
 - 나중에(선택): VM에 AVX2를 노출하면(호스트 Hyper-V·메모리 무결성 끄기 등) 작은 모델 재측정
 - 후순위: 골드버전 개편 6-2 두 번째 마을(`town2`)부터 재개 — 위키 GOLD_REDESIGN 7-2장
