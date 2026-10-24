@@ -9,6 +9,11 @@
       "baseURL": "https://generativelanguage.googleapis.com/v1beta/openai",
       "apiKeyEnv": "GEMINI_API_KEY",
       "apiKeySecret": "geminiKey"
+    },
+    "gateway": {
+      "baseURL": "http://localhost:8000/v1",
+      "apiKeyEnv": "ARCANA_GATEWAY_TOKEN",
+      "apiKeySecret": "gatewayToken"
     }
   },
   "models": {
