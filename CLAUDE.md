@@ -48,7 +48,8 @@ Electron 기반 데스크톱 펫 RPG. 펫(에레멘탈)이 바탕화면 위를 �
 
 ## 명령
 - 실행: `pnpm --filter desktop start`
-- 테스트: `pnpm test` (= `turbo run test`, 패키지별 결과는 `<패키지>:test:` 접두어로 출력)
+- 테스트: `pnpm test` (= `turbo run test`, 패키지별 결과는 `<패키지>:test:` 접두어로 출력). gateway 테스트는 처음 한 번 `pnpm --filter gateway setup`(.venv 생성) 필요
+- 게이트웨이: `pnpm --filter gateway start` / `pnpm --filter gateway worker` (환경변수 `ARCANA_GATEWAY_TOKEN`, `GEMINI_API_KEY`, `REDIS_URL` — 이 VM의 6379는 다른 프로젝트 Redis이므로 개발용은 6380)
 - 빌드: `pnpm --filter desktop build` (Windows 설치 파일: `apps/desktop`에서 `pnpm exec electron-builder --win --x64`)
 
 ## 기록
