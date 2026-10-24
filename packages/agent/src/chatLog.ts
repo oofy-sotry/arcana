@@ -9,7 +9,7 @@ export function formatChatLog(res: AgentChatResult, totalMs: number): string {
     `model=${res.model}`,
     `tools=${res.route.tools.join(',') || '-'}`,
     `context=${res.context.chars}자(${res.context.parts.join('+')})`,
-    `history=${res.history.turns}턴(요약${res.history.summarized})`,
+    `history=${res.history.turns}턴(요약${res.history.summarized}${res.history.llmSummary ? '+LLM' : ''})`,
     `tokens=${res.usage.promptTokens}/${res.usage.completionTokens}`,
     `steps=${res.steps}`,
     `toolCalls=${res.toolCalls}`,
