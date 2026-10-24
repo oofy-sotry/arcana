@@ -68,7 +68,8 @@ def main():
     config = load_config(DEFAULT_CONFIG_PATH, os.environ.get("ARCANA_GATEWAY_CONFIG"))
     queue = JobQueue(connect_redis(redis_url), ttl_seconds=config.summary.result_ttl_seconds)
     with httpx.Client(timeout=config.upstream_timeout_seconds) as client:
-        log_event("worker_started", model=config.summary.model)
+        # 이전 워커가 처리 도중 죽어 남긴 job부터 다시 처리 (compose는 워커를 하나만 띄운다)
+        log_event("worker_started", model=config.summary.model, requeued=queue.requeue_processing())
         while True:
             try:
                 process_one(queue, client, config)
