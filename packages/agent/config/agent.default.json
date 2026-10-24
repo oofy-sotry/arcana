@@ -42,5 +42,11 @@
       "small": { "inputPer1M": 0, "outputPer1M": 0 },
       "large": { "inputPer1M": 0.25, "outputPer1M": 1.5 }
     }
+  },
+  "summary": {
+    "enabled": false,
+    "provider": "gateway",
+    "pollMs": 2000,
+    "timeoutMs": 60000
   }
 }
