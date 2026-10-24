@@ -292,7 +292,7 @@ desktop main (에이전트 루프·tool) ──OpenAI 호환──▶ gateway (F
 
 ---
 
-## 현재 상태 (2026-10-21 기준, v0.2.3)
+## 현재 상태 (2026-10-24 기준, v0.3.0)
 
 | 단계 | 상태 |
 |------|------|
@@ -308,6 +308,12 @@ desktop main (에이전트 루프·tool) ──OpenAI 호환──▶ gateway (F
 | 소환사·월드맵 | ✅ 완료 |
 | 골드버전 형식 개편 (기절·회복소·상점·턴제 전투·포획·체육관·육성소) | ✅ 1~5단계 + 6-1 완료, 6-2 두 번째 마을부터 진행 예정 |
 | 스프라이트 | 🔶 일부 — 캐릭터 스프라이트 130장(`assets/sprites/characters`) 배치, 몬스터·UI·사운드·아이템 이미지는 미제작(색상 도형으로 대체 표시) |
+| 모노레포 전환 (pnpm + Turborepo) | ✅ 완료 |
+| AI 펫 에이전트 · 모델 라우팅 · 컨텍스트 선택 | ✅ 완료 |
+| 비용 · 지연 기록 + 3조건 비교 측정 | ✅ 완료 |
+| CI · 릴리스 · 자동 업데이트 | ✅ 완료 — v0.3.0 Releases 업로드, Windows 실기기 설치·업데이트 확인은 남음 |
+| LLM 게이트웨이 · Redis 큐 · docker compose 배포 | ✅ 완료 — 개발 VM에서 compose로 운영 중 |
+| 테스트 | desktop 89 · server 65 · game-core 5 · shared 2 · agent 132 · gateway 80, 전부 통과 |
 
 > 전체 진행 체크리스트는 [COMMIT_PLAN](https://github.com/oofy-sotry/arcana/wiki/COMMIT_PLAN), 남은 작업은
 > [ROADMAP](https://github.com/oofy-sotry/arcana/wiki/ROADMAP) Phase 8 "남은 작업 후보" 참조.
