@@ -27,3 +27,8 @@ test('넘긴 경우·재시도는 덧붙임, tool 없으면 -', () => {
 test('실패 — 이유와 오류만', () => {
   assert.equal(formatChatLog({ ok: false, reason: 'rate_limited', error: 'too many' }, 50), 'fail reason=rate_limited total=50ms error="too many"')
 })
+
+test('LLM 요약이 들어갔으면 기록에 +LLM', () => {
+  const line = formatChatLog({ ...ok, history: { turns: 6, summarized: 1, llmSummary: true } }, 900)
+  assert.match(line, / history=6턴\(요약1\+LLM\) /)
+})
