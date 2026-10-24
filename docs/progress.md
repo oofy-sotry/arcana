@@ -137,10 +137,17 @@
 - [x] 운영 시작: 저장소 루트 `.env`(권한 600, git 제외 — JWT_SECRET·게이트웨이 토큰 새로 생성, Gemini 키, `SERVER_DATA_DIR=./apps/server/data`) → ghcr.io `latest`(`sha-23fda3b`) pull → 네 서비스 healthy, 스모크 통과, `10.0.2.15:4000/health` 응답(VirtualBox 포워딩 경로), 게이트웨이 8000은 바깥 주소에서 응답 없음. Docker 서비스가 부팅 시 자동 시작(`enabled`)이라 `restart: unless-stopped`로 재부팅 뒤에도 뜸
 - [x] 테스트: desktop 89, server 65, game-core 5, shared 2, agent 132, gateway 80 — 전부 통과(종료 코드 0), CI·Images 통과
 
+## 2026-10-24 — D7 README 정리
+- [x] README: 한눈에 보기 표, 프로세스 구조 그림(에이전트·자동 업데이트·LLM 공급자), AI 펫 에이전트(설계 원칙·라우팅·컨텍스트·대화 기록·비용 기록·3조건 측정 표), LLM 게이트웨이와 작업 큐, 배포(compose)·CI/CD, 트러블슈팅 11건, 한계, 현재 상태 v0.3.0, 기술 스택, 프로젝트 구조
+- 숫자·이름은 코드와 기록에서 다시 확인(IPC invoke 95개, 마이그레이션 18개, 테이블 `agent_requests`, tool 존재 검사 `check`, CSP 수정 내용, WebSocket은 renderer 쪽)
+- 정리 중 고친 것: 기존 README의 채널 93개·마이그레이션 17개(옛 값), 그림의 테두리 어긋남(한글 2칸 — 칸 단위로 그리는 스크립트로 다시 그림), main→서버 선에 WS로 잘못 적은 것, 공용 패키지 수, 트러블슈팅에 실제로 겪지 않은 증상을 적은 것
+- [x] GitHub 마크다운 렌더러로 확인: 표 8개 모두 렌더, 문서 안 링크 2개가 제목 앵커와 일치
+- 남은 것: 데모 GIF 2개(돌아다니는 펫, 에이전트 실행) — 이 VM은 GUI 세션이 없어 Windows 호스트에서 녹화 필요
+
 ## 다음 할 일
 - D6 이어서: **Windows에서 v0.3.0 설치·실행(완료 기준)** → `0.3.1`을 내서 자동 업데이트 실제 확인. 온라인 탭 서버 주소는 그대로 `localhost:4000`(VirtualBox 포워딩)
 - 나중에(결정 ②): Windows 클라이언트가 게이트웨이 쓰기 — `.env`에 `GATEWAY_BIND=0.0.0.0`, VirtualBox 포워딩 8000 추가, 클라이언트 `agent.json`·`gatewayToken`. HTTP 평문이라 같은 와이파이에서만
 - 나중에(결정 ③): 게이트웨이 경유 Ollama — Ollama 서비스에 `OLLAMA_HOST=0.0.0.0`(sudo)
-- D7 마무리: README(아키텍처 그림·AI 에이전트 설계·D5 비교 표·게이트웨이·한계), 데모 GIF 2개(돌아다니는 펫, 에이전트 실행), ai-log 정리
+- D7 남은 것: 데모 GIF 2개(돌아다니는 펫, 에이전트 실행) — Windows 호스트에서 녹화, ai-log 정리
 - 나중에(선택): VM에 AVX2를 노출하면(호스트 Hyper-V·메모리 무결성 끄기 등) 작은 모델 재측정
 - 후순위: 골드버전 개편 6-2 두 번째 마을(`town2`)부터 재개 — 위키 GOLD_REDESIGN 7-2장
