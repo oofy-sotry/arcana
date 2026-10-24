@@ -15,6 +15,7 @@ Electron 기반 데스크톱 펫 RPG. 펫(에레멘탈)이 바탕화면 위를 �
   - `src/game` — 게임 시스템과 데이터
   - `src/db` — sql.js 저장소와 마이그레이션
 - `apps/server` — Express + sql.js, JWT 인증, 실시간 매칭
+- `apps/gateway` — Python FastAPI. OpenAI 호환 LLM 게이트웨이(공급자 키 보관·요청 계측)와 Redis 큐 대화 요약 워커. 에이전트 루프·tool은 desktop main에 그대로 둔다
 - `packages/shared` — TypeScript. IPC 채널 이름, 공용 데이터 타입 (`apps/desktop/test/ipcChannels.test.js`가 실제 채널과 일치하는지 확인)
 - `packages/game-core` — JS. 클라이언트·서버가 함께 쓰는 게임 규칙 (속성 상성, 데미지 공식, 몬스터 데이터)
 
