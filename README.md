@@ -333,12 +333,15 @@ legacy/tamagotchi → 초기 프로토타입 코드 보존 (구 다마고치)
 
 | 항목 | 내용 |
 |------|------|
-| 플랫폼 | Electron |
-| 언어 | JavaScript (CommonJS, Main/DB/Game 레이어 — 프리로드 contextBridge), TypeScript (`packages/shared`) |
+| 플랫폼 | Electron 33 |
+| 언어 | JavaScript (CommonJS, Main/DB/Game 레이어 — 프리로드 contextBridge), TypeScript (`packages/agent`, `packages/shared`), Python 3.12 (`apps/gateway`) |
 | 렌더링 | PixiJS v8 (ES 모듈) |
 | 저장소 (클라이언트) | sql.js (WebAssembly SQLite) |
 | 저장소 (서버) | sql.js — `apps/server` Express 앱 |
+| AI | OpenAI 호환 Chat Completions(SSE 스트리밍) — Gemini API(큰 모델), Ollama(작은 모델), 자체 구현 에이전트 루프(SDK 없음) |
+| 게이트웨이 · 큐 | FastAPI, httpx, Redis(`BLMOVE` 기반 작업 큐) |
 | 모노레포 | pnpm workspaces + Turborepo |
+| 배포 | electron-builder(NSIS) + electron-updater, Docker · docker compose, ghcr.io, GitHub Actions |
 | 온라인 | 완료 — JWT 인증, 랭킹, 온라인 교배, PvP 시즌, 친구 |
 
 ---
