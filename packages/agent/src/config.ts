@@ -53,6 +53,17 @@ export interface PricingConfig {
   models: Record<string, ModelPrice>
 }
 
+/** 밀려난 대화 턴을 게이트웨이 큐로 LLM 요약 — 응답을 기다리게 하지 않고 뒤에서 돈다 */
+export interface SummaryJobConfig {
+  enabled:   boolean
+  /** job API가 있는 공급자 (providers의 이름) */
+  provider:  string
+  /** 결과 조회 간격 */
+  pollMs:    number
+  /** 이 시간 안에 끝나지 않으면 포기하고 규칙 요약 유지 */
+  timeoutMs: number
+}
+
 export interface AgentConfig {
   maxSteps:     number
   defaultModel: string
@@ -60,6 +71,7 @@ export interface AgentConfig {
   models:       Record<string, ModelConfig>
   routing:      RoutingConfig
   pricing:      PricingConfig
+  summary:      SummaryJobConfig
 }
 
 export interface ResolvedModel {
@@ -104,6 +116,7 @@ export function loadAgentConfig({ defaultsPath = DEFAULT_CONFIG_PATH, overridePa
       note:   override.pricing?.note ?? base.pricing?.note,
       models: { ...base.pricing?.models, ...override.pricing?.models },
     },
+    summary:      { ...base.summary, ...override.summary },
   }
 }
 
