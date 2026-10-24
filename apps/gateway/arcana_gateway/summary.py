@@ -27,10 +27,9 @@ def validate_payload(payload, settings: SummarySettings) -> dict:
     turns = payload.get("turns")
     if not isinstance(turns, list) or not turns:
         raise ValueError("turns는 비어 있지 않은 배열이어야 합니다")
-    if len(turns) > settings.max_turns:
-        raise ValueError(f"turns는 {settings.max_turns}개까지 보낼 수 있습니다")
     cleaned = []
-    for turn in turns:
+    # 상한을 넘으면 거절하지 않고 최근 턴만 — 거절하면 데스크톱이 같은 턴을 계속 보내 요약이 영영 실패한다
+    for turn in turns[-settings.max_turns:]:
         if not isinstance(turn, dict) or not isinstance(turn.get("user"), str) or not isinstance(turn.get("reply"), str):
             raise ValueError("각 턴은 user·reply 문자열이 있어야 합니다")
         cleaned.append({"user": _clip(turn["user"], TEXT_CLIP), "reply": _clip(turn["reply"], TEXT_CLIP)})
