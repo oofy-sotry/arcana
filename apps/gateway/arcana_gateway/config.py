@@ -20,7 +20,7 @@ class Upstream:
 @dataclass(frozen=True)
 class SummarySettings:
     model: str
-    # 한 job에 받을 대화 턴 수 상한
+    # 한 job에서 요약할 대화 턴 수 상한 — 넘으면 최근 턴만 쓴다
     max_turns: int
     # 요약 결과 글자 수 상한
     max_chars: int
