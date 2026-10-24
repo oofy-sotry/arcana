@@ -68,3 +68,30 @@ def test_claim_skips_expired_job(queue, redis):
     redis.delete("arcana:job:job0")  # 워커가 없는 동안 TTL로 사라진 job
     assert queue.claim(timeout=0.01) == ("job1", "summary", {"n": 2})
     assert redis.lrange("arcana:jobs:processing", 0, -1) == ["job1"]
+
+
+def test_requeue_processing_after_worker_crash(queue, redis):
+    queue.submit("summary", {"n": 1})
+    queue.claim(timeout=0.01)  # 워커가 가져간 뒤 죽음 → 처리 중 목록에 남음
+    assert queue.requeue_processing() == 1
+    assert redis.lrange("arcana:jobs:processing", 0, -1) == []
+    assert queue.get("job0")["status"] == "queued"
+    assert queue.claim(timeout=0.01) == ("job0", "summary", {"n": 1})
+
+
+def test_requeue_drops_expired_jobs(queue, redis):
+    queue.submit("summary", {})
+    queue.claim(timeout=0.01)
+    redis.delete("arcana:job:job0")  # 그사이 TTL로 사라짐
+    assert queue.requeue_processing() == 0
+    assert redis.lrange("arcana:jobs:processing", 0, -1) == []
+    assert redis.lrange("arcana:jobs:pending", 0, -1) == []
+
+
+def test_requeue_keeps_order_before_new_jobs(queue):
+    queue.submit("summary", {"n": 1})
+    queue.claim(timeout=0.01)
+    queue.submit("summary", {"n": 2})
+    queue.requeue_processing()
+    assert queue.claim(timeout=0.01)[0] == "job0"  # 먼저 들어온 job이 먼저
+    assert queue.claim(timeout=0.01)[0] == "job1"
