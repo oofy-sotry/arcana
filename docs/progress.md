@@ -114,9 +114,19 @@
 - 못 한 것: 게이트웨이 경유 Ollama 호출(목록에는 나옴, 이 VM에서 느려 생략)
 - [x] 테스트: desktop 89, server 65, game-core 5, shared 2, agent 130, gateway 72 — 전부 통과(종료 코드 0)
 
+### 6-5 Docker 이미지 → ghcr.io + docker compose (2026-10-24)
+- [x] `apps/server/Dockerfile`(Node 24 slim, 서버+game-core 운영 의존성만 `pnpm install --filter server...`, node 사용자, 361MB), `apps/gateway/Dockerfile`(Python 3.12 slim, 게이트웨이·워커 공용, 일반 사용자, 212MB), 둘 다 헬스체크
+- [x] `compose.yaml`: server(4000)·gateway(기본 127.0.0.1:8000 — 키를 들고 있어서)·worker·redis(포트 안 엶, 디스크 저장 안 함). 비밀값은 `.env`(예시 `.env.example`), 없으면 시작 거부. 서버 DB는 기본 named volume, 이 VM의 기존 DB는 `SERVER_DATA_DIR=./apps/server/data`
+- [x] `deploy/smoke.sh`: 서버 health, 게이트웨이 큐 켜짐, 토큰 없으면 401, job 제출 → 워커가 끝낼 때까지(키 없으면 failed도 통과)
+- [x] `images.yml`: 빌드 → compose로 띄워 스모크 → main이면 검사한 이미지를 ghcr.io에 `latest`·`sha-<7자리>`로 push. 저장소가 공개라 패키지도 로그인 없이 pull 됨(빈 Docker 설정으로 확인)
+- [x] VM 확인: ghcr.io의 `sha-2c353ad` 이미지를 pull해 네 서비스 healthy, 스모크 통과(Gemini 요약 done), 데스크톱 에이전트 → 컨테이너 게이트웨이로 4턴 대화·LLM 요약까지
+- 발견·수정: ① `.dockerignore`의 `*.log`는 루트만 뜻해서 `server.log`가 이미지에 들어감 → `**/` ② 워커 healthcheck를 `disable`로 두자 CI 러너의 compose가 `up --wait`에서 실패(이 VM의 Compose v5.5.1은 통과) → Redis ping 헬스체크
+- 한계: 컨테이너에서 호스트 Ollama에 안 닿음 — Ollama가 `127.0.0.1`에만 열림(`OLLAMA_HOST=0.0.0.0` 필요, sudo). 데스크톱 잡담 모델은 Ollama에 직접 붙으므로 동작엔 지장 없음
+- 아직 안 한 것: 이 VM의 실제 운영 서버를 compose로 바꾸기(기존 DB 연결·새 JWT_SECRET이면 기존 로그인 토큰 무효) — 사용자 결정 필요
+
 ## 다음 할 일
 - D6 이어서: **Windows에서 v0.3.0 설치·실행(완료 기준)** → `0.3.1`을 내서 자동 업데이트 실제 확인
-- D6 6-5: 서버·게이트웨이·워커·Redis Docker 이미지 → ghcr.io, VM에서 docker compose (Ollama 주소는 `ARCANA_GATEWAY_CONFIG` 덮어쓰기로)
+- (결정 필요) 이 VM의 운영 서버를 compose로 전환: `.env`에 `SERVER_DATA_DIR=./apps/server/data`, JWT_SECRET 값 결정
 - D7 마무리: README(아키텍처 그림·AI 에이전트 설계·D5 비교 표·게이트웨이·한계), 데모 GIF 2개(돌아다니는 펫, 에이전트 실행), ai-log 정리
 - 나중에(선택): VM에 AVX2를 노출하면(호스트 Hyper-V·메모리 무결성 끄기 등) 작은 모델 재측정
 - 후순위: 골드버전 개편 6-2 두 번째 마을(`town2`)부터 재개 — 위키 GOLD_REDESIGN 7-2장
