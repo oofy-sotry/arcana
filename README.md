@@ -12,6 +12,20 @@
 몬스터 육성·수집 장르의 오리지널 세계관을 배경으로,  
 육성 / 진화 / 수집 / 교배를 통해 전설의 에레멘탈 **옴니렉스**를 향해 나아갑니다.
 
+개인 프로젝트이며, 운영 중인 서비스가 아닙니다.
+
+### 한눈에 보기
+
+| 영역 | 내용 |
+|---|---|
+| Electron | main / preload / renderer 분리, `contextIsolation`, IPC 라우터 한 곳 등록, 투명 오버레이 창 클릭 통과, 트레이, electron-builder 설치 파일 + 자동 업데이트 |
+| AI 펫 에이전트 | 자연어 요청 → 기존 게임 함수를 tool로 호출 (main 프로세스, TypeScript). 단계 상한·입력 검증·공급자 장애 시 에이전트만 꺼짐 |
+| 모델 라우팅 · 컨텍스트 | 잡담은 작은 모델, tool이 필요한 요청은 큰 모델에 필요한 tool만. 상태는 요청에 필요한 부분만 넣음 |
+| 비용 · 지연 | 요청마다 모델·토큰·첫 토큰·전체 시간·환산 비용·tool 수·성공을 DB에 기록. 같은 요청 20개 × 3조건 비교로 **입력 토큰 -47%, 환산 비용 -37%** ([측정 결과](#측정-결과)) |
+| LLM 게이트웨이 · 큐 | Python FastAPI OpenAI 호환 게이트웨이(키 보관·요청 계측) + Redis 큐 워커로 대화 요약을 응답 경로 밖에서 처리 |
+| 모노레포 | pnpm workspaces + Turborepo — Electron 앱, Express 서버, FastAPI 게이트웨이, 공용 패키지 4개 |
+| 배포 | GitHub Actions: 테스트 → Windows 설치 파일 → Releases, 서버·게이트웨이 이미지 → 스모크 검사 → ghcr.io, VM에서 docker compose |
+
 ---
 
 ## 기술 구조
