@@ -1,0 +1,67 @@
+# 서버·게이트웨이 이미지 — 빌드 → compose로 네 서비스를 띄워 스모크 검사 → main push면 ghcr.io에 push
+# 태그: latest, sha-<커밋 7자리>. 검사한 그 이미지를 그대로 올린다
+name: Images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/server/**
+      - apps/gateway/**
+      - packages/game-core/**
+      - compose.yaml
+      - deploy/**
+      - .dockerignore
+      - pnpm-lock.yaml
+      - .github/workflows/images.yml
+  pull_request:
+    paths:
+      - apps/server/**
+      - apps/gateway/**
+      - packages/game-core/**
+      - compose.yaml
+      - deploy/**
+      - .dockerignore
+      - pnpm-lock.yaml
+      - .github/workflows/images.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    env:
+      # 검사용 값 — Gemini 키 없이 띄우므로 요약 job은 failed로 끝나는 것까지 확인
+      JWT_SECRET: ci-only-jwt-secret
+      ARCANA_GATEWAY_TOKEN: ci-only-gateway-token
+    steps:
+      - uses: actions/checkout@v7
+      - name: 이미지 빌드
+        run: docker compose build
+      - name: compose로 띄우기
+        run: docker compose up -d --wait
+      - name: 스모크 검사
+        run: deploy/smoke.sh
+      - name: 실패하면 컨테이너 로그
+        if: failure()
+        run: docker compose logs
+      - name: ghcr.io 로그인
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: ghcr.io에 push
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          short=${GITHUB_SHA::7}
+          for name in server gateway; do
+            image=ghcr.io/oofy-sotry/arcana-$name
+            docker tag "$image:latest" "$image:sha-$short"
+            docker push "$image:latest"
+            docker push "$image:sha-$short"
+          done
