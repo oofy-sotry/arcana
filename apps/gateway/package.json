@@ -5,7 +5,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "setup": "python3 -m venv .venv && .venv/bin/pip install -q -r requirements-dev.txt",
+    "venv": "python3 -m venv .venv && .venv/bin/pip install -q -r requirements-dev.txt",
     "test": ".venv/bin/python -m pytest -q",
     "start": ".venv/bin/python -m uvicorn arcana_gateway.main:build_app --factory --host 0.0.0.0 --port 8000",
     "worker": ".venv/bin/python -m arcana_gateway.worker"
