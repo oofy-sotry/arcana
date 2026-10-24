@@ -97,3 +97,20 @@
 ### 직접 확인·수정한 것 (D6)
 - AWS가 무료가 아님을 지적 → AWS 대신 ghcr.io + VM docker compose로 결정
 - 자동 업데이트를 먼저 넣고 v0.3.0으로 릴리스하는 순서 결정
+
+## 2026-10-24
+
+### Claude에게 맡긴 것 (D6 v0.3.0 릴리스·6-4)
+- `win-client-v0.3.0` 태그 push와 Release 결과 확인, electron-updater 소스로 태그 접두어가 업데이트를 막지 않는지 확인
+- `apps/gateway`(FastAPI 게이트웨이·Redis 큐 요약 워커)와 `packages/agent` 연결, CI에 Python 단계 (테스트 먼저)
+- 실제 Gemini·Redis로 끝까지 실행 확인 (다른 프로젝트 Redis를 피해 6380에 개발용 컨테이너)
+
+### Claude가 저지른 실수와 바로잡은 것 (6-4)
+- 워커 대기 시간을 redis-py 8 기본 소켓 시간 초과와 같은 5초로 둬서 빈 큐에서 워커가 죽음 — fakeredis 단위 테스트로는 안 잡히고 실제 실행에서 발견, 회귀 테스트 추가 후 수정
+- 스트림 전달에 `aiter_raw`를 쓰면서 `content-encoding` 헤더를 빼서 압축 응답이 깨질 수 있었음 — 테스트 실패 원인을 보다가 발견, `aiter_bytes`로
+- job 큐 테스트와 구현을 함께 쓰고 실패를 먼저 확인하지 않음 — 이후 파일부터는 실패 확인 뒤 구현
+- 개발 프로세스를 끄려고 `pkill -f "arcana_gateway"`를 써서 같은 문자열이 든 명령 셸까지 종료됨 — 패턴을 python 프로세스로 좁힘
+
+### 직접 확인·수정한 것 (6-4)
+- Windows 확인 전에 6-4를 먼저 하기로 결정
+- FastAPI 역할은 LLM 게이트웨이(에이전트 루프는 main 그대로), 큐 작업은 LLM 대화 요약으로 결정
