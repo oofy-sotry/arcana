@@ -263,7 +263,7 @@ desktop main (에이전트 루프·tool) ──OpenAI 호환──▶ gateway (F
 | 작은 모델 첫 토큰이 0.5초~35초로 들쭉날쭉 | VirtualBox VM에 AVX/AVX2가 노출되지 않음(`/proc/cpuinfo`에 sse4_2까지) | VM 한계로 기록, 잡담 시간 초과를 20초로 줄여 큰 모델로 넘김 |
 | 실시간 PvP WebSocket이 연결되지 않음 | 런처 CSP에 `connect-src`가 없어 `ws://` 차단 | `connect-src 'self' ws: wss:` 추가 (회귀 테스트) |
 | Windows 러너에서 의존 패키지만 빌드하려는데 desktop까지 빌드됨 | `pnpm.CMD`를 거치며 cmd가 turbo 필터 `desktop^...`의 `^`를 지움 | 그 단계만 bash로 실행 |
-| 자동 업데이트가 설치 파일을 못 찾음 | 파일 이름의 공백이 GitHub 업로드 때 점으로 바뀌어 `latest.yml`과 어긋남 | `Arcana-Setup-<버전>.exe`로 고정 |
+| 업로드된 설치 파일 이름이 `latest.yml`에 적힌 이름과 다름 (그대로 두면 자동 업데이트가 파일을 못 받음) | 파일 이름의 공백이 GitHub 업로드 때 점으로 바뀜 | 릴리스 전에 이름을 비교해 발견, `Arcana-Setup-<버전>.exe`로 고정 |
 | 설치 파일에 agent TS 원본이 들어감 | electron-builder는 워크스페이스 패키지를 `node_modules/...`가 아니라 저장소 루트 기준 경로로 매칭 | 소스를 읽고 `packages/agent/...` 패턴으로 제외 |
 | 큐 워커가 빈 큐에서 `TimeoutError`로 죽음 | redis-py 8 소켓 읽기 기본 시간 초과(5초)가 `BLMOVE` 대기(5초)와 같음 — 가짜 Redis 테스트로는 안 잡힘 | 소켓 시간 초과를 대기+5초로, 루프는 `RedisError` 전체에 버팀 |
 | 게이트웨이가 Google 쿠키를 클라이언트로 전달 | 공급자 응답 헤더를 "막을 것만 빼고" 넘김 | 실제 응답 헤더를 찍어 보고 발견 → 넘길 헤더만 고름 |
