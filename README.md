@@ -167,12 +167,12 @@ set -a; . ./.env; set +a; deploy/smoke.sh   # 서버 health · 게이트웨이 �
 
 ```
 renderer(도우미 탭) ──agent:chat──▶ main: AgentService
-                                     │ 1. 라우팅: 키워드 규칙으로 필요한 tool 판단
-                                     │ 2. 컨텍스트 선택: 그 tool에 필요한 상태만 프롬프트에
-                                     │ 3. 에이전트 루프: 모델 ↔ tool (단계 상한 6)
-                                     │      tool = 기존 게임 시스템 함수 (agentGameApi.js)
-                                     │ 4. 요청 기록: 토큰·지연·환산 비용 → DB
-◀──agent:token / agent:tool (스트림)─┘
+                                    │ 1. 라우팅: 키워드 규칙으로 필요한 tool 판단
+                                    │ 2. 컨텍스트 선택: 그 tool에 필요한 상태만 프롬프트에
+                                    │ 3. 에이전트 루프: 모델 ↔ tool (단계 상한 6)
+                                    │      tool = 기존 게임 시스템 함수 (agentGameApi.js)
+                                    │ 4. 요청 기록: 토큰·지연·환산 비용 → DB
+◀──agent:token / agent:tool (스트림)┘
 ```
 
 ### 설계 원칙
@@ -230,7 +230,7 @@ renderer(도우미 탭) ──agent:chat──▶ main: AgentService
 
 ```
 desktop main (에이전트 루프·tool) ──OpenAI 호환──▶ gateway (FastAPI) ──▶ Gemini / Ollama
-        │ 밀려난 대화 턴                              │ 공급자 키는 서버 환경변수에만
+        │ 밀려난 대화 턴                            │ 공급자 키는 서버 환경변수에만
         └─POST /v1/jobs/summary─▶ Redis 대기 목록 ─BLMOVE─▶ 워커 ──▶ Gemini
           GET /v1/jobs/:id ◀── 결과 (TTL 1시간, 입력 대화는 삭제)
 ```
