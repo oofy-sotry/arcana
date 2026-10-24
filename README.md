@@ -33,30 +33,34 @@
 ### 프로세스 구조
 
 ```
-┌──────────────────────── Main 프로세스 (Node.js) ────────────────────────┐
-│ GameWorld      게임 시스템 21개 생성·DI, 60초 tick(컨디션·나이·에너지)  │
-│                sql.js(WebAssembly SQLite) 저장 + 마이그레이션 17개      │
-│ IpcRouter      ipcMain 채널 93개를 한 파일에서 등록                      │
-│ WindowManager  투명 오버레이 창 · 런처 창 · 트레이                       │
-│ ApiService     서버 REST 호출 (HTTP, JWT)                                │
-│ logger         파일 로그 + 에러는 서버 /client-log로 전송                │
-└──────────────▲──────────────────────────────────────────▲───────────────┘
-               │ IPC (invoke / send)                       │ HTTP
-┌──────────────┴──────────────┐                 ┌──────────┴──────────────┐
-│ Preload                     │                 │ apps/server (Express+ws)│
-│ contextBridge로             │                 │ JWT 인증 · 세이브 ·     │
-│ window.arcana.* 만 노출     │                 │ 랭킹 · 교배 · 친구 ·    │
-└──────────────▲──────────────┘                 │ 실시간 매칭 큐          │
-               │                                └──────────▲──────────────┘
-┌──────────────┴──────────────────────────────────┐        │ WebSocket
-│ Renderer                                         ├────────┘ (실시간 PvP·파티 사냥)
-│ 오버레이: PixiJS — 바탕화면 위를 걷는 펫          │
-│ 런처/월드맵: Canvas 2D + DOM 패널                 │
-│ 사냥(턴제 전투): PixiJS — 런처 창 안에서 화면 전환 │
-└──────────────────────────────────────────────────┘
+┌──────────────────────── Main 프로세스 (Node.js) ─────────────────────────┐
+│ GameWorld      게임 시스템 21개 생성·DI, 60초 tick(컨디션·나이·에너지)   │
+│                sql.js(WebAssembly SQLite) 저장 + 마이그레이션 18개       │
+│ IpcRouter      invoke 채널 95개를 한 파일에서 등록                        │
+│ WindowManager  투명 오버레이 창 · 런처 창 · 트레이                        │
+│ AgentService   AI 펫 에이전트 루프 (@arcana/agent, TypeScript)            │
+│ ApiService     서버 REST 호출 (HTTP, JWT)                                 │
+│ updater        GitHub Releases 자동 업데이트 (electron-updater)           │
+│ logger         파일 로그 + 에러는 서버 /client-log로 전송                 │
+└──────▲────────────────────────────────▲──────────────────────▲──────────┘
+       │ IPC (invoke / send,            │ HTTP · WebSocket     │ OpenAI 호환 HTTP (SSE)
+       │  main→renderer 이벤트 2개)     │                      │
+┌──────┴──────────────────────┐  ┌──────┴─────────────────┐  ┌─┴──────────────────────┐
+│ Preload                     │  │ apps/server            │  │ Gemini API / Ollama    │
+│ contextBridge로             │  │ Express + ws           │  │ (또는 apps/gateway 경유)│
+│ window.arcana.* 만 노출     │  │ JWT 인증 · 세이브 ·    │  └────────────────────────┘
+└──────▲──────────────────────┘  │ 랭킹 · 교배 · 친구 ·   │
+       │                         │ 실시간 매칭 큐         │
+┌──────┴────────────────────────────────────────────┐  └──────▲─────────────────┘
+│ Renderer                                          │         │ WebSocket
+│ 오버레이: PixiJS — 바탕화면 위를 걷는 펫           ├─────────┘ (실시간 PvP·파티 사냥)
+│ 런처/월드맵: Canvas 2D + DOM 패널 (도우미 탭 포함)  │
+│ 사냥(턴제 전투): PixiJS — 런처 창 안에서 화면 전환  │
+└───────────────────────────────────────────────────┘
 ```
 
 게임 상태를 바꾸는 로직은 모두 main 프로세스의 `apps/desktop/src/game/systems`에 있고, renderer는 화면 표시와 입력만 담당합니다.
+AI 에이전트도 main 프로세스에서 돌고, renderer는 IPC로 요청을 보내 토큰 스트림을 받아 표시만 합니다.
 
 ### 보안 설정
 
