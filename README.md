@@ -81,6 +81,7 @@ AI 에이전트도 main 프로세스에서 돌고, renderer는 IPC로 요청을 
 - `IpcRouter`는 생성자로 게임 시스템들을 주입받아 호출만 하므로, 시스템 로직은 Electron 없이 `node --test`로 테스트할 수 있습니다.
 - 요청·응답은 `ipcRenderer.invoke` / `ipcMain.handle`, 응답이 필요 없는 신호(오버레이 마우스 전환)만 `send` / `on`을 씁니다.
 - `ipcMain.handle`의 반환값은 구조적 복제를 거치므로 `BrowserWindow` 같은 객체를 반환하지 않도록 합니다(실제로 겪은 버그).
+- 에이전트 응답은 main→renderer 이벤트 `agent:token`·`agent:tool`로 흘려 보내고, preload가 요청 id로 걸러 그 요청을 보낸 쪽에만 전달합니다. 이벤트 채널도 `packages/shared`의 목록과 테스트로 묶여 있습니다.
 
 ### 오버레이 클릭 통과
 
