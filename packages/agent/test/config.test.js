@@ -3,7 +3,7 @@ const assert = require('node:assert/strict')
 const fs   = require('node:fs')
 const os   = require('node:os')
 const path = require('node:path')
-const { loadAgentConfig, loadSecrets, resolveModel, DEFAULT_CONFIG_PATH } = require('../dist')
+const { loadAgentConfig, loadSecrets, resolveModel, resolveProvider, DEFAULT_CONFIG_PATH } = require('../dist')
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'arcana-agent-'))
 
@@ -151,4 +151,13 @@ test('사용자 설정 — summary는 바꾼 항목만 덮어씀', () => {
   const base   = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
   const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH, overridePath })
   assert.deepEqual(config.summary, { ...base.summary, enabled: true })
+})
+
+test('resolveProvider — 모델 없이 공급자 주소·키만 (요약 job용)', () => {
+  const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
+  assert.deepEqual(resolveProvider(config, 'gateway', { env: {}, secrets: { gatewayToken: 'gw' } }),
+    { baseURL: config.providers.gateway.baseURL, apiKey: 'gw', available: true })
+  assert.equal(resolveProvider(config, 'gateway', { env: {}, secrets: {} }).available, false)
+  assert.equal(resolveProvider(config, 'ollama', { env: {}, secrets: {} }).available, true)
+  assert.throws(() => resolveProvider(config, 'nowhere', { env: {}, secrets: {} }), /nowhere/)
 })
