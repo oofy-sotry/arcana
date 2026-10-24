@@ -24,6 +24,8 @@ function createAgent() {
       secrets: loadSecrets(path.join(userData, 'agent-secrets.json')),
       env:     process.env,
       game:    createAgentGameApi(gameWorld),
+      // 게이트웨이 요약 job(설정 summary.enabled일 때만) — 대화 원문 없이 결과만
+      onSummary: e => console.log('[agent] summary', e.ok ? `ok turns=${e.turns} ${e.ms}ms` : `fail ${e.ms}ms error=${JSON.stringify(e.error)}`),
     })
     service.init().then(s => console.log('[agent]', s.enabled ? `켜짐 (${s.model})` : `꺼짐 (${s.reason})`))
     return service
