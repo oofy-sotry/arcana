@@ -12,6 +12,14 @@ from .jobs import JobQueue
 from .logs import log_event
 from .summary import SummaryError, summarize, validate_payload
 
+# job이 없을 때 한 번에 기다리는 시간(초)
+CLAIM_TIMEOUT = 5
+
+
+def connect_redis(url: str):
+    # redis-py 8은 소켓 읽기 시간 초과 기본값이 5초 — BLMOVE 대기보다 길게 잡지 않으면 빈 큐에서 TimeoutError가 난다
+    return redis.Redis.from_url(url, decode_responses=True, socket_timeout=CLAIM_TIMEOUT + 5)
+
 
 def _summarize_with_retry(client, upstream, settings, payload, retry_delay):
     # 무료 한도 초과(429)는 잠시 뒤 한 번 다시
@@ -24,7 +32,7 @@ def _summarize_with_retry(client, upstream, settings, payload, retry_delay):
         return summarize(client, upstream, settings, payload)
 
 
-def process_one(queue: JobQueue, client: httpx.Client, config: GatewayConfig, timeout: float = 5, retry_delay: float = 2, log=log_event) -> bool:
+def process_one(queue: JobQueue, client: httpx.Client, config: GatewayConfig, timeout: float = CLAIM_TIMEOUT, retry_delay: float = 2, log=log_event) -> bool:
     """job 하나를 처리하면 True, timeout 동안 job이 없으면 False"""
     claimed = queue.claim(timeout)
     if claimed is None:
@@ -58,7 +66,7 @@ def main():
     if not redis_url:
         raise SystemExit("REDIS_URL 환경변수가 필요합니다 (예: redis://localhost:6379/0)")
     config = load_config(DEFAULT_CONFIG_PATH, os.environ.get("ARCANA_GATEWAY_CONFIG"))
-    queue = JobQueue(redis.Redis.from_url(redis_url, decode_responses=True), ttl_seconds=config.summary.result_ttl_seconds)
+    queue = JobQueue(connect_redis(redis_url), ttl_seconds=config.summary.result_ttl_seconds)
     with httpx.Client(timeout=config.upstream_timeout_seconds) as client:
         log_event("worker_started", model=config.summary.model)
         while True:
