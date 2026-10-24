@@ -1,0 +1,17 @@
+# 서버 이미지는 저장소 루트를 빌드 컨텍스트로 쓴다 — 필요 없는 큰 폴더·비밀·DB는 보내지 않는다
+.git
+**/node_modules
+**/.turbo
+**/dist
+**/.venv
+**/__pycache__
+**/.pytest_cache
+# .gitignore와 달리 *.log는 루트만 뜻해서 **/를 붙인다
+**/.env
+**/.env.*
+**/*.db
+**/*.db-journal
+**/*.log
+apps/desktop
+apps/server/data
+apps/server/test
