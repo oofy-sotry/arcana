@@ -23,7 +23,7 @@
 | 모델 라우팅 · 컨텍스트 | 잡담은 작은 모델, tool이 필요한 요청은 큰 모델에 필요한 tool만. 상태는 요청에 필요한 부분만 넣음 |
 | 비용 · 지연 | 요청마다 모델·토큰·첫 토큰·전체 시간·환산 비용·tool 수·성공을 DB에 기록. 같은 요청 20개 × 3조건 비교로 **입력 토큰 -47%, 환산 비용 -37%** ([측정 결과](#측정-결과)) |
 | LLM 게이트웨이 · 큐 | Python FastAPI OpenAI 호환 게이트웨이(키 보관·요청 계측) + Redis 큐 워커로 대화 요약을 응답 경로 밖에서 처리 |
-| 모노레포 | pnpm workspaces + Turborepo — Electron 앱, Express 서버, FastAPI 게이트웨이, 공용 패키지 4개 |
+| 모노레포 | pnpm workspaces + Turborepo — Electron 앱, Express 서버, FastAPI 게이트웨이 + 공용 패키지 3개(agent · game-core · shared) |
 | 배포 | GitHub Actions: 테스트 → Windows 설치 파일 → Releases, 서버·게이트웨이 이미지 → 스모크 검사 → ghcr.io, VM에서 docker compose |
 
 ---
