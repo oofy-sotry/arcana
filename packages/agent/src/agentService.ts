@@ -1,7 +1,7 @@
 // 에이전트 서비스 — desktop main이 쓰는 진입점. 요청마다 라우팅(잡담=작은 모델, tool=큰 모델)과
 // 컨텍스트 선택을 하고 에이전트 루프를 돌린다. 공급자 문제는 예외 대신 꺼짐 상태나 실패 결과로 돌려줘
 // 게임 쪽은 에이전트가 없어도 그대로 동작한다
-import { resolveModel, type AgentConfig } from './config'
+import { resolveModel, resolveProvider, type AgentConfig } from './config'
 import { createChatClient, LlmError, type ChatClient, type ChatMessage, type ChatUsage } from './llmClient'
 import { runAgent, type AgentRunResult, type ToolCallEvent } from './agentLoop'
 import { createPetTools, type GameApi } from './petTools'
@@ -9,6 +9,7 @@ import { routeRequest } from './router'
 import { buildContext } from './context'
 import { createConversationMemory } from './memory'
 import { estimateCostUsd } from './pricing'
+import { createSummaryClient as createSummaryClientDefault, type SummaryClient } from './summaryClient'
 
 export const MAX_MESSAGE_LENGTH = 500
 /** 잡담 모델이 게임 기능이 필요하다고 판단했을 때 답하는 표시 — 큰 모델로 다시 보낸다 */
@@ -65,8 +66,8 @@ export type AgentChatResult =
       route:         RouteInfo
       /** 프롬프트에 넣은 게임 상태 크기 */
       context:       { chars: number; parts: string[] }
-      /** 프롬프트에 넣은 이전 대화 */
-      history:       { turns: number; summarized: number }
+      /** 프롬프트에 넣은 이전 대화 — llmSummary는 게이트웨이 요약 job 결과가 들어갔을 때만 */
+      history:       { turns: number; summarized: number; llmSummary?: true }
       /** 무료 한도 초과로 다시 시도한 횟수 */
       retries:       number
       /** 참고 단가표로 환산한 비용(USD) — 단가가 없으면 null */
@@ -88,7 +89,14 @@ export interface AgentServiceOptions {
    * routing+context(기본): 라우팅 + 컨텍스트 선택
    */
   strategy?:     'full' | 'routing' | 'routing+context'
+  createSummaryClient?: (opts: { baseURL: string; apiKey?: string }) => SummaryClient
+  /** 요약 job 결과 조회 사이 대기 — 테스트에서 바꿔 끼운다 */
+  sleep?:        (ms: number) => Promise<void>
+  /** 요약 job 하나가 끝날 때마다 (로그용, 대화 원문 없음) */
+  onSummary?:    (event: SummaryEvent) => void
 }
+
+export type SummaryEvent = { ok: true; ms: number; turns: number } | { ok: false; ms: number; error: string }
 
 export interface ChatOptions {
   onToken?:    (token: string) => void
@@ -98,7 +106,7 @@ export interface ChatOptions {
 
 interface Target { client: ChatClient; model: string }
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
 // 작은 모델은 표시를 need_tools·Need_Tools. 처럼 바꿔 쓰기도 해서 대소문자를 무시한다
 const isNeedTools = (text: string) => text.toUpperCase().includes(NEED_TOOLS)
@@ -123,12 +131,56 @@ function holdMarker(onToken?: (token: string) => void) {
   return { push, flush }
 }
 
-export function createAgentService({ config, secrets, env, game, createClient = createChatClient, now = Date.now, strategy = 'routing+context' }: AgentServiceOptions) {
+export function createAgentService({
+  config, secrets, env, game, createClient = createChatClient, now = Date.now, strategy = 'routing+context',
+  createSummaryClient = createSummaryClientDefault, sleep: wait = sleep, onSummary,
+}: AgentServiceOptions) {
   let status: AgentStatus = { enabled: false, reason: 'not_ready' }
   let large: Target | undefined
   let small: Target | undefined
   const allTools = createPetTools(game)
   const memory   = createConversationMemory({ maxTurns: config.routing.historyTurns })
+  const summarizer = connectSummarizer()
+  let summaryTask: Promise<void> | undefined
+
+  // 요약 job — 설정에서 켜고 게이트웨이 키가 있을 때만. 없으면 규칙 요약만 쓴다
+  function connectSummarizer(): SummaryClient | undefined {
+    if (!config.summary?.enabled) return undefined
+    try {
+      const p = resolveProvider(config, config.summary.provider, { env, secrets })
+      return p.available ? createSummaryClient({ baseURL: p.baseURL, apiKey: p.apiKey }) : undefined
+    } catch {
+      return undefined
+    }
+  }
+
+  async function runSummaryJob(client: SummaryClient) {
+    const req = memory.summaryRequest()
+    if (!req) return
+    const started = now()
+    try {
+      const id = await client.submit(req)
+      for (;;) {
+        await wait(config.summary.pollMs)
+        const job = await client.get(id)
+        if (job.status === 'done' && job.summary) {
+          memory.applySummary(job.summary, req.upTo)
+          onSummary?.({ ok: true, ms: now() - started, turns: req.turns.length })
+          return
+        }
+        if (job.status === 'failed') throw new Error(job.error ?? '요약 job 실패')
+        if (now() - started >= config.summary.timeoutMs) throw new Error(`요약 job이 ${config.summary.timeoutMs}ms 시간 안에 끝나지 않음`)
+      }
+    } catch (err) {
+      onSummary?.({ ok: false, ms: now() - started, error: (err as Error).message })
+    }
+  }
+
+  // 응답을 기다리게 하지 않도록 뒤에서 돌리고, 한 번에 job 하나만
+  function summarizeInBackground() {
+    if (!summarizer || summaryTask) return
+    summaryTask = runSummaryJob(summarizer).finally(() => { summaryTask = undefined })
+  }
 
   async function connectChatModel(): Promise<Target | undefined> {
     try {
@@ -238,6 +290,7 @@ export function createAgentService({ config, secrets, env, game, createClient = 
 
       const { result, context, retries } = outcome
       memory.add(text, result.reply)
+      summarizeInBackground()
       return {
         ok:           true,
         reply:        result.reply,
@@ -265,7 +318,13 @@ export function createAgentService({ config, secrets, env, game, createClient = 
     }
   }
 
-  return { init, chat, status: (): AgentStatus => status }
+  return {
+    init,
+    chat,
+    status: (): AgentStatus => status,
+    /** 돌고 있는 요약 job이 끝날 때까지 — 테스트·측정 스크립트용 */
+    flushSummary: (): Promise<void> => summaryTask ?? Promise.resolve(),
+  }
 }
 
 export type AgentService = ReturnType<typeof createAgentService>
