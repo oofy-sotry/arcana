@@ -65,7 +65,7 @@ export function createConversationMemory({ maxTurns, maxSummaryLines = 6, maxPen
     toMessages,
     summaryRequest,
     applySummary,
-    stats: () => ({ turns, summarized: ruleLines().length, ...(llmSummary ? { llmSummary: true } : {}) }),
+    stats: () => ({ turns, summarized: ruleLines().length, ...(llmSummary ? { llmSummary: true as const } : {}) }),
     clear: () => { recent = []; pending = []; llmSummary = null; turns = 0; clearedAt = seq },
   }
 }
