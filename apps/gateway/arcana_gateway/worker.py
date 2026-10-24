@@ -44,9 +44,12 @@ def process_one(queue: JobQueue, client: httpx.Client, config: GatewayConfig, ti
 
     settings = config.summary
     started = time.monotonic()
+    upstream = config.upstream_for(settings.model)
     try:
         payload = validate_payload(payload, settings)
-        text, usage = _summarize_with_retry(client, config.upstream_for(settings.model), settings, payload, retry_delay)
+        if not upstream.available:
+            raise SummaryError(f"요약 모델 공급자 키가 없습니다: {upstream.name}")
+        text, usage = _summarize_with_retry(client, upstream, settings, payload, retry_delay)
     except (ValueError, SummaryError) as err:
         queue.fail(job_id, str(err))
         log("summary", job=job_id, model=settings.model, ok=False, error=str(err)[:200],
