@@ -356,6 +356,8 @@ legacy/tamagotchi → 초기 프로토타입 코드 보존 (구 다마고치)
 - ✅ [커밋 계획 체크리스트](https://github.com/oofy-sotry/arcana/wiki/COMMIT_PLAN) — 커밋 단위 진행 이력
 - ⚖️ [세력 시스템](https://github.com/oofy-sotry/arcana/wiki/FACTION_SYSTEM) · 📖 [스토리 설계](https://github.com/oofy-sotry/arcana/wiki/STORY_DESIGN) · 🗺️ [구역 설계](https://github.com/oofy-sotry/arcana/wiki/ZONES_DESIGN)
 - 📐 [커밋 규칙](https://github.com/oofy-sotry/arcana/wiki/COMMIT_RULES)
+- 🤖 [AI 에이전트·배포 보강 계획과 진행](https://github.com/oofy-sotry/arcana/wiki/HOMI_AI_PLAN) — 단계별 결정·실측·실수와 정정
+- 저장소 안: [`docs/progress.md`](docs/progress.md) (진행 상황) · [`docs/ai-log.md`](docs/ai-log.md) (Claude Code에 맡긴 작업과 사람이 직접 확인·결정한 내용, 날짜별)
 
 ---
 
