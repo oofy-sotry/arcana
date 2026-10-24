@@ -54,8 +54,13 @@ services:
       - ./deploy/gateway.json:/config/gateway.json:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    # 이미지 기본 헬스체크(/healthz)는 HTTP 서버용 — 워커는 큐(Redis)에 닿는지로 본다.
+    # disable로 두면 CI 러너의 compose가 up --wait에서 "no healthcheck"로 실패함
     healthcheck:
-      disable: true
+      test: ["CMD", "python", "-c", "import os, redis; redis.Redis.from_url(os.environ['REDIS_URL'], socket_timeout=2).ping()"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
     depends_on:
       redis:
         condition: service_healthy
