@@ -1,0 +1,7 @@
+{
+  "upstreams": {
+    "ollama": {
+      "baseURL": "http://host.docker.internal:11434/v1"
+    }
+  }
+}
