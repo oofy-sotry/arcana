@@ -124,3 +124,31 @@ test('사용자 설정 — 단가는 모델별로 덮어씀', () => {
   assert.deepEqual(config.pricing.models.small, base.pricing.models.small)
   assert.equal(config.pricing.note, base.pricing.note)
 })
+
+test('기본 설정 — 게이트웨이 공급자는 있지만 요약 job은 꺼짐 (켜면 게이트웨이를 띄워야 함)', () => {
+  const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
+  assert.ok(config.providers.gateway.baseURL)
+  assert.equal(config.summary.enabled, false)
+  assert.equal(config.summary.provider, 'gateway')
+  assert.ok(config.summary.pollMs > 0)
+  assert.ok(config.summary.timeoutMs > config.summary.pollMs)
+})
+
+test('resolveModel — 게이트웨이를 큰 모델 공급자로 바꾸면 게이트웨이 토큰을 키로 씀', () => {
+  const dir = tmp()
+  const overridePath = path.join(dir, 'agent.json')
+  fs.writeFileSync(overridePath, JSON.stringify({ models: { large: { provider: 'gateway', model: 'gemini-flash-lite-latest' } } }))
+  const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH, overridePath })
+  const m = resolveModel(config, 'large', { env: {}, secrets: { gatewayToken: 'gw', geminiKey: 'gem' } })
+  assert.equal(m.baseURL, config.providers.gateway.baseURL)
+  assert.equal(m.apiKey, 'gw')
+})
+
+test('사용자 설정 — summary는 바꾼 항목만 덮어씀', () => {
+  const dir = tmp()
+  const overridePath = path.join(dir, 'agent.json')
+  fs.writeFileSync(overridePath, JSON.stringify({ summary: { enabled: true } }))
+  const base   = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH })
+  const config = loadAgentConfig({ defaultsPath: DEFAULT_CONFIG_PATH, overridePath })
+  assert.deepEqual(config.summary, { ...base.summary, enabled: true })
+})
