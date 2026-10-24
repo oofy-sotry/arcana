@@ -1,6 +1,7 @@
 # LLM 게이트웨이와 요약 워커가 함께 쓰는 이미지 — 워커는 compose에서 command만 바꾼다
 # docker build apps/gateway
 FROM python:3.12-slim
+LABEL org.opencontainers.image.source=https://github.com/oofy-sotry/arcana
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY requirements.txt .
