@@ -30,6 +30,12 @@ permissions:
   contents: read
   packages: write
 
+# 같은 브랜치 실행은 하나씩 — 동시에 돌면 latest가 더 오래된 커밋 이미지로 덮일 수 있다.
+# 진행 중인 것은 끝까지 두고(취소하면 push가 반쯤 끝날 수 있음), 기다리는 것은 가장 새 커밋만 남는다
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   images:
     runs-on: ubuntu-latest
