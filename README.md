@@ -118,14 +118,39 @@ pnpm workspaces + Turborepo로 클라이언트·서버·게이트웨이·공용 
 
 ```bash
 pnpm install                              # 전체 워크스페이스 설치 (pnpm 12)
-pnpm --filter desktop start              # 클라이언트 실행 (서버 없이도 동작)
+pnpm --filter desktop start              # 클라이언트 실행 (서버·LLM 없이도 동작)
 JWT_SECRET=<랜덤 값> pnpm --filter server start   # 온라인 서버 (기본 포트 4000)
 
-pnpm test                                # 전체 테스트 (turbo run test)
+pnpm --filter gateway run venv           # 처음 한 번 — 게이트웨이 테스트용 Python .venv
+pnpm test                                # 전체 테스트 (turbo run test, pytest 포함)
 pnpm --filter desktop build              # electron-builder 설치 파일 생성
 ```
 
-Windows 설치 파일은 `apps/desktop`에서 `pnpm exec electron-builder --win --x64`로 만듭니다(Linux에서는 wine 필요).
+- Windows 설치 파일은 `apps/desktop`에서 `pnpm exec electron-builder --win --x64`로 만듭니다(Linux에서는 wine 필요).
+- AI 도우미를 쓰려면 Gemini 키를 환경변수 `GEMINI_API_KEY` 또는 `userData/agent-secrets.json`의 `geminiKey`에 넣습니다. 잡담용 작은 모델은 Ollama(`qwen2.5:3b`)가 켜져 있으면 쓰고, 없으면 잡담도 큰 모델로 갑니다.
+
+### 배포 (docker compose)
+
+서버·게이트웨이·워커·Redis를 한 번에 띄웁니다. 이미지는 main에 push할 때 GitHub Actions가 ghcr.io에 올립니다.
+
+```bash
+cp .env.example .env                     # JWT_SECRET, ARCANA_GATEWAY_TOKEN, GEMINI_API_KEY 채우기
+docker compose pull && docker compose up -d
+set -a; . ./.env; set +a; deploy/smoke.sh   # 서버 health · 게이트웨이 인증 · 큐 · 워커 처리 확인
+```
+
+- 서버는 `:4000`, 게이트웨이는 공급자 키를 들고 있어서 기본으로 `127.0.0.1:8000`에만 엽니다(`GATEWAY_BIND`로 변경). Redis는 포트를 열지 않고 디스크에 저장하지 않습니다.
+- 비밀값이 없으면 compose가 시작하지 않습니다. 컨테이너는 모두 root가 아닌 사용자로 돌고 헬스체크가 있습니다.
+
+### CI / CD
+
+| 워크플로 | 언제 | 하는 일 |
+|---|---|---|
+| `ci.yml` | push · PR | `pnpm test` (Node 24 + Python 3.12) |
+| `release.yml` | 태그 `win-client-v<버전>` | 태그와 앱 버전 일치 확인 → 테스트 → Windows 러너에서 설치 파일 빌드 → Releases에 exe · blockmap · `latest.yml` 업로드 |
+| `images.yml` | 서버 · 게이트웨이 경로 변경 | 이미지 빌드 → compose로 네 서비스를 띄워 스모크 검사 → main이면 **검사한 그 이미지**를 ghcr.io에 `latest` · `sha-<7자리>`로 push |
+
+설치된 앱은 시작할 때 GitHub Releases의 `latest.yml`을 확인해 새 버전을 받고, 받은 뒤 재시작할지 묻습니다(개발 실행에서는 건너뜀).
 
 서버 주소는 기본값 `http://localhost:4000`이며, 게임 안 온라인 탭에서 바꿀 수 있습니다(환경변수 `ARCANA_SERVER_URL`로 초기값 지정 가능).
 
