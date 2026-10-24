@@ -72,6 +72,7 @@ def test_summarize_calls_upstream_without_streaming():
     prompt = "\n".join(m["content"] for m in seen["body"]["messages"])
     assert "처음 만남" in prompt and "밥 줘" in prompt and "사과를 먹였어요" in prompt
     assert "50자" in prompt
+    assert "추측" in prompt  # 대화에 없는 상태("사냥 준비 중")를 덧붙이던 문제
 
 
 def test_summary_is_clipped_to_max_chars():
