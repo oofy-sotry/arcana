@@ -99,6 +99,7 @@ AI 에이전트도 main 프로세스에서 돌고, renderer는 IPC로 요청을 
 같은 HTTP 서버에 붙은 WebSocket(`ws`)으로 구성됩니다. 인증은 bcrypt 해시 + JWT, 저장소는 sql.js입니다.
 실시간 PvP·파티 사냥은 서버 메모리의 매칭 큐(`apps/server/realtime/queue.js`, `partyQueue.js`, `huntMatch.js`)로 짝을 맞춥니다.
 서버가 없어도 싱글플레이는 전부 동작하고, 온라인 탭만 연결 실패로 표시됩니다.
+서버 주소는 기본값 `http://localhost:4000`이며, 게임 안 온라인 탭에서 바꿀 수 있습니다(환경변수 `ARCANA_SERVER_URL`로 초기값 지정 가능).
 
 ### 모노레포 구성
 
@@ -156,8 +157,6 @@ set -a; . ./.env; set +a; deploy/smoke.sh   # 서버 health · 게이트웨이 �
 | `images.yml` | 서버 · 게이트웨이 경로 변경 | 이미지 빌드 → compose로 네 서비스를 띄워 스모크 검사 → main이면 **검사한 그 이미지**를 ghcr.io에 `latest` · `sha-<7자리>`로 push |
 
 설치된 앱은 시작할 때 GitHub Releases의 `latest.yml`을 확인해 새 버전을 받고, 받은 뒤 재시작할지 묻습니다(개발 실행에서는 건너뜀).
-
-서버 주소는 기본값 `http://localhost:4000`이며, 게임 안 온라인 탭에서 바꿀 수 있습니다(환경변수 `ARCANA_SERVER_URL`로 초기값 지정 가능).
 
 ---
 
