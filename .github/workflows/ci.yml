@@ -24,5 +24,5 @@ jobs:
           python-version: '3.12'
       - run: pnpm install --frozen-lockfile
       # apps/gateway(FastAPI) 테스트는 .venv의 pytest로 돈다
-      - run: pnpm --filter gateway setup
+      - run: pnpm --filter gateway run venv
       - run: pnpm test
