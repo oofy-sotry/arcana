@@ -54,9 +54,11 @@ def process_one(queue: JobQueue, client: httpx.Client, config: GatewayConfig, ti
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(message)s")
+    redis_url = os.environ.get("REDIS_URL")
+    if not redis_url:
+        raise SystemExit("REDIS_URL 환경변수가 필요합니다 (예: redis://localhost:6379/0)")
     config = load_config(DEFAULT_CONFIG_PATH, os.environ.get("ARCANA_GATEWAY_CONFIG"))
-    queue = JobQueue(redis.Redis.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379/0"), decode_responses=True),
-                     ttl_seconds=config.summary.result_ttl_seconds)
+    queue = JobQueue(redis.Redis.from_url(redis_url, decode_responses=True), ttl_seconds=config.summary.result_ttl_seconds)
     with httpx.Client(timeout=config.upstream_timeout_seconds) as client:
         log_event("worker_started", model=config.summary.model)
         while True:
