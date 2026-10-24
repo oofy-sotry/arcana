@@ -17,8 +17,8 @@ from .meter import StreamMeter
 from .summary import validate_payload
 
 JOB_ID = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
-# 공급자 응답에서 그대로 넘기지 않는 헤더 (길이·압축은 다시 계산된다)
-HOP_HEADERS = {"content-length", "content-encoding", "transfer-encoding", "connection"}
+# 공급자 응답에서 넘기는 헤더 — 나머지(공급자 쿠키·date·server 등)는 버린다. retry-after는 429 재시도에 쓴다
+PASSED_HEADERS = {"content-type", "retry-after"}
 
 
 def _error(status: int, message: str, kind: str) -> JSONResponse:
@@ -80,7 +80,7 @@ def create_app(config: GatewayConfig, token: str, http_client: httpx.AsyncClient
             log("chat", **fields, ok=False, status=502, error=type(err).__name__, **meter.finish())
             return _error(502, f"공급자에 연결할 수 없습니다: {upstream.name}", "upstream_unreachable")
 
-        passed_headers = {k: v for k, v in res.headers.items() if k.lower() not in HOP_HEADERS}
+        passed_headers = {k: v for k, v in res.headers.items() if k.lower() in PASSED_HEADERS}
 
         # 오류 응답(429 포함)은 상태와 본문을 그대로 돌려준다 — 데스크톱이 재시도·폴백을 판단한다
         if res.status_code != 200 or not stream:
