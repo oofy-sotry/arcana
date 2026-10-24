@@ -47,6 +47,7 @@
     "enabled": false,
     "provider": "gateway",
     "pollMs": 2000,
-    "timeoutMs": 60000
+    "timeoutMs": 60000,
+    "failureBackoffMs": 60000
   }
 }
