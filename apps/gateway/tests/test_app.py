@@ -242,6 +242,18 @@ def test_submit_summary_job_and_read_status(client, queue):
     assert res.json() == {"id": job_id, "kind": "summary", "status": "done", "result": {"summary": "사과를 먹였다"}}
 
 
+def test_summary_body_over_limit_is_413(client, queue):
+    big = {"previous": None, "turns": [{"user": "가" * 3000, "reply": "b"}]}
+    res = client.post("/v1/jobs/summary", json=big, headers=AUTH)
+    assert res.status_code == 413
+    assert queue.claim(timeout=0.01) is None
+
+
+def test_summary_body_not_json_is_400(client):
+    res = client.post("/v1/jobs/summary", content=b"not json", headers={**AUTH, "content-type": "application/json"})
+    assert res.status_code == 400
+
+
 def test_invalid_summary_payload_is_400(client):
     res = client.post("/v1/jobs/summary", json={"turns": []}, headers=AUTH)
     assert res.status_code == 400
