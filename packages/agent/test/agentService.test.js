@@ -354,3 +354,145 @@ test('strategy 기본값은 라우팅 + 컨텍스트 선택', async () => {
   await service.init()
   assert.deepEqual((await service.chat('상태')).context.parts, ['pets'])
 })
+
+// ── 게이트웨이 요약 job ─────────────────────────────────────────────────
+
+const summaryConfig = {
+  ...config,
+  providers: { ...config.providers, gw: { baseURL: 'http://gw/v1', apiKeySecret: 'gwToken' } },
+  summary:   { enabled: true, provider: 'gw', pollMs: 10, timeoutMs: 1000 },
+}
+
+// get은 jobs에 넣어 둔 상태를 차례로 돌려주고, 마지막 것은 계속 반복
+function fakeSummaryFactory({ submitError, jobs = [{ status: 'done', summary: 'LLM 요약' }] } = {}) {
+  const made = []
+  const submits = []
+  let gets = 0
+  const createSummaryClient = opts => {
+    made.push(opts)
+    return {
+      submit: async req => {
+        submits.push(structuredClone(req))
+        if (submitError) throw submitError
+        return `job${submits.length}`
+      },
+      get: async () => jobs[Math.min(gets++, jobs.length - 1)],
+    }
+  }
+  return { createSummaryClient, made, submits, gets: () => gets }
+}
+
+const chatReplies = n => ({ responses: { tiny: Array.from({ length: n }, (_, i) => ({ content: `답${i + 1}` })) } })
+
+async function chatTurns(service, n) {
+  for (let i = 1; i <= n; i++) await service.chat(`안녕${i}`)
+}
+
+test('요약 job — 설정에 없으면(기본 꺼짐) 만들지 않음', async () => {
+  const summary = fakeSummaryFactory()
+  const service = make(fakeClientFactory(chatReplies(3)), { createSummaryClient: summary.createSummaryClient, secrets: { remoteKey: 'k', gwToken: 'g' } })
+  await service.init()
+  await chatTurns(service, 3)
+  await service.flushSummary()
+  assert.equal(summary.made.length, 0)
+})
+
+test('요약 job — 게이트웨이 키가 없으면 꺼짐', async () => {
+  const summary = fakeSummaryFactory()
+  const service = make(fakeClientFactory(chatReplies(3)), { config: summaryConfig, createSummaryClient: summary.createSummaryClient })
+  await service.init()
+  await chatTurns(service, 3)
+  assert.equal(summary.made.length, 0)
+})
+
+test('요약 job — 턴이 밀려나면 큐에 보내고, 끝나면 다음 요청에 LLM 요약이 들어감', async () => {
+  const factory = fakeClientFactory(chatReplies(4))
+  const summary = fakeSummaryFactory({ jobs: [{ status: 'queued' }, { status: 'running' }, { status: 'done', summary: '안녕1에 답1로 답함' }] })
+  const events  = []
+  const service = make(factory, {
+    config: summaryConfig, secrets: { remoteKey: 'k', gwToken: 'g' },
+    createSummaryClient: summary.createSummaryClient, sleep: async () => {}, onSummary: e => events.push(e),
+  })
+  await service.init()
+  await chatTurns(service, 2)
+  assert.equal(summary.submits.length, 0) // historyTurns 2 — 아직 밀려난 턴 없음
+  await service.chat('안녕3')
+  await service.flushSummary()
+
+  assert.deepEqual(summary.made, [{ baseURL: 'http://gw/v1', apiKey: 'g' }])
+  assert.deepEqual(summary.submits, [{ previous: null, turns: [{ user: '안녕1', reply: '답1' }], upTo: 1 }])
+  assert.equal(summary.gets(), 3)
+  assert.equal(events.length, 1)
+  assert.equal(events[0].ok, true)
+
+  const res  = await service.chat('안녕4')
+  const msgs = factory.requests.at(-1).messages
+  assert.deepEqual(msgs[1], { role: 'system', content: '이전 대화 요약:\n안녕1에 답1로 답함' })
+  assert.deepEqual(res.history, { turns: 3, summarized: 0, llmSummary: true })
+})
+
+test('요약 job — 도는 동안엔 새 job을 보내지 않고, 응답은 job을 기다리지 않음', async () => {
+  let release
+  const gate    = new Promise(resolve => { release = resolve })
+  const summary = fakeSummaryFactory()
+  const service = make(fakeClientFactory(chatReplies(4)), {
+    config: summaryConfig, secrets: { remoteKey: 'k', gwToken: 'g' },
+    createSummaryClient: summary.createSummaryClient, sleep: () => gate,
+  })
+  await service.init()
+  await chatTurns(service, 3) // 3번째에서 job 시작 → 조회 대기에서 멈춤
+  const res = await service.chat('안녕4') // 그래도 응답은 바로 옴
+  assert.equal(res.ok, true)
+  assert.equal(summary.submits.length, 1)
+  release()
+  await service.flushSummary()
+  assert.equal(summary.submits.length, 1)
+})
+
+test('요약 job — 실패해도 대화는 정상, 규칙 요약 유지', async () => {
+  const factory = fakeClientFactory(chatReplies(4))
+  const summary = fakeSummaryFactory({ submitError: new Error('503') })
+  const events  = []
+  const service = make(factory, {
+    config: summaryConfig, secrets: { remoteKey: 'k', gwToken: 'g' },
+    createSummaryClient: summary.createSummaryClient, sleep: async () => {}, onSummary: e => events.push(e),
+  })
+  await service.init()
+  await chatTurns(service, 3)
+  await service.flushSummary()
+  const res = await service.chat('안녕4')
+  assert.equal(res.ok, true)
+  assert.equal(events[0].ok, false)
+  assert.match(events[0].error, /503/)
+  assert.match(factory.requests.at(-1).messages[1].content, /사용자: 안녕1 → 도우미: 답1/)
+  assert.equal(res.history.llmSummary, undefined)
+})
+
+test('요약 job — 실패 상태로 끝나면 포기', async () => {
+  const summary = fakeSummaryFactory({ jobs: [{ status: 'failed', error: '공급자 429' }] })
+  const events  = []
+  const service = make(fakeClientFactory(chatReplies(3)), {
+    config: summaryConfig, secrets: { remoteKey: 'k', gwToken: 'g' },
+    createSummaryClient: summary.createSummaryClient, sleep: async () => {}, onSummary: e => events.push(e),
+  })
+  await service.init()
+  await chatTurns(service, 3)
+  await service.flushSummary()
+  assert.deepEqual([events[0].ok, events[0].error], [false, '공급자 429'])
+})
+
+test('요약 job — timeoutMs 안에 끝나지 않으면 포기', async () => {
+  let t = 0
+  const summary = fakeSummaryFactory({ jobs: [{ status: 'running' }] })
+  const events  = []
+  const service = make(fakeClientFactory(chatReplies(3)), {
+    config: summaryConfig, secrets: { remoteKey: 'k', gwToken: 'g' },
+    createSummaryClient: summary.createSummaryClient, now: () => t, sleep: async ms => { t += ms * 30 }, onSummary: e => events.push(e),
+  })
+  await service.init()
+  await chatTurns(service, 3)
+  await service.flushSummary()
+  assert.equal(events[0].ok, false)
+  assert.match(events[0].error, /시간/)
+  assert.ok(summary.gets() <= 4) // pollMs 10 × 30 = 300ms씩 → 1000ms 안에 몇 번만
+})
