@@ -248,6 +248,26 @@ desktop main (에이전트 루프·tool) ──OpenAI 호환──▶ gateway (F
 
 ---
 
+## 트러블슈팅 (실제로 겪은 문제)
+
+테스트는 통과했는데 실제로 실행해야 드러난 문제가 대부분이었습니다.
+
+| 증상 | 원인 | 해결 |
+|---|---|---|
+| 큰 모델 공급자가 모든 요청에 `200 OK`, 본문 `OK`만 돌려줌 | GitHub Models가 2026-07-30 종료 — 종료된 주소가 오류 대신 200을 줌 | 토큰 없는 요청과 응답을 비교해 발견, Gemini(OpenAI 호환 주소)로 교체. 이후 "응답이 왔다"가 아니라 "기대한 형식인지"까지 확인 |
+| Gemini 스트리밍에서 tool 호출이 깨지거나 두 번째 요청이 400 | Gemini는 tool 호출 조각에 `index`가 없고 병렬 호출을 청크마다 따로 보냄, `thought_signature`를 다음 요청에 되돌려 보내야 함 | 호출을 `id`로 구분, `extra_content`를 보존해 되돌려 보냄 (회귀 테스트 추가) |
+| 작은 모델 첫 토큰이 0.5초~35초로 들쭉날쭉 | VirtualBox VM에 AVX/AVX2가 노출되지 않음(`/proc/cpuinfo`에 sse4_2까지) | VM 한계로 기록, 잡담 시간 초과를 20초로 줄여 큰 모델로 넘김 |
+| 실시간 PvP WebSocket이 연결되지 않음 | 런처 CSP에 `connect-src`가 없어 `ws://` 차단 | `connect-src 'self' ws: wss:` 추가 (회귀 테스트) |
+| Windows 러너에서 의존 패키지만 빌드하려는데 desktop까지 빌드됨 | `pnpm.CMD`를 거치며 cmd가 turbo 필터 `desktop^...`의 `^`를 지움 | 그 단계만 bash로 실행 |
+| 자동 업데이트가 설치 파일을 못 찾음 | 파일 이름의 공백이 GitHub 업로드 때 점으로 바뀌어 `latest.yml`과 어긋남 | `Arcana-Setup-<버전>.exe`로 고정 |
+| 설치 파일에 agent TS 원본이 들어감 | electron-builder는 워크스페이스 패키지를 `node_modules/...`가 아니라 저장소 루트 기준 경로로 매칭 | 소스를 읽고 `packages/agent/...` 패턴으로 제외 |
+| 큐 워커가 빈 큐에서 `TimeoutError`로 죽음 | redis-py 8 소켓 읽기 기본 시간 초과(5초)가 `BLMOVE` 대기(5초)와 같음 — 가짜 Redis 테스트로는 안 잡힘 | 소켓 시간 초과를 대기+5초로, 루프는 `RedisError` 전체에 버팀 |
+| 게이트웨이가 Google 쿠키를 클라이언트로 전달 | 공급자 응답 헤더를 "막을 것만 빼고" 넘김 | 실제 응답 헤더를 찍어 보고 발견 → 넘길 헤더만 고름 |
+| CI에서 Python `.venv` 준비 단계가 아무것도 안 함 | 스크립트 이름 `setup`이 pnpm 자체 명령 `pnpm setup`과 겹침 | 이름을 `venv`로 |
+| CI에서만 `docker compose up --wait` 실패 | 워커 healthcheck를 `disable`로 둠 — 러너의 compose 버전은 이를 오류로 처리 | Redis ping 헬스체크 |
+
+---
+
 ## 핵심 특징
 
 - 🖥️ **데스크톱 위를 자유롭게 돌아다니는 펫** — 창 안에 갇히지 않음
