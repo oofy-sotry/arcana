@@ -47,15 +47,21 @@ def create_app(config: GatewayConfig, token: str, http_client: httpx.AsyncClient
                 for model, name in config.models.items() if config.upstreams[name].available]
         return {"object": "list", "data": data}
 
-    @app.post("/v1/chat/completions")
-    async def chat(request: Request):
+    async def read_json(request: Request):
+        """(원본 바이트, JSON) 또는 오류 응답 — 크기 상한은 모든 POST에 같게"""
         raw = await request.body()
         if len(raw) > config.max_body_bytes:
-            return _error(413, f"요청 본문은 {config.max_body_bytes}바이트까지 받습니다", "too_large")
+            return None, None, _error(413, f"요청 본문은 {config.max_body_bytes}바이트까지 받습니다", "too_large")
         try:
-            body = json.loads(raw)
+            return raw, json.loads(raw), None
         except ValueError:
-            return _error(400, "JSON 본문이 아닙니다", "invalid_request")
+            return None, None, _error(400, "JSON 본문이 아닙니다", "invalid_request")
+
+    @app.post("/v1/chat/completions")
+    async def chat(request: Request):
+        raw, body, err = await read_json(request)
+        if err:
+            return err
         if not isinstance(body, dict) or not isinstance(body.get("model"), str) or not isinstance(body.get("messages"), list):
             return _error(400, "model 문자열과 messages 배열이 필요합니다", "invalid_request")
 
@@ -112,10 +118,13 @@ def create_app(config: GatewayConfig, token: str, http_client: httpx.AsyncClient
     async def submit_summary(request: Request):
         if queue is None:
             return _error(503, "작업 큐를 쓸 수 없습니다", "queue_unavailable")
+        _, body, err = await read_json(request)
+        if err:
+            return err
         try:
-            payload = validate_payload(await request.json(), config.summary)
-        except ValueError as err:
-            return _error(400, str(err), "invalid_request")
+            payload = validate_payload(body, config.summary)
+        except ValueError as invalid:
+            return _error(400, str(invalid), "invalid_request")
         try:
             job_id = queue.submit("summary", payload)
         except redis.RedisError:
